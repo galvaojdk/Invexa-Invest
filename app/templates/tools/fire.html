@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block header_title %}Planejamento FIRE{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+
+    <!-- Info Card -->
+    <div
+        class="bg-gradient-to-r from-blue-900/20 to-indigo-900/20 rounded-2xl p-6 border border-blue-500/10 flex items-start gap-4">
+        <div class="p-3 bg-blue-500/10 rounded-xl">
+            <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z">
+                </path>
+            </svg>
+        </div>
+        <div>
+            <h3 class="text-white font-bold text-lg">Regra dos 4% (300x)</h3>
+            <p class="text-slate-400 text-sm mt-1 leading-relaxed">
+                Esta regra estima que você precisa acumular 300 vezes o seu custo de vida mensal para viver apenas dos
+                rendimentos, sem consumir o patrimônio principal.
+            </p>
+        </div>
+    </div>
+
+    <!-- Inputs -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Card 1: Expenses/NW -->
+        <div class="bg-[#0f172a] rounded-2xl border border-slate-800 p-6 shadow-xl">
+            <h4 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-6 border-b border-slate-800 pb-2">
+                Situação Atual</h4>
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Gasto Mensal Desejado
+                        (R$)</label>
+                    <input type="number" id="monthly-expense"
+                        class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none font-mono text-lg transition-all placeholder-slate-700"
+                        placeholder="5000">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Patrimônio Atual (R$)</label>
+                    <input type="number" id="current-nw"
+                        class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none font-mono text-lg transition-all placeholder-slate-700"
+                        placeholder="0">
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Growth -->
+        <div class="bg-[#0f172a] rounded-2xl border border-slate-800 p-6 shadow-xl">
+            <h4
+                class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-6 border-b border-slate-800 pb-2">
+                Crescimento</h4>
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Aporte Mensal (R$)</label>
+                    <input type="number" id="monthly-contribution"
+                        class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none font-mono text-lg transition-all placeholder-slate-700"
+                        placeholder="2000">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Rentabilidade Anual
+                        (%)</label>
+                    <div class="relative">
+                        <input type="number" id="interest-rate"
+                            class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none font-mono text-lg transition-all placeholder-slate-700"
+                            placeholder="6" value="8">
+                        <div class="absolute right-4 top-3.5 text-slate-500 font-bold">%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button onclick="calculateFire()"
+        class="w-full group relative bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/20 transition-all overflow-hidden">
+        <div
+            class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+        </div>
+        <span class="relative flex items-center justify-center gap-2 text-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z">
+                </path>
+            </svg>
+            Calcular Liberdade Financeira
+        </span>
+    </button>
+
+    <!-- Results Section -->
+    <div id="result" class="hidden animate-fade-in-up">
+        <div class="bg-[#0f172a] rounded-2xl border border-slate-800 p-8 shadow-2xl relative overflow-hidden">
+            <!-- Background Glow -->
+            <div
+                class="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2">
+            </div>
+
+            <div class="relative z-10 text-center mb-8">
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Seu Número Mágico</h3>
+                <p class="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight"
+                    id="fire-number">R$ 0,00</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 md:gap-8 border-t border-slate-800 pt-8 relative z-10 mb-8">
+                <div class="text-center p-4 rounded-xl bg-slate-900/50 border border-slate-800/50">
+                    <p class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Tempo Estimado</p>
+                    <p class="text-2xl md:text-3xl font-bold text-blue-400" id="time-to-fire">-- anos</p>
+                </div>
+                <div class="text-center p-4 rounded-xl bg-slate-900/50 border border-slate-800/50">
+                    <p class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Patrimônio Final</p>
+                    <p class="text-2xl md:text-3xl font-bold text-emerald-400" id="final-nw">--</p>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="relative z-10">
+                <div class="flex justify-between items-end mb-2">
+                    <span class="text-sm font-medium text-slate-300" id="progress-text">Progresso</span>
+                    <span class="text-xs text-slate-500 font-mono" id="progress-pct">0%</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-4 overflow-hidden shadow-inner">
+                    <div id="progress-bar"
+                        class="bg-gradient-to-r from-blue-600 to-emerald-500 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+                        style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center relative z-10">
+                <button onclick="toggleDetails()"
+                    class="text-sm text-slate-400 hover:text-white underline underline-offset-4 transition-colors">
+                    Ver Detalhamento Mensal &darr;
+                </button>
+            </div>
+        </div>
+
+        <!-- Monthly Detail Table -->
+        <div id="monthly-detail"
+            class="hidden mt-8 bg-[#0f172a] rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+            <div class="overflow-x-auto max-h-[500px] custom-scrollbar">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs text-slate-500 uppercase bg-slate-900/80 sticky top-0 backdrop-blur-sm z-10">
+                        <tr>
+                            <th class="px-6 py-4 font-bold tracking-wider">Mês</th>
+                            <th class="px-6 py-4 font-bold tracking-wider text-right">Início</th>
+                            <th class="px-6 py-4 font-bold tracking-wider text-right">Aporte</th>
+                            <th class="px-6 py-4 font-bold tracking-wider text-right">Juros</th>
+                            <th class="px-6 py-4 font-bold tracking-wider text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-slate-800/50 text-slate-300">
+                        <!-- Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculateFire() {
+        const expense = parseFloat(document.getElementById('monthly-expense').value) || 0;
+        const current = parseFloat(document.getElementById('current-nw').value) || 0;
+        const contribution = parseFloat(document.getElementById('monthly-contribution').value) || 0;
+        const rateAnual = parseFloat(document.getElementById('interest-rate').value) || 0;
+
+        // Rate monthly
+        const rateMonthly = (Math.pow(1 + (rateAnual / 100), 1 / 12) - 1);
+
+        // Target
+        const fireNumber = expense * 300;
+
+        let balance = current;
+        let months = 0;
+        let tableHtml = '';
+
+        // Projection Limit (e.g. 80 years)
+        const maxMonths = 12 * 80;
+
+        const fmtBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        while (balance < fireNumber && months < maxMonths) {
+            months++;
+            const startBalance = balance;
+            const interest = startBalance * rateMonthly;
+            balance = startBalance + interest + contribution;
+
+            tableHtml += `
+                <tr class="hover:bg-slate-800/50 transition-colors border-b border-slate-800/30 group">
+                    <td class="px-6 py-3 font-mono text-slate-500 group-hover:text-slate-300 transition-colors">#${months}</td>
+                    <td class="px-6 py-3 text-right font-mono text-slate-400">${fmtBRL.format(startBalance)}</td>
+                    <td class="px-6 py-3 text-right font-mono text-emerald-500/80">+ ${fmtBRL.format(contribution)}</td>
+                    <td class="px-6 py-3 text-right font-mono text-blue-500/80">+ ${fmtBRL.format(interest)}</td>
+                    <td class="px-6 py-3 text-right font-mono font-bold text-white shadow-[inset_2px_0_0_0_rgba(59,130,246,0.5)] bg-slate-800/20">${fmtBRL.format(balance)}</td>
+                </tr>
+            `;
+
+            if (balance <= startBalance && months > 1) break;
+        }
+
+        const years = (months / 12).toFixed(1);
+
+        document.getElementById('fire-number').innerText = fmtBRL.format(fireNumber);
+        document.getElementById('time-to-fire').innerText = `${years} anos`;
+        document.getElementById('final-nw').innerText = fmtBRL.format(fireNumber);
+
+        const progress = Math.min(100, (current / fireNumber) * 100) || 0;
+        document.getElementById('progress-text').innerText = `Você tem ${progress.toFixed(1)}% do necessário`;
+        document.getElementById('progress-pct').innerText = `${progress.toFixed(1)}%`;
+        document.getElementById('progress-bar').style.width = `${progress}%`;
+
+        document.getElementById('table-body').innerHTML = tableHtml;
+        document.getElementById('result').classList.remove('hidden');
+        document.getElementById('monthly-detail').classList.add('hidden');
+
+        // Scroll to result
+        setTimeout(() => {
+            document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
+
+    function toggleDetails() {
+        const el = document.getElementById('monthly-detail');
+        el.classList.toggle('hidden');
+        if (!el.classList.contains('hidden')) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+</script>
+{% endblock %}

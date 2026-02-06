@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Invexa{% endblock %}</title>
+    <!-- Tailwind CSS (CDN para MVP) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10B981', // Emerald 500
+                        secondary: '#3B82F6', // Blue 500
+                        dark: '#0f172a', // Slate 900
+                        darker: '#020617', // Slate 950
+                        surface: '#1e293b', // Slate 800
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b1120;
+            /* Deepest Slate */
+        }
+    </style>
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body
+    class="bg-[#0b1120] text-slate-300 font-sans antialiased h-screen flex overflow-hidden selection:bg-blue-500/30 selection:text-blue-200">
+
+    <!-- Mobile Header -->
+    <div
+        class="md:hidden fixed w-full bg-[#0f172a]/90 backdrop-blur-md z-50 flex justify-between items-center p-4 border-b border-slate-800">
+        <span
+            class="font-bold text-xl text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">Invexa</span>
+        <button id="mobile-menu-btn" class="text-slate-400 hover:text-white focus:outline-none">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                </path>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Sidebar -->
+    <aside
+        class="w-64 bg-[#0f172a] border-r border-slate-800 hidden md:flex flex-col z-20 transition-transform transform md:translate-x-0 -translate-x-full fixed md:relative h-full"
+        id="sidebar">
+        <div class="p-6 border-b border-slate-800/50">
+            <h1 class="text-2xl font-bold flex items-center gap-2 tracking-tight">
+                <div
+                    class="p-1.5 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-lg shadow-lg shadow-emerald-500/20">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
+                </div>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">Invexa</span>
+            </h1>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-8 overflow-y-auto">
+            <!-- Section: Principal -->
+            <div>
+                <h3 class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Principal</h3>
+                <div class="space-y-1">
+                    <a href="/dashboard"
+                        class="group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {% if request.url.path == '/dashboard' %}bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]{% else %}text-slate-400 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <svg class="w-5 h-5 {% if request.url.path == '/dashboard' %}text-blue-400{% else %}text-slate-500 group-hover:text-white{% endif %} transition-colors"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                            </path>
+                        </svg>
+                        Dashboard
+                    </a>
+                    <a href="/portfolio"
+                        class="group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {% if request.url.path == '/portfolio' %}bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]{% else %}text-slate-400 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <svg class="w-5 h-5 {% if request.url.path == '/portfolio' %}text-blue-400{% else %}text-slate-500 group-hover:text-white{% endif %} transition-colors"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                            </path>
+                        </svg>
+                        Minha Carteira
+                    </a>
+                </div>
+                <a href="/premium/subscribe"
+                    class="group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {% if '/premium/subscribe' in request.url.path %}bg-purple-600/10 text-purple-400 border border-purple-500/20{% else %}text-purple-400 hover:bg-purple-900/20 hover:text-purple-300{% endif %}">
+                    <svg class="w-5 h-5 {% if '/premium/subscribe' in request.url.path %}text-purple-400{% else %}text-purple-500 group-hover:text-purple-300{% endif %} transition-colors"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z">
+                        </path>
+                    </svg>
+                    Seja Premium 🚀
+                </a>
+            </div>
+            </div>
+
+            <!-- Section: Rankings -->
+            <div>
+                <h3 class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Rankings</h3>
+                <div class="space-y-1">
+                    <a href="/rankings/fiis"
+                        class="group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {% if '/rankings/fiis' in request.url.path %}bg-blue-600/10 text-blue-400 border border-blue-500/20{% else %}text-slate-400 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <svg class="w-5 h-5 {% if '/rankings/fiis' in request.url.path %}text-blue-400{% else %}text-slate-500 group-hover:text-white{% endif %} transition-colors"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                            </path>
+                        </svg>
+                        Ranking de FIIs
+                    </a>
+                    <a href="/rankings/acoes"
+                        class="group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {% if '/rankings/acoes' in request.url.path %}bg-blue-600/10 text-blue-400 border border-blue-500/20{% else %}text-slate-400 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <svg class="w-5 h-5 {% if '/rankings/acoes' in request.url.path %}text-blue-400{% else %}text-slate-500 group-hover:text-white{% endif %} transition-colors"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z">
+                            </path>
+                        </svg>
+                        Ranking de Ações
+                    </a>
+                    <a href="/screener"
+                        class="group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {% if request.url.path == '/screener' %}bg-blue-600/10 text-blue-400 border border-blue-500/20{% else %}text-slate-400 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <svg class="w-5 h-5 {% if request.url.path == '/screener' %}text-blue-400{% else %}text-slate-500 group-hover:text-white{% endif %} transition-colors"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        Principais Recomendações
+                    </a>
+                </div>
+            </div>
+
+            <!-- Section: Ferramentas -->
+            <div>
+                <h3 class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Ferramentas</h3>
+                <div class="space-y-1">
+                    <a href="/ferramentas/juros"
+                        class="group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {% if '/ferramentas/juros' in request.url.path %}bg-blue-600/10 text-blue-400 border border-blue-500/20{% else %}text-slate-400 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <svg class="w-5 h-5 {% if '/ferramentas/juros' in request.url.path %}text-blue-400{% else %}text-slate-500 group-hover:text-white{% endif %} transition-colors"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                        Calc. Juros
+                    </a>
+                    <a href="/ferramentas/fire"
+                        class="group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {% if '/ferramentas/fire' in request.url.path %}bg-blue-600/10 text-blue-400 border border-blue-500/20{% else %}text-slate-400 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <svg class="w-5 h-5 {% if '/ferramentas/fire' in request.url.path %}text-blue-400{% else %}text-slate-500 group-hover:text-white{% endif %} transition-colors"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 21v-8a2 2 0 012-2h14a2 2 0 012 2v8M10 9H7a1 1 0 01-1-1V5a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1zm9-1h-3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V9a1 1 0 00-1-1z">
+                            </path>
+                        </svg>
+                        Aposentadoria
+                    </a>
+                    <a href="/ferramentas/comparador"
+                        class="group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {% if '/ferramentas/comparador' in request.url.path %}bg-blue-600/10 text-blue-400 border border-blue-500/20{% else %}text-slate-400 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <svg class="w-5 h-5 {% if '/ferramentas/comparador' in request.url.path %}text-blue-400{% else %}text-slate-500 group-hover:text-white{% endif %} transition-colors"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z">
+                            </path>
+                        </svg>
+                        Comparador
+                    </a>
+                    <a href="/ferramentas/valuation"
+                        class="group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {% if '/ferramentas/valuation' in request.url.path %}bg-blue-600/10 text-blue-400 border border-blue-500/20{% else %}text-slate-400 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <svg class="w-5 h-5 {% if '/ferramentas/valuation' in request.url.path %}text-blue-400{% else %}text-slate-500 group-hover:text-white{% endif %} transition-colors"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                        Valuation
+                    </a>
+                    <a href="/ferramentas/agenda"
+                        class="group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {% if '/ferramentas/agenda' in request.url.path %}bg-blue-600/10 text-blue-400 border border-blue-500/20{% else %}text-slate-400 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <svg class="w-5 h-5 {% if '/ferramentas/agenda' in request.url.path %}text-blue-400{% else %}text-slate-500 group-hover:text-white{% endif %} transition-colors"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                        Agenda
+                    </a>
+
+                </div>
+            </div>
+            </div>
+            </div>
+
+            <!-- Section: Admin (Hidden by default) -->
+            <div id="admin-menu" class="hidden">
+                <h3 class="px-4 text-[10px] font-bold text-purple-500 uppercase tracking-widest mb-3">Administração</h3>
+                <div class="space-y-1">
+                    <a href="/admin"
+                        class="group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {% if '/admin' in request.url.path %}bg-purple-600/10 text-purple-400 border border-purple-500/20{% else %}text-slate-400 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <svg class="w-5 h-5 {% if '/admin' in request.url.path %}text-purple-400{% else %}text-slate-500 group-hover:text-white{% endif %} transition-colors"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z">
+                                <!-- Replacing Icon -->
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                            </path>
+                        </svg>
+                        Painel Admin
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800/50 bg-slate-900/50">
+            <div class="flex items-center gap-3 mb-4 cursor-pointer hover:bg-slate-800 p-2 rounded-lg transition-colors"
+                onclick="window.location.href='/profile'">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 p-[1px]">
+                    <div
+                        class="h-full w-full rounded-full bg-slate-800 flex items-center justify-center text-white font-bold text-xs user-avatar">
+                        U
+                    </div>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-white user-name">Usuário</p>
+                    <p class="text-[10px] text-emerald-400 font-mono user-status">Assinante PRO</p>
+                </div>
+            </div>
+            <a href="/logout"
+                class="flex items-center gap-2 text-sm text-red-400 hover:text-red-300 transition-colors px-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                    </path>
+                </svg>
+                Sair
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative pt-16 md:pt-0 w-full">
+        <!-- Header for Dashboard View -->
+        <header
+            class="bg-[#0b1120]/80 backdrop-blur border-b border-slate-800 py-4 px-8 flex justify-between items-center hidden md:flex sticky top-0 z-30">
+            <h2 class="text-xl font-bold text-white tracking-wide">{% block header_title %}Visão Geral{% endblock %}
+            </h2>
+            <div class="flex items-center gap-4">
+                <div class="relative group">
+                    <input type="text" placeholder="Buscar ativo..."
+                        class="pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-64 transition-all group-hover:bg-slate-800">
+                    <svg class="w-4 h-4 text-slate-500 absolute left-3 top-2.5" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+                <button class="p-2 text-slate-400 hover:text-white transition-colors relative">
+                    <div class="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Premium Upsell Modal -->
+    <div id="premium-modal"
+        class="fixed inset-0 bg-black/90 backdrop-blur-md z-[60] hidden flex items-center justify-center p-4">
+        <div
+            class="bg-gradient-to-b from-slate-900 to-[#0f172a] border border-purple-500/30 rounded-3xl max-w-lg w-full p-8 relative shadow-2xl shadow-purple-900/20 overflow-hidden">
+            <!-- Background Glow -->
+            <div
+                class="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-purple-600/20 blur-[100px] rounded-full pointer-events-none">
+            </div>
+
+            <button onclick="closePremiumModal()"
+                class="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+
+            <div class="text-center relative z-10">
+                <div
+                    class="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-lg shadow-purple-500/30">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+
+                <h2 class="text-2xl font-bold text-white mb-2">Desbloqueie o Poder do Invexa <span
+                        class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">PRO</span>
+                </h2>
+                <p class="text-slate-400 mb-8">Esta funcionalidade é exclusiva para assinantes. Tenha acesso a
+                    inteligência artificial, valuation automático e muito mais.</p>
+
+                <div class="space-y-4">
+                    <a href="/premium/subscribe"
+                        class="block w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:to-blue-500 text-center text-white font-bold text-lg shadow-lg shadow-purple-900/40 hover:scale-[1.02] transition-transform cursor-pointer">
+                        VER PLANOS & ASSINAR 🚀
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global Modal Controls
+        function showPremiumModal() {
+            document.getElementById('premium-modal').classList.remove('hidden');
+        }
+        function closePremiumModal() {
+            document.getElementById('premium-modal').classList.add('hidden');
+        }
+
+        // Mobile menu toggle
+        const btn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+
+        if (btn && sidebar) {
+            btn.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+                sidebar.classList.toggle('fixed');
+                sidebar.classList.toggle('bg-[#0f172a]');
+                sidebar.classList.toggle('h-full');
+                sidebar.classList.toggle('z-40');
+                sidebar.classList.toggle('top-0');
+                sidebar.classList.toggle('left-0');
+                // Ajustes para mobile
+                sidebar.classList.toggle('pt-16');
+            });
+        }
+
+        // Check Auth & Admin Status
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const response = await fetch('/api/v1/auth/me', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        const user = await response.json();
+                        // Update User Info
+                        if (document.querySelector('.user-name')) {
+                            document.querySelector('.user-name').innerText = user.full_name || user.email.split('@')[0];
+                        }
+                        if (document.querySelector('.user-status')) {
+                            document.querySelector('.user-status').innerText = user.is_premium ? 'Assinante PRO' : 'Plano Gratuito';
+                            if (!user.is_premium) {
+                                document.querySelector('.user-status').classList.replace('text-emerald-400', 'text-slate-400');
+                            }
+                        }
+                        if (document.querySelector('.user-avatar')) {
+                            const initial = (user.full_name || user.email)[0].toUpperCase();
+                            document.querySelector('.user-avatar').innerText = initial;
+                        }
+
+                        // Show Admin Menu
+                        if (user.is_admin) {
+                            document.getElementById('admin-menu').classList.remove('hidden');
+                        }
+                    }
+                } catch (e) { console.error("Auth Check Failed", e); }
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block header_title %}Comparador de Ativos{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+
+    <!-- Search / Input -->
+    <div class="bg-[#0f172a] p-6 rounded-2xl shadow-xl border border-slate-800">
+        <h3 class="text-lg font-bold text-white mb-4">Escolha os ativos para comparar</h3>
+        <div class="flex flex-col md:flex-row gap-4">
+            <input type="text" id="tickers-input" placeholder="Ex: WEGE3, PETR4, VALE3"
+                class="flex-1 bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-500 uppercase">
+            <button onclick="compareAssets()"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z">
+                    </path>
+                </svg>
+                Comparar
+            </button>
+        </div>
+        <p class="text-xs text-slate-500 mt-2">* Funcionalidade exclusiva para assinantes Premium.</p>
+    </div>
+
+    <!-- Results Table -->
+    <div id="results-container" class="hidden overflow-x-auto">
+        <div class="bg-[#0f172a] rounded-2xl border border-slate-800 shadow-xl inline-block min-w-full">
+            <table class="w-full text-sm text-left text-slate-400">
+                <thead class="text-xs text-slate-500 uppercase bg-slate-900 border-b border-slate-800 font-bold">
+                    <tr>
+                        <th class="px-6 py-4 sticky left-0 bg-slate-900 z-10">Métrica</th>
+                        <!-- Dynamic Columns -->
+                    </tr>
+                </thead>
+                <tbody id="comparison-body" class="divide-y divide-slate-800">
+                    <!-- Rows -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="hidden text-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+        <p class="text-slate-500 mt-4">Analisando fundamentos...</p>
+    </div>
+
+</div>
+
+<script>
+    // Check Premium Status on Load
+    async function checkPremiumAccess() {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            const res = await fetch('/api/v1/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) {
+                const user = await res.json();
+                if (!user.is_premium && !user.is_admin) {
+                    showPremiumModal();
+                    // Blur content
+                    document.querySelector('.max-w-6xl').classList.add('blur-sm', 'pointer-events-none');
+                }
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    document.addEventListener('DOMContentLoaded', checkPremiumAccess);
+
+    async function compareAssets() {
+        const input = document.getElementById('tickers-input').value;
+        if (!input) return alert("Digite pelo menos um ativo.");
+
+        document.getElementById('loading').classList.remove('hidden');
+        document.getElementById('results-container').classList.add('hidden');
+
+        try {
+            const token = localStorage.getItem('token');
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+            const response = await fetch(`/api/v1/premium/comparator?tickers=${encodeURIComponent(input)}`, { headers });
+
+            if (response.status === 403) {
+                showPremiumModal();
+                return;
+            }
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.detail || "Erro ao comparar");
+            }
+
+            const data = await response.json();
+            renderComparison(data);
+        } catch (e) {
+            alert(e.message);
+        } finally {
+            document.getElementById('loading').classList.add('hidden');
+        }
+    }
+
+    function renderComparison(data) {
+        if (!data || data.length === 0) return alert("Nenhum dado encontrado.");
+
+        const container = document.getElementById('results-container');
+        const thead = container.querySelector('thead tr');
+        const tbody = document.getElementById('comparison-body');
+
+        // Reset
+        thead.innerHTML = '<th class="px-6 py-4 sticky left-0 bg-slate-900 z-10">Métrica</th>';
+        tbody.innerHTML = '';
+
+        // Headers
+        data.forEach(asset => {
+            const th = document.createElement('th');
+            th.className = "px-6 py-4 text-center min-w-[150px]";
+            th.innerHTML = `<span class="text-white text-base">${asset.ticker}</span><br><span class="text-[10px] font-normal text-slate-500">${asset.sector}</span>`;
+            thead.appendChild(th);
+        });
+
+        // Metrics Definition
+        const metrics = [
+            { id: 'price', label: 'Preço Atual', fmt: 'money' },
+            { id: 'dy', label: 'Dividend Yield (12m)', fmt: 'percent', best: 'high' },
+            { id: 'p_vp', label: 'P/VP', fmt: 'number', best: 'low_positive' },
+            { id: 'lpa', label: 'LPA', fmt: 'money', best: 'high' },
+            { id: 'vpa', label: 'VPA', fmt: 'money', best: 'high' },
+            { id: 'roe', label: 'ROE Est.', fmt: 'percent', best: 'high' },
+            { id: 'fair_graham', label: 'Preço Justo (Graham)', fmt: 'money', highlight: true },
+            { id: 'fair_bazin', label: 'Preço Justo (Bazin)', fmt: 'money', highlight: true },
+        ];
+
+        metrics.forEach(m => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-800/30 transition-colors";
+
+            // Label
+            const tdLabel = document.createElement('td');
+            tdLabel.className = "px-6 py-4 font-medium text-slate-300 sticky left-0 bg-[#0f172a] z-10 border-r border-slate-800";
+            tdLabel.innerText = m.label;
+            tr.appendChild(tdLabel);
+
+            // Find best value for coloring
+            let values = data.map(d => d[m.id]);
+            let bestVal = null;
+
+            if (m.best === 'high') bestVal = Math.max(...values);
+            if (m.best === 'low_positive') {
+                const positives = values.filter(v => v > 0);
+                if (positives.length > 0) bestVal = Math.min(...positives);
+            }
+
+            // Data Cells
+            data.forEach(asset => {
+                const val = asset[m.id];
+                const td = document.createElement('td');
+                td.className = "px-6 py-4 text-center";
+
+                let displayVal = val;
+                if (m.fmt === 'money') displayVal = val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                if (m.fmt === 'percent') displayVal = val.toFixed(2) + '%';
+                if (m.fmt === 'number') displayVal = val.toFixed(2);
+
+                // Highlight winner
+                if (m.best && val === bestVal) {
+                    td.classList.add("text-emerald-400", "font-bold", "bg-emerald-500/5");
+                }
+                // Highlight Price vs Fair Price
+                else if (m.highlight) {
+                    if (val > asset.price) td.classList.add("text-emerald-400", "font-bold"); // Cheap
+                    else td.classList.add("text-red-400"); // Expensive
+                }
+
+                td.innerText = displayVal;
+                tr.appendChild(td);
+            });
+
+            tbody.appendChild(tr);
+        });
+
+        container.classList.remove('hidden');
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block header_title %}Valuation Inteligente{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+
+    <!-- Search -->
+    <div class="bg-[#0f172a] p-6 rounded-2xl shadow-xl border border-slate-800 flex gap-4 items-center">
+        <div class="flex-1 relative">
+            <input type="text" id="ticker-input" placeholder="Digite um ativo (Ex: BBAS3)..."
+                class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 uppercase">
+            <svg class="w-5 h-5 text-slate-500 absolute left-3 top-3.5" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+        </div>
+        <button onclick="analyzeValuation()"
+            class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg transition-colors shadow-lg shadow-purple-500/20">
+            Analisar
+        </button>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="hidden text-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
+        <p class="text-slate-500 mt-4">Consultando oráculo financeiro...</p>
+    </div>
+
+    <!-- Results -->
+    <div id="results-area" class="hidden space-y-8">
+
+        <!-- Header Info -->
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-3xl font-bold text-white" id="res-ticker">ABCD3</h2>
+                <p class="text-slate-400">Preço Atual: <span class="text-white font-mono text-xl" id="res-price">R$
+                        0,00</span></p>
+            </div>
+            <div class="text-right">
+                <span
+                    class="px-3 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 text-xs font-bold uppercase">Premium
+                    Analysis</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <!-- Graham Card -->
+            <div class="bg-[#0f172a] rounded-2xl border border-slate-800 p-6 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <h1 class="text-6xl font-bold text-white">G</h1>
+                </div>
+                <h3 class="text-slate-400 text-sm font-bold uppercase tracking-wider mb-4">Método de Graham</h3>
+
+                <div class="flex items-baseline gap-2 mb-2">
+                    <span class="text-4xl font-bold text-white" id="graham-price">R$ 0,00</span>
+                    <span class="text-sm text-slate-500">Preço Justo</span>
+                </div>
+
+                <div class="mb-6">
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-400">Margem de Segurança</span>
+                        <span class="text-white font-bold" id="graham-margin">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-2">
+                        <div class="bg-gradient-to-r from-red-500 to-emerald-500 h-2 rounded-full" style="width: 0%"
+                            id="graham-bar"></div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800 text-xs text-slate-400">
+                    <p class="mb-2"><strong>Fórmula:</strong> √(22.5 × LPA × VPA)</p>
+                    <div class="flex justify-between">
+                        <span>LPA: <span class="text-white" id="ind-lpa">0.00</span></span>
+                        <span>VPA: <span class="text-white" id="ind-vpa">0.00</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bazin Card -->
+            <div class="bg-[#0f172a] rounded-2xl border border-slate-800 p-6 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <h1 class="text-6xl font-bold text-white">B</h1>
+                </div>
+                <h3 class="text-slate-400 text-sm font-bold uppercase tracking-wider mb-4">Método de Bazin</h3>
+
+                <div class="flex items-baseline gap-2 mb-2">
+                    <span class="text-4xl font-bold text-white" id="bazin-price">R$ 0,00</span>
+                    <span class="text-sm text-slate-500">Preço Teto (6%)</span>
+                </div>
+
+                <div class="mb-6">
+                    <p class="text-sm text-slate-400">
+                        Baseado em um Dividend Yield alvo de <strong class="text-white">6%</strong> ao ano.
+                    </p>
+                </div>
+
+                <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800 text-xs text-slate-400">
+                    <p class="mb-2"><strong>Fórmula:</strong> Dividendos (12m) / 0.06</p>
+                    <div class="flex justify-between">
+                        <span>DY Atual: <span class="text-white" id="ind-dy">0%</span></span>
+                        <span>Div/Ação: <span class="text-white" id="ind-dpa">R$ 0.00</span></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Recommendation Box -->
+        <div
+            class="bg-gradient-to-r from-purple-900/40 to-blue-900/40 border border-purple-500/30 p-6 rounded-2xl text-center">
+            <h3 class="text-lg font-bold text-white mb-2">Veredito do Oráculo</h3>
+            <p class="text-slate-300 text-sm" id="recommendation-text">Digite um ativo para analisar.</p>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Check Premium Status on Load
+    async function checkPremiumAccess() {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            const res = await fetch('/api/v1/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) {
+                const user = await res.json();
+                if (!user.is_premium && !user.is_admin) {
+                    showPremiumModal();
+                    // Blur content
+                    document.querySelector('.max-w-4xl').classList.add('blur-sm', 'pointer-events-none');
+                }
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    document.addEventListener('DOMContentLoaded', checkPremiumAccess);
+
+    async function analyzeValuation() {
+        const ticker = document.getElementById('ticker-input').value;
+        if (!ticker) return;
+
+        document.getElementById('loading').classList.remove('hidden');
+        document.getElementById('results-area').classList.add('hidden');
+
+        try {
+            const token = localStorage.getItem('token');
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+            const response = await fetch(`/api/v1/premium/valuation/${ticker}`, { headers });
+
+            if (response.status === 403) {
+                showPremiumModal();
+                return;
+            }
+            if (!response.ok) throw new Error("Erro ao analisar ativo.");
+
+            const data = await response.json();
+            renderValuation(data);
+
+        } catch (e) {
+            alert(e.message);
+        } finally {
+            document.getElementById('loading').classList.add('hidden');
+        }
+    }
+
+    function renderValuation(data) {
+        // Basic Info
+        document.getElementById('res-ticker').innerText = data.ticker;
+        document.getElementById('res-price').innerText = fmtMoney(data.price);
+
+        // Graham
+        document.getElementById('graham-price').innerText = fmtMoney(data.graham.fair_price);
+        document.getElementById('graham-margin').innerText = data.graham.margin.toFixed(2) + "%";
+
+        // Graham Bar (0% at center? No, simpler: 0 to 100% margin)
+        // If Margin is negative, it's expensive.
+        // Let's normalize: Metric is Margin %. -50% to +50% range mapping?
+        // Simple logic: If margin > 0, green bar width proportional to safety.
+        // For UI simplicity, let's just color the text green/red for now and handle bar lightly.
+        const margin = data.graham.margin;
+        const gBar = document.getElementById('graham-bar');
+        gBar.style.width = Math.min(Math.max(margin + 50, 0), 100) + "%"; // Mock visual
+        document.getElementById('graham-margin').className = margin > 0 ? "text-emerald-400 font-bold" : "text-red-400 font-bold";
+
+        document.getElementById('ind-lpa').innerText = data.indicators.lpa;
+        document.getElementById('ind-vpa').innerText = data.indicators.vpa;
+
+        // Bazin
+        document.getElementById('bazin-price').innerText = fmtMoney(data.bazin.fair_price);
+        document.getElementById('ind-dy').innerText = data.indicators.dy.toFixed(2) + "%";
+        document.getElementById('ind-dpa').innerText = fmtMoney(data.bazin.dividend_per_share);
+
+        // Recommendation
+        const isCheapGraham = data.price < data.graham.fair_price;
+        const isCheapBazin = data.price < data.bazin.fair_price;
+
+        const recText = document.getElementById('recommendation-text');
+        if (isCheapGraham && isCheapBazin) {
+            recText.innerHTML = "<span class='text-emerald-400 font-bold'>OPORTUNIDADE CLARA!</span> O ativo está barato segundo Graham e Bazin.";
+        } else if (isCheapGraham || isCheapBazin) {
+            recText.innerHTML = "<span class='text-yellow-400 font-bold'>ATENÇÃO:</span> O ativo está descontado em um dos métodos, mas não em ambos. Estude mais.";
+        } else {
+            recText.innerHTML = "<span class='text-red-400 font-bold'>CARO/RISCO:</span> O preço atual está acima dos valores justos calculados.";
+        }
+
+        document.getElementById('results-area').classList.remove('hidden');
+    }
+
+    function fmtMoney(val) {
+        return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+</script>
+{% endblock %}

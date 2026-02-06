@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block header_title %}Juros Compostos{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+
+    <!-- Header Card -->
+    <div
+        class="bg-gradient-to-r from-emerald-900/20 to-teal-900/20 rounded-2xl p-6 border border-emerald-500/10 flex items-start gap-4">
+        <div class="p-3 bg-emerald-500/10 rounded-xl">
+            <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                </path>
+            </svg>
+        </div>
+        <div>
+            <h3 class="text-white font-bold text-lg">O Poder do Tempo</h3>
+            <p class="text-slate-400 text-sm mt-1 leading-relaxed">
+                Veja seu dinheiro trabalhar por você. Simule o efeito dos juros compostos ao longo dos anos.
+            </p>
+        </div>
+    </div>
+
+    <!-- Inputs -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div
+            class="bg-[#0f172a] rounded-xl border border-slate-800 p-5 shadow-lg group hover:border-blue-500/30 transition-colors">
+            <label
+                class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide group-hover:text-blue-400 transition-colors">Inicial
+                (R$)</label>
+            <input type="number" id="principal"
+                class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none font-mono transition-all placeholder-slate-600"
+                placeholder="0,00">
+        </div>
+        <div
+            class="bg-[#0f172a] rounded-xl border border-slate-800 p-5 shadow-lg group hover:border-emerald-500/30 transition-colors">
+            <label
+                class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide group-hover:text-emerald-400 transition-colors">Aporte
+                Mensal (R$)</label>
+            <input type="number" id="contribution"
+                class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none font-mono transition-all placeholder-slate-600"
+                placeholder="0,00">
+        </div>
+        <div
+            class="bg-[#0f172a] rounded-xl border border-slate-800 p-5 shadow-lg group hover:border-purple-500/30 transition-colors">
+            <label
+                class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide group-hover:text-purple-400 transition-colors">Taxa
+                Anual (%)</label>
+            <input type="number" id="rate"
+                class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none font-mono transition-all placeholder-slate-600"
+                placeholder="10">
+        </div>
+        <div
+            class="bg-[#0f172a] rounded-xl border border-slate-800 p-5 shadow-lg group hover:border-orange-500/30 transition-colors">
+            <label
+                class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide group-hover:text-orange-400 transition-colors">Tempo
+                (Anos)</label>
+            <input type="number" id="years"
+                class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none font-mono transition-all placeholder-slate-600"
+                placeholder="10">
+        </div>
+    </div>
+
+    <button onclick="calculate()"
+        class="w-full group relative bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-500/20 transition-all overflow-hidden">
+        <div
+            class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+        </div>
+        <span class="relative flex items-center justify-center gap-2 text-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+            </svg>
+            Simular Rendimentos
+        </span>
+    </button>
+
+    <!-- Results Section -->
+    <div id="result" class="hidden animate-fade-in-up">
+        <div class="bg-[#0f172a] rounded-2xl border border-slate-800 p-8 shadow-2xl relative overflow-hidden">
+            <!-- Background Glow -->
+            <div
+                class="absolute top-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2">
+            </div>
+
+            <div class="relative z-10 text-center mb-10">
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Montante Final Acumulado
+                </h3>
+                <p class="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200 tracking-tight"
+                    id="final-value">R$ 0,00</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 border-t border-slate-800 pt-8 relative z-10">
+                <div class="p-4 rounded-xl bg-slate-900/50 border border-slate-800/50 flex flex-col items-center">
+                    <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Total Investido</p>
+                    <p class="text-xl font-bold text-slate-300" id="total-invested">R$ 0,00</p>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-900/50 border border-slate-800/50 flex flex-col items-center">
+                    <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Total em Juros</p>
+                    <p class="text-xl font-bold text-emerald-400" id="total-interest">R$ 0,00</p>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center relative z-10">
+                <button onclick="toggleDetails()"
+                    class="text-sm text-slate-400 hover:text-white underline underline-offset-4 transition-colors">
+                    Ver Jornada Detalhada &darr;
+                </button>
+            </div>
+        </div>
+
+        <!-- Monthly Detail Table -->
+        <div id="monthly-detail"
+            class="hidden mt-8 bg-[#0f172a] rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+            <div class="overflow-x-auto max-h-[500px] custom-scrollbar">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs text-slate-500 uppercase bg-slate-900/80 sticky top-0 backdrop-blur-sm z-10">
+                        <tr>
+                            <th class="px-6 py-4 font-bold tracking-wider">Mês</th>
+                            <th class="px-6 py-4 font-bold tracking-wider text-right">Saldo Inicial</th>
+                            <th class="px-6 py-4 font-bold tracking-wider text-right">Aporte</th>
+                            <th class="px-6 py-4 font-bold tracking-wider text-right">Rendimento</th>
+                            <th class="px-6 py-4 font-bold tracking-wider text-right">Saldo Final</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-slate-800/50 text-slate-300">
+                        <!-- Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        const p = parseFloat(document.getElementById('principal').value) || 0;
+        const c = parseFloat(document.getElementById('contribution').value) || 0;
+        const r = (parseFloat(document.getElementById('rate').value) || 0) / 100;
+        const t = parseFloat(document.getElementById('years').value) || 0;
+
+        const n = 12; // mensal
+        const r_month = Math.pow(1 + r, 1 / 12) - 1;
+        const total_months = t * 12;
+
+        let balance = p;
+        let tableHtml = '';
+
+        const fmtBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        // Loop generation
+        for (let i = 1; i <= total_months; i++) {
+            let startBalance = balance;
+            let interest = startBalance * r_month;
+            balance = startBalance + interest + c;
+
+            tableHtml += `
+                 <tr class="hover:bg-slate-800/50 transition-colors border-b border-slate-800/30 group">
+                    <td class="px-6 py-3 font-mono text-slate-500 group-hover:text-slate-300 transition-colors">#${i}</td>
+                    <td class="px-6 py-3 text-right font-mono text-slate-400">${fmtBRL.format(startBalance)}</td>
+                    <td class="px-6 py-3 text-right font-mono text-emerald-500/80">+ ${fmtBRL.format(c)}</td>
+                    <td class="px-6 py-3 text-right font-mono text-blue-500/80">+ ${fmtBRL.format(interest)}</td>
+                    <td class="px-6 py-3 text-right font-mono font-bold text-white shadow-[inset_2px_0_0_0_rgba(16,185,129,0.5)] bg-slate-800/20">${fmtBRL.format(balance)}</td>
+                </tr>
+            `;
+        }
+
+        const fv = balance;
+        const invested = p + (c * total_months);
+        const totalInterest = fv - invested;
+
+        document.getElementById('final-value').innerText = fmtBRL.format(fv);
+        document.getElementById('total-invested').innerText = fmtBRL.format(invested);
+        document.getElementById('total-interest').innerText = fmtBRL.format(totalInterest);
+
+        document.getElementById('table-body').innerHTML = tableHtml;
+        document.getElementById('result').classList.remove('hidden');
+        document.getElementById('monthly-detail').classList.add('hidden');
+
+        // Scroll to result
+        setTimeout(() => {
+            document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
+
+    function toggleDetails() {
+        const el = document.getElementById('monthly-detail');
+        el.classList.toggle('hidden');
+        if (!el.classList.contains('hidden')) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+</script>
+{% endblock %}

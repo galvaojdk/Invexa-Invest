@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block header_title %}Painel Administrativo{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-12 gap-8">
+
+    <!-- Stats Cards -->
+    <div class="col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-[#0f172a] p-6 rounded-2xl shadow-xl border border-slate-800">
+            <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Total Usuários</h3>
+            <p class="text-3xl font-bold text-white" id="stat-total-users">...</p>
+        </div>
+        <div class="bg-[#0f172a] p-6 rounded-2xl shadow-xl border border-slate-800">
+            <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Usuários Premium</h3>
+            <p class="text-3xl font-bold text-emerald-400" id="stat-premium-users">...</p>
+        </div>
+        <div class="bg-[#0f172a] p-6 rounded-2xl shadow-xl border border-slate-800">
+            <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Receita Estimada (Mensal)</h3>
+            <p class="text-3xl font-bold text-blue-400" id="stat-revenue">R$ 0,00</p>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="col-span-12">
+        <div class="bg-[#0f172a] rounded-2xl border border-slate-800 shadow-lg overflow-hidden">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/30">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                    Gerenciar Usuários
+                </h3>
+                <input type="text" placeholder="Buscar email..."
+                    class="bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-slate-400">
+                    <thead class="text-xs text-slate-500 uppercase bg-slate-900 border-b border-slate-800 font-bold">
+                        <tr>
+                            <th class="px-6 py-4">ID</th>
+                            <th class="px-6 py-4">Usuário</th>
+                            <th class="px-6 py-4 text-center">Role</th>
+                            <th class="px-6 py-4 text-center">Status</th>
+                            <th class="px-6 py-4 text-center">Plano</th>
+                            <th class="px-6 py-4 text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800" id="users-table-body">
+                        <!-- JS will populate -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Section -->
+    <div class="col-span-12 mt-8">
+        <div class="bg-[#0f172a] rounded-2xl border border-slate-800 shadow-lg overflow-hidden">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/30">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Gerenciador de Credenciais (Mercado Pago)
+                </h3>
+            </div>
+
+            <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Add New Credential -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Adicionar Nova Credencial</h4>
+
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Nome / Identificador (ex: Produção, Teste
+                            Dev)</label>
+                        <input type="text" id="cred-label" placeholder="Ex: Ambiente de Teste"
+                            class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Access Token (TEST- ou APP-)</label>
+                        <input type="password" id="cred-token" placeholder="TEST-..."
+                            class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono">
+                    </div>
+
+                    <button onclick="addCredential()"
+                        class="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors flex justify-center items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
+                            </path>
+                        </svg>
+                        Salvar Credencial
+                    </button>
+                </div>
+
+                <!-- Credential List -->
+                <div>
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Credenciais Salvas</h4>
+                    <div class="bg-slate-900/50 rounded-xl border border-slate-800 overflow-hidden">
+                        <table class="w-full text-sm text-left text-slate-400">
+                            <thead class="text-xs text-slate-500 uppercase bg-slate-900 border-b border-slate-800">
+                                <tr>
+                                    <th class="px-4 py-3">Nome</th>
+                                    <th class="px-4 py-3 text-center">Status</th>
+                                    <th class="px-4 py-3 text-right">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="credentials-list" class="divide-y divide-slate-800">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                        <div id="no-creds-msg" class="p-4 text-center text-xs text-slate-500 hidden">Nenhuma credencial
+                            cadastrada.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    async function loadAdminData() {
+        // Fetch users from API (Need to implement GET /api/v1/admin/users)
+        // For now, let's assume the template receives 'users' from backend or fetches it.
+        // Implementing client-side fetch for cleaner architecture if API exists.
+
+        try {
+            const response = await fetch('/api/v1/admin/users', {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+
+            if (!response.ok) throw new Error("Falha ao carregar usuários");
+
+            const users = await response.json();
+            renderUsers(users);
+            updateStats(users);
+
+            // Load Settings
+            loadSettings();
+
+        } catch (e) {
+            console.error(e);
+            document.getElementById('users-table-body').innerHTML = `<tr><td colspan="6" class="px-6 py-4 text-center text-red-400">Erro ao carregar dados. Verifique suas permissões.</td></tr>`;
+        }
+    }
+
+    let loadedCredentials = [];
+
+    async function loadSettings() {
+        try {
+            const response = await fetch('/api/v1/admin/settings', {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            if (response.ok) {
+                const settings = await response.json();
+
+                // Parse MP_CREDENTIALS if exists
+                if (settings['MP_CREDENTIALS']) {
+                    try {
+                        loadedCredentials = JSON.parse(settings['MP_CREDENTIALS']);
+                        renderCredentials();
+                    } catch (e) { console.error("Error parsing credentials JSON", e); }
+                }
+            }
+        } catch (e) { console.error("Error loading settings", e); }
+    }
+
+    function renderCredentials() {
+        const list = document.getElementById('credentials-list');
+        list.innerHTML = '';
+
+        if (loadedCredentials.length === 0) {
+            document.getElementById('no-creds-msg').classList.remove('hidden');
+            return;
+        }
+        document.getElementById('no-creds-msg').classList.add('hidden');
+
+        loadedCredentials.forEach((cred, index) => {
+            const tr = document.createElement('tr');
+            tr.className = cred.active ? "bg-emerald-500/5" : "hover:bg-slate-800/30";
+
+            const statusBadge = cred.active
+                ? '<span class="text-emerald-400 font-bold text-xs flex items-center justify-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> ATIVO</span>'
+                : '<button onclick="setDefaultCredential(' + index + ')" class="text-slate-500 hover:text-white text-xs underline decoration-dotted">Definir Padrão</button>';
+
+            tr.innerHTML = `
+                <td class="px-4 py-3">
+                    <div class="font-medium text-white">${cred.label}</div>
+                    <div class="text-[10px] text-slate-500 font-mono">${cred.token.substring(0, 8)}...${cred.token.substring(cred.token.length - 4)}</div>
+                </td>
+                <td class="px-4 py-3 text-center">${statusBadge}</td>
+                <td class="px-4 py-3 text-right">
+                    <button onclick="removeCredential(${index})" class="text-red-500 hover:text-red-400 p-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </td>
+            `;
+            list.appendChild(tr);
+        });
+    }
+
+    async function addCredential() {
+        const label = document.getElementById('cred-label').value;
+        const token = document.getElementById('cred-token').value;
+
+        if (!label || !token) return alert("Preencha o Nome e o Token.");
+
+        if (!token.startsWith('TEST-') && !token.startsWith('APP-') && !token.startsWith('APP_USR-')) {
+            return alert("Token inválido! O Access Token deve começar com 'TEST-', 'APP-' ou 'APP_USR-'.");
+        }
+
+        // Add to array
+        const newCred = {
+            id: Date.now().toString(), // Simple ID
+            label: label,
+            token: token,
+            active: loadedCredentials.length === 0 // First one is active by default
+        };
+
+        loadedCredentials.push(newCred);
+        await saveCredentials();
+
+        // Clear form
+        document.getElementById('cred-label').value = '';
+        document.getElementById('cred-token').value = '';
+    }
+
+    async function removeCredential(index) {
+        if (!confirm("Remover esta credencial?")) return;
+        loadedCredentials.splice(index, 1);
+        await saveCredentials();
+    }
+
+    async function setDefaultCredential(index) {
+        // Set all to false, one to true
+        loadedCredentials.forEach((c, i) => c.active = (i === index));
+        await saveCredentials();
+    }
+
+    async function saveCredentials() {
+        try {
+            const jsonValue = JSON.stringify(loadedCredentials);
+            const response = await fetch('/api/v1/admin/settings', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ key: 'MP_CREDENTIALS', value: jsonValue })
+            });
+
+            if (response.ok) {
+                renderCredentials();
+                // alert("Salvo!"); // Optional feedback
+            } else {
+                alert("Erro ao salvar.");
+            }
+        } catch (e) { console.error(e); alert("Erro de conexão."); }
+    }
+
+    function renderUsers(users) {
+        const tbody = document.getElementById('users-table-body');
+        tbody.innerHTML = '';
+
+        users.forEach(user => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-800/50 transition-colors";
+
+            const roleBadge = user.is_admin
+                ? '<span class="px-2 py-1 rounded bg-purple-500/10 text-purple-400 text-xs font-bold border border-purple-500/20">ADMIN</span>'
+                : '<span class="text-slate-500">User</span>';
+
+            const statusBadge = user.is_active
+                ? '<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1"></span> Ativo'
+                : '<span class="w-2 h-2 rounded-full bg-red-500 inline-block mr-1"></span> Inativo';
+
+            const premiumBadge = user.is_premium
+                ? '<span class="px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-xs font-bold border border-emerald-500/20 uppercase tracking-wider">PREMIUM</span>'
+                : '<span class="px-2 py-1 rounded bg-slate-700 text-slate-400 text-xs font-bold border border-slate-600">FREE</span>';
+
+            tr.innerHTML = `
+                <td class="px-6 py-4 font-mono text-xs text-slate-600">#${user.id}</td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-white border border-slate-700">
+                             ${user.email.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <div class="text-white font-medium">${user.full_name || 'Sem nome'}</div>
+                            <div class="text-xs text-slate-500">${user.email}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-center">${roleBadge}</td>
+                <td class="px-6 py-4 text-center text-xs">${statusBadge}</td>
+                <td class="px-6 py-4 text-center">${premiumBadge}</td>
+                <td class="px-6 py-4 text-right">
+                    <div class="flex justify-end gap-2">
+                        <button onclick="togglePremium(${user.id})" class="p-2 rounded hover:bg-emerald-500/10 text-slate-400 hover:text-emerald-400 transition-colors" title="Alternar Premium">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </button>
+                        <button onclick="deleteUser(${user.id})" class="p-2 rounded hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-colors" title="Excluir Usuário">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function updateStats(users) {
+        document.getElementById('stat-total-users').innerText = users.length;
+        const premiumCount = users.filter(u => u.is_premium).length;
+        document.getElementById('stat-premium-users').innerText = premiumCount;
+
+        // Mock Revenue: R$ 29,90 per premium user
+        const revenue = premiumCount * 29.90;
+        document.getElementById('stat-revenue').innerText = revenue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    async function togglePremium(userId) {
+        if (!confirm("Tem certeza que deseja alterar o status Premium deste usuário?")) return;
+
+        try {
+            const response = await fetch(`/api/v1/admin/users/${userId}/toggle-premium`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+
+            if (response.ok) {
+                loadAdminData(); // Refresh
+            } else {
+                alert("Erro ao alterar status.");
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function deleteUser(userId) {
+        if (!confirm("ATENÇÃO: Isso excluirá o usuário permanentemente. Deseja continuar?")) return;
+
+        try {
+            const response = await fetch(`/api/v1/admin/users/${userId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+
+            if (response.ok) {
+                loadAdminData();
+            } else {
+                alert("Erro ao excluir usuário.");
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadAdminData);
+
+</script>
+{% endblock %}

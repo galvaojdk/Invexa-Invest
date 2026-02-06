@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block header_title %}Assinatura Premium{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+        <h2 class="text-3xl font-extrabold text-white sm:text-4xl">
+            Desbloqueie o Poder Total do Invexa
+        </h2>
+        <p class="mt-4 text-xl text-slate-400">
+            Ferramentas profissionais para investidores sérios.
+        </p>
+    </div>
+
+    <div class="flex justify-center mb-12">
+        <div class="bg-slate-800 p-1 rounded-xl flex items-center shadow-inner relative">
+            <button id="plan-monthly"
+                class="px-6 py-2 rounded-lg text-sm font-bold text-white bg-blue-600 shadow-sm transition-all relative z-10 w-32">Mensal</button>
+            <button id="plan-annual"
+                class="px-6 py-2 rounded-lg text-sm font-bold text-slate-400 hover:text-white transition-all relative z-10 w-32 text-center group">
+                Anual
+                <span
+                    class="absolute -top-3 -right-2 bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded-full shadow border border-slate-900 group-hover:scale-110 transition-transform">-10%</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+
+        <!-- FREE Plan -->
+        <div
+            class="bg-[#0f172a] rounded-2xl p-8 border border-slate-800 opacity-75 hover:opacity-100 transition-opacity">
+            <h3 class="text-xl font-bold text-white">Gratuito</h3>
+            <p class="text-slate-400 mt-2">Para quem está começando.</p>
+            <div class="my-8">
+                <span class="text-4xl font-extrabold text-white">R$ 0</span>
+                <span class="text-slate-500">/mês</span>
+            </div>
+            <ul class="space-y-4 text-slate-300">
+                <li class="flex items-center">
+                    <svg class="w-5 h-5 text-emerald-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Gerenciamento básico de carteira
+                </li>
+                <li class="flex items-center">
+                    <svg class="w-5 h-5 text-emerald-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Acesso limitado ao Screener
+                </li>
+            </ul>
+        </div>
+
+        <!-- PREMIUM Plan -->
+        <div
+            class="bg-[#0f172a] rounded-2xl p-8 border border-blue-600 relative overflow-hidden shadow-2xl shadow-blue-900/20 transform md:scale-105 transition-all">
+            <div class="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
+                RECOMENDADO
+            </div>
+            <h3 class="text-xl font-bold text-white">Premium</h3>
+            <p class="text-blue-200 mt-2">Para maximizar seus retornos.</p>
+            <div class="my-8">
+                <div id="price-display">
+                    <span class="text-4xl font-extrabold text-white">R$ 29,90</span>
+                    <span class="text-slate-500">/mês</span>
+                </div>
+                <p id="savings-display" class="hidden text-emerald-400 text-xs font-bold mt-1">Economize R$ 35,90 /ano
+                </p>
+            </div>
+            <ul class="space-y-4 text-white mb-8">
+                <li class="flex items-center">
+                    <svg class="w-5 h-5 text-blue-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Screener Ilimitado & Ranking Mágico
+                </li>
+                <li class="flex items-center">
+                    <svg class="w-5 h-5 text-blue-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Smart Valuation (Graham/Bazin)
+                </li>
+                <li class="flex items-center">
+                    <svg class="w-5 h-5 text-blue-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Comparador de Ativos Avançado
+                </li>
+                <li class="flex items-center">
+                    <svg class="w-5 h-5 text-blue-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Alertas de Preço & Agenda de Dividendos
+                </li>
+            </ul>
+
+            <button id="btn-subscribe"
+                class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-transform hover:scale-[1.02] flex items-center justify-center gap-2">
+                <span>Assinar Agora</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3">
+                    </path>
+                </svg>
+            </button>
+            <p class="text-xs text-center text-slate-500 mt-4">Pagamento seguro via Mercado Pago</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentPlan = 'monthly';
+
+    // UI Toggle Logic
+    const btnMonthly = document.getElementById('plan-monthly');
+    const btnAnnual = document.getElementById('plan-annual');
+    const priceDisplay = document.getElementById('price-display');
+    const savingsDisplay = document.getElementById('savings-display');
+
+    function selectPlan(plan) {
+        currentPlan = plan;
+        if (plan === 'monthly') {
+            btnMonthly.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+            btnMonthly.classList.remove('text-slate-400', 'hover:text-white');
+
+            btnAnnual.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+            btnAnnual.classList.add('text-slate-400', 'hover:text-white');
+
+            priceDisplay.innerHTML = '<span class="text-4xl font-extrabold text-white">R$ 29,90</span><span class="text-slate-500">/mês</span>';
+            savingsDisplay.classList.add('hidden');
+        } else {
+            btnAnnual.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+            btnAnnual.classList.remove('text-slate-400', 'hover:text-white');
+
+            btnMonthly.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+            btnMonthly.classList.add('text-slate-400', 'hover:text-white');
+
+            priceDisplay.innerHTML = '<span class="text-4xl font-extrabold text-white">R$ 322,90</span><span class="text-slate-500">/ano</span>';
+            savingsDisplay.classList.remove('hidden');
+        }
+    }
+
+    btnMonthly.addEventListener('click', () => selectPlan('monthly'));
+    btnAnnual.addEventListener('click', () => selectPlan('annual'));
+
+    document.getElementById('btn-subscribe').addEventListener('click', async function () {
+        const btn = this;
+        const originalContent = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2"></span> Processando...';
+
+        try {
+            const response = await fetch('/api/v1/payments/checkout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ plan_type: currentPlan })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.checkout_url) {
+                // Redirect to Mercado Pago
+                window.location.href = data.checkout_url;
+            } else if (data.message || data.detail) {
+                alert(data.message || data.detail);
+                if (data.redirect) window.location.href = data.redirect;
+            } else {
+                alert('Erro ao iniciar checkout. Tente novamente.');
+                console.error(data);
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Erro de conexão.');
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+        }
+    });
+</script>
+{% endblock %}

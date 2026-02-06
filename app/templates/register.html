@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Invexa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10B981',
+                        dark: '#0b1120',
+                        surface: '#0f172a',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+    </style>
+</head>
+
+<body class="bg-[#0b1120] flex items-center justify-center h-screen selection:bg-blue-500/30 selection:text-blue-200">
+
+    <!-- Background Glow Effects -->
+    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl translate-y-1/2"></div>
+        <div class="absolute bottom-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2">
+        </div>
+    </div>
+
+    <div class="relative z-10 w-full max-w-md p-6">
+        <div class="bg-[#0f172a] rounded-2xl shadow-2xl border border-slate-800 p-8 relative overflow-hidden group">
+
+            <div class="text-center mb-8">
+                <div class="flex justify-center mb-4">
+                    <div
+                        class="w-16 h-16 bg-slate-900 rounded-2xl border border-slate-700 flex items-center justify-center shadow-lg shadow-emerald-500/10">
+                        <svg class="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                    </div>
+                </div>
+                <h1 class="text-3xl font-bold text-white tracking-tight">Criar Conta</h1>
+                <p class="text-slate-400 mt-2 text-sm">Junte-se ao Invexa gratuitamente</p>
+            </div>
+
+            <form id="registerForm" class="space-y-5">
+                <div>
+                    <label for="full_name"
+                        class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nome
+                        Completo</label>
+                    <input type="text" id="full_name" name="full_name" required
+                        class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all placeholder-slate-600"
+                        placeholder="Seu nome">
+                </div>
+
+                <div>
+                    <label for="email"
+                        class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Email</label>
+                    <input type="email" id="email" name="email" required
+                        class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all placeholder-slate-600"
+                        placeholder="seu@email.com">
+                </div>
+
+                <div>
+                    <label for="password"
+                        class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Senha</label>
+                    <input type="password" id="password" name="password" required
+                        class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all placeholder-slate-600"
+                        placeholder="••••••••">
+                </div>
+
+                <div>
+                    <label for="confirm_password"
+                        class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Confirmar
+                        Senha</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required
+                        class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all placeholder-slate-600"
+                        placeholder="••••••••">
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit"
+                        class="w-full group relative bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-500/25 transition-all overflow-hidden">
+                        <div
+                            class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                        </div>
+                        <span class="relative">Cadastrar</span>
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-8 text-center text-sm border-t border-slate-800 pt-6">
+                <span class="text-slate-500">Já tem uma conta?</span>
+                <a href="/login" class="font-medium text-blue-400 hover:text-blue-300 ml-1 transition-colors">Fazer
+                    Login</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            const fullName = document.getElementById('full_name').value;
+
+            if (password !== confirmPassword) {
+                alert('As senhas não coincidem!');
+                return;
+            }
+
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="flex items-center justify-center gap-2"><svg class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Cadastrando...</span>';
+
+            try {
+                const response = await fetch('/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password,
+                        full_name: fullName
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Cadastro realizado com sucesso! Faça login.');
+                    window.location.href = '/login';
+                } else {
+                    const data = await response.json();
+                    alert('Erro no cadastro: ' + (data.detail || 'Tente novamente.'));
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Erro ao tentar conectar.');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+    </script>
+
+</body>
+
+</html>

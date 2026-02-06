@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+
+{% block header_title %}Plano de Aposentadoria (FIRE){% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-12 gap-8">
+
+    <!-- LEFT: Inputs -->
+    <div class="col-span-12 space-y-6">
+        <div class="bg-[#0f172a] p-6 rounded-2xl shadow-xl border border-slate-800 relative overflow-hidden">
+            <!-- Top highlight -->
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 items-end">
+
+                <div class="lg:col-span-2">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Despesa Mensal
+                        (Hoje)</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-slate-500 text-sm font-bold">R$</span>
+                        </div>
+                        <input type="number" id="inp-expense"
+                            class="bg-slate-900 border border-slate-700 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent block w-full pl-10 py-3 transition-all outline-none placeholder-slate-600"
+                            value="5000">
+                    </div>
+                </div>
+
+                <div class="lg:col-span-1">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Inflação (%
+                        AA)</label>
+                    <input type="number" step="0.01" id="inp-inflation"
+                        class="bg-slate-900 border border-slate-700 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent block w-full px-4 py-3 transition-all outline-none placeholder-slate-600"
+                        value="4.5">
+                </div>
+
+                <div class="lg:col-span-2">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Investimento
+                        Inicial</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-slate-500 text-sm font-bold">R$</span>
+                        </div>
+                        <input type="number" id="inp-initial"
+                            class="bg-slate-900 border border-slate-700 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent block w-full pl-10 py-3 transition-all outline-none placeholder-slate-600"
+                            value="3000">
+                    </div>
+                </div>
+
+                <div class="lg:col-span-1">
+                    <button onclick="calculateFIRE()"
+                        class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-500/20 transition-all h-[50px] flex items-center justify-center">
+                        Calcular
+                    </button>
+                </div>
+
+                <div class="lg:col-span-2">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Aporte
+                        Mensal</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-slate-500 text-sm font-bold">R$</span>
+                        </div>
+                        <input type="number" id="inp-monthly"
+                            class="bg-slate-900 border border-slate-700 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent block w-full pl-10 py-3 transition-all outline-none placeholder-slate-600"
+                            value="2500">
+                    </div>
+                </div>
+
+                <div class="lg:col-span-1">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">↑ Aporte (%
+                        AA)</label>
+                    <input type="number" step="0.01" id="inp-contribution-inc"
+                        class="bg-slate-900 border border-slate-700 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent block w-full px-4 py-3 transition-all outline-none placeholder-slate-600"
+                        value="8.0">
+                </div>
+
+                <div class="lg:col-span-1">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Rentab. (%
+                        AM)</label>
+                    <input type="number" step="0.01" id="inp-rate"
+                        class="bg-slate-900 border border-slate-700 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent block w-full px-4 py-3 transition-all outline-none placeholder-slate-600"
+                        value="0.9">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN RESULT -->
+    <div class="col-span-12">
+        <div class="bg-[#0f172a] p-8 rounded-2xl shadow-xl border border-slate-800">
+            <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 mb-4"
+                id="result-headline">
+                Calculando sua liberdade...
+            </h2>
+            <div class="flex flex-wrap gap-8 text-sm mb-8">
+                <div class="flex items-center gap-3 bg-slate-900/50 px-4 py-2 rounded-lg border border-slate-800">
+                    <div class="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                    <span id="res-passive" class="text-emerald-400 font-medium">Dividendo Estimado: R$ 0,00</span>
+                </div>
+                <div class="flex items-center gap-3 bg-slate-900/50 px-4 py-2 rounded-lg border border-slate-800">
+                    <div class="w-2 h-2 bg-rose-500 rounded-full"></div>
+                    <span id="res-cost" class="text-rose-400 font-medium">Custo de Vida Futuro: R$ 0,00</span>
+                </div>
+            </div>
+
+            <div class="h-[400px] w-full">
+                <canvas id="fireChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLE DETAILS -->
+    <div class="col-span-12">
+        <div class="bg-[#0f172a] rounded-2xl shadow-xl border border-slate-800 overflow-hidden">
+            <div class="p-6 border-b border-slate-800 bg-[#0b1120] flex justify-between items-center">
+                <h3 class="font-bold text-white flex items-center gap-2">
+                    <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                        </path>
+                    </svg>
+                    Detalhamento da Jornada
+                </h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-slate-400">
+                    <thead class="text-xs text-slate-500 uppercase bg-slate-900 border-b border-slate-800 font-bold">
+                        <tr>
+                            <th class="px-6 py-4">Ano</th>
+                            <th class="px-6 py-4">Custo Vida</th>
+                            <th class="px-6 py-4 text-center">Status</th>
+                            <th class="px-6 py-4 text-right">Aportes (Ano)</th>
+                            <th class="px-6 py-4 text-right">Renda Passiva</th>
+                            <th class="px-6 py-4 text-right">Patrimônio</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-slate-800">
+                        <!-- JS filler -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.borderColor = '#1e293b';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+
+    let fireChart = null;
+
+    function calculateFIRE() {
+        // Inputs
+        let expense = parseFloat(document.getElementById('inp-expense').value);
+        let inflation = parseFloat(document.getElementById('inp-inflation').value) / 100;
+        let initial = parseFloat(document.getElementById('inp-initial').value);
+        let monthly = parseFloat(document.getElementById('inp-monthly').value);
+        let contribInc = parseFloat(document.getElementById('inp-contribution-inc').value) / 100;
+        let rate = parseFloat(document.getElementById('inp-rate').value) / 100;
+
+        let balance = initial;
+        let months = 0;
+        const maxMonths = 600; // Cap at 50 years to avoid infinite loop
+
+        let currentMonthExp = expense;
+        let currentMonthContrib = monthly;
+
+        // Data for chart
+        const labels = [];
+        const dataPassive = [];
+        const dataCost = [];
+        const annualData = [];
+
+        let retiredMetrics = null;
+
+        // Iterate
+        for (let m = 1; m <= maxMonths; m++) {
+            // 1. Earn Interest
+            let interest = balance * rate;
+            balance += interest;
+
+            // 2. Add Contribution
+            balance += currentMonthContrib;
+
+            // 3. Check FIRE
+            // Passive Income without eating principal: Balance * Rate
+            let passiveIncome = interest; // Or balance * rate if we assume we consume all interest?
+            // Actually, usually we compare balance * rate.
+
+            if (passiveIncome >= currentMonthExp && !retiredMetrics) {
+                retiredMetrics = {
+                    months: m,
+                    finalPassive: passiveIncome,
+                    finalCost: currentMonthExp
+                };
+            }
+
+            // Store Data (Yearly or every X months for chart smoothness)
+            if (m % 12 === 0) {
+                let year = m / 12;
+                let currentYear = new Date().getFullYear() + year;
+                labels.push(currentYear);
+                dataPassive.push(passiveIncome);
+                dataCost.push(currentMonthExp);
+
+                // Table Data (Yearly Snapshot)
+                annualData.push({
+                    year: Math.floor(year),
+                    cost: currentMonthExp,
+                    passive: passiveIncome,
+                    balance: balance,
+                    status: passiveIncome >= currentMonthExp ? "LIBERDADE FINANCEIRA 🚀" : "Acumulando",
+                    contribAnnual: currentMonthContrib * 12 // Approx
+                });
+
+                // Apply Annual Inflation and Contrib Increase
+                currentMonthExp = currentMonthExp * (1 + inflation);
+                currentMonthContrib = currentMonthContrib * (1 + contribInc);
+            }
+        }
+
+        // Render Result
+        if (retiredMetrics) {
+            let years = Math.floor(retiredMetrics.months / 12);
+            let remMonths = retiredMetrics.months % 12;
+            let totalDays = retiredMetrics.months * 30; // Approx
+            document.getElementById('result-headline').innerHTML =
+                `Restam apenas <span class="text-emerald-400 decoration-emerald-500/30 underline decoration-4 underline-offset-4">${years} anos e ${remMonths} meses</span> para sua liberdade!`;
+
+            document.getElementById('res-passive').innerText = `Dividendos mensais: ${retiredMetrics.finalPassive.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+            document.getElementById('res-cost').innerText = `Custo mensal: ${retiredMetrics.finalCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+        } else {
+            document.getElementById('result-headline').innerHTML = "<span class='text-rose-400'>Meta não atingida em 50 anos.</span> Aumente os aportes ou rentabilidade.";
+        }
+
+        renderChart(labels, dataPassive, dataCost);
+        renderTable(annualData);
+    }
+
+    function renderChart(labels, passive, cost) {
+        const ctx = document.getElementById('fireChart').getContext('2d');
+        if (fireChart) fireChart.destroy();
+
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
+        gradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
+
+        fireChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Dividendos (Renda Passiva)',
+                        data: passive,
+                        borderColor: '#10B981',
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#10B981',
+                        pointBorderColor: '#0f172a',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Custo de Vida',
+                        data: cost,
+                        borderColor: '#F43F5E',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    x: {
+                        grid: { display: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#1e293b' },
+                        ticks: { callback: (val) => 'R$ ' + val }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { usePointStyle: true, boxWidth: 8 }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#e2e8f0',
+                        bodyColor: '#e2e8f0',
+                        borderColor: 'rgba(148, 163, 184, 0.1)',
+                        borderWidth: 1,
+                        padding: 10,
+                        callbacks: {
+                            label: function (context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = '';
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-800/50 transition-colors";
+
+            const statusColor = row.status.includes('LIBERDADE') ? 'text-emerald-400 font-bold' : 'text-amber-500';
+
+            tr.innerHTML = `
+                <td class="px-6 py-4 font-medium text-white">${row.year} anos</td>
+                <td class="px-6 py-4">${row.cost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                <td class="px-6 py-4 text-center ${statusColor}">${row.status}</td>
+                <td class="px-6 py-4 text-right">${row.contribAnnual.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                <td class="px-6 py-4 text-right font-medium text-emerald-500">${row.passive.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                <td class="px-6 py-4 text-right font-bold text-slate-200">${row.balance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', calculateFIRE);
+</script>
+{% endblock %}

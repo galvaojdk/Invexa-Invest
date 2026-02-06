@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+
+{% block header_title %}Minha Carteira{% endblock %}
+
+{% block content %}
+<!-- Tech Container -->
+<div class="space-y-6">
+
+    <!-- Actions Bar -->
+    <div class="flex justify-end">
+        <button onclick="openModal('BUY')"
+            class="group relative inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)] overflow-hidden">
+            <div
+                class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700">
+            </div>
+            <svg class="w-5 h-5 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6">
+                </path>
+            </svg>
+            <span class="relative z-10">Registrar Movimentação</span>
+        </button>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state"
+        class="hidden bg-[#0f172a] rounded-2xl border border-slate-800 p-12 text-center relative overflow-hidden group">
+        <div class="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-10 transition-opacity duration-500">
+        </div>
+        <div
+            class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-slate-800/50 mb-6 border border-slate-700 ring-1 ring-blue-500/20 group-hover:ring-blue-500/50 transition-all">
+            <svg class="w-10 h-10 text-slate-400 group-hover:text-blue-400 transition-colors" fill="none"
+                stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6">
+                </path>
+            </svg>
+        </div>
+        <h3 class="text-xl font-bold text-white mb-2">Sua carteira está vazia</h3>
+        <p class="text-slate-400 mb-8 max-w-md mx-auto">Conecte sua conta ou registre sua primeira operação manualmente.
+        </p>
+        <button onclick="openModal('BUY')"
+            class="text-blue-400 hover:text-white font-medium hover:underline underline-offset-4 transition-colors">
+            Registrar primeira compra &rarr;
+        </button>
+    </div>
+
+    <!-- Portfolio Table -->
+    <div id="portfolio-content"
+        class="hidden bg-[#0f172a] rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead
+                    class="bg-slate-900/80 border-b border-slate-800 text-xs text-slate-500 uppercase font-medium tracking-wider">
+                    <tr>
+                        <th class="px-6 py-4 text-left">Ativo</th>
+                        <th class="px-6 py-4 text-center">Qtde</th>
+                        <th class="px-6 py-4 text-right">Preço Médio</th>
+                        <th class="px-6 py-4 text-right">Preço Atual</th>
+                        <th class="px-6 py-4 text-right">Saldo Total</th>
+                        <th class="px-6 py-4 text-right">Rentabilidade</th>
+                        <th class="px-6 py-4 text-center">Recomendação</th>
+                        <th class="px-6 py-4 text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="portfolio-table-body" class="divide-y divide-slate-800/50 bg-slate-900/20">
+                    <!-- Javascript will populate -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Transaction Modal (Dark Theme) -->
+<div id="transactionModal"
+    class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+    <div class="relative w-full max-w-md p-1">
+        <!-- Glow border effect -->
+        <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-2xl opacity-20 blur-md">
+        </div>
+
+        <div class="relative bg-[#0f172a] rounded-xl border border-slate-700 shadow-2xl p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    <span id="modal-title">Registrar Movimentação</span>
+                </h3>
+                <button onclick="closeModal()" class="text-slate-500 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <form id="transactionForm" class="space-y-5">
+                <!-- Toggle Type -->
+                <div class="grid grid-cols-2 gap-1 bg-slate-900 p-1 rounded-lg border border-slate-800">
+                    <button type="button" id="btn-type-buy" onclick="setTransactionType('BUY')"
+                        class="py-2.5 text-sm font-bold rounded-md transition-all">Compra</button>
+                    <button type="button" id="btn-type-sell" onclick="setTransactionType('SELL')"
+                        class="py-2.5 text-sm font-bold rounded-md transition-all">Venda</button>
+                </div>
+                <input type="hidden" id="transaction-type" value="BUY">
+
+                <div>
+                    <label class="block text-slate-400 text-xs font-bold mb-1.5 uppercase tracking-wide">Ticker</label>
+                    <input type="text" id="ticker"
+                        class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none uppercase placeholder-slate-600 transition-all font-mono"
+                        placeholder="EX: WEGE3" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label
+                            class="block text-slate-400 text-xs font-bold mb-1.5 uppercase tracking-wide">Quantidade</label>
+                        <input type="number" id="quantity"
+                            class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none placeholder-slate-600 transition-all font-mono"
+                            placeholder="0" required>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 text-xs font-bold mb-1.5 uppercase tracking-wide">Preço
+                            (R$)</label>
+                        <input type="number" step="0.01" id="price"
+                            class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none placeholder-slate-600 transition-all font-mono"
+                            placeholder="0,00" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-slate-400 text-xs font-bold mb-1.5 uppercase tracking-wide">Data</label>
+                    <input type="date" id="date"
+                        class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-slate-300 transition-all"
+                        required>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-3">
+                    <button type="button" onclick="closeModal()"
+                        class="px-5 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white transition-all text-sm font-medium">Cancelar</button>
+                    <button type="submit" id="btn-save"
+                        class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-lg shadow-blue-500/20 transition-all text-sm">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Formatters
+    const fmtBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+    const fmtPct = new Intl.NumberFormat('pt-BR', { style: 'percent', minimumFractionDigits: 2 });
+
+    async function loadPortfolio() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/v1/portfolio/', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const items = await response.json();
+
+            if (items.length === 0) {
+                document.getElementById('empty-state').classList.remove('hidden');
+                document.getElementById('portfolio-content').classList.add('hidden');
+            } else {
+                document.getElementById('empty-state').classList.add('hidden');
+                document.getElementById('portfolio-content').classList.remove('hidden');
+
+                const tbody = document.getElementById('portfolio-table-body');
+                tbody.innerHTML = '';
+
+                items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-800/50 transition-colors group border-b border-slate-800/50';
+
+                    const rentClass = item.rentability_val >= 0 ? 'text-emerald-400' : 'text-red-400';
+                    const rentBg = item.rentability_val >= 0 ? 'bg-emerald-500/10' : 'bg-red-500/10';
+                    const rentSign = item.rentability_val >= 0 ? '+' : '';
+
+                    tr.innerHTML = `
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400 ring-1 ring-slate-700">
+                                    ${item.ticker.substring(0, 2)}
+                                </div>
+                                <span class="text-white font-bold tracking-wide">${item.ticker}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-center font-mono text-slate-300">${item.quantity}</td>
+                        <td class="px-6 py-4 text-right text-slate-400 text-xs">${fmtBRL.format(item.average_price)}</td>
+                        <td class="px-6 py-4 text-right text-white font-bold font-mono tracking-tight">${fmtBRL.format(item.current_price)}</td>
+                        <td class="px-6 py-4 text-right font-medium text-slate-200 font-mono">${fmtBRL.format(item.total_value)}</td>
+                        <td class="px-6 py-4 text-right">
+                             <div class="flex flex-col items-end">
+                                <span class="${rentClass} font-bold text-xs">${rentSign}${item.rentability_pct}%</span>
+                                <span class="text-[10px] text-slate-500">${rentSign}${fmtBRL.format(item.rentability_val)}</span>
+                             </div>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            ${getRecBadge(item.recommendation)}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                <button onclick="openModal('BUY', '${item.ticker}')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 flex items-center justify-center transition-colors border border-slate-700 hover:border-emerald-500/50" title="Comprar">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                </button>
+                                <button onclick="openModal('SELL', '${item.ticker}')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-red-500/20 text-red-400 hover:text-red-300 flex items-center justify-center transition-colors border border-slate-700 hover:border-red-500/50" title="Vender">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function getRecBadge(status) {
+        if (status === 'Descontado') return '<span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[10px] font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(16,185,129,0.2)]">Comprar Mais</span>';
+        if (status === 'Bom Pagador') return '<span class="px-2 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded text-[10px] font-bold uppercase tracking-wider">Manter (Renda)</span>';
+        if (status === 'Caro') return '<span class="px-2 py-1 bg-red-500/10 text-red-400 border border-red-500/20 rounded text-[10px] font-bold uppercase tracking-wider">Vender</span>';
+        return '<span class="px-2 py-1 bg-slate-800 text-slate-400 border border-slate-700 rounded text-[10px] font-bold uppercase tracking-wider">Manter</span>';
+    }
+
+    // Modal Logic
+    function openModal(type = 'BUY', ticker = '') {
+        const modal = document.getElementById('transactionModal');
+        modal.classList.remove('hidden');
+
+        // Reset and pre-fill
+        document.getElementById('transactionForm').reset();
+        document.getElementById('ticker').value = ticker;
+
+        // Default Date to Today
+        document.getElementById('date').valueAsDate = new Date();
+
+        setTransactionType(type);
+    }
+
+    function closeModal() {
+        document.getElementById('transactionModal').classList.add('hidden');
+    }
+
+    function setTransactionType(type) {
+        document.getElementById('transaction-type').value = type;
+        const btnBuy = document.getElementById('btn-type-buy');
+        const btnSell = document.getElementById('btn-type-sell');
+        const btnSave = document.getElementById('btn-save');
+
+        if (type === 'BUY') {
+            btnBuy.className = 'py-2.5 text-sm font-bold rounded-md transition-all bg-emerald-600 text-white shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-500';
+            btnSell.className = 'py-2.5 text-sm font-bold rounded-md transition-all text-slate-400 hover:text-white hover:bg-slate-800';
+            btnSave.className = 'px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-500/20 transition-all text-sm';
+            btnSave.innerText = 'Confirmar Compra';
+        } else {
+            btnSell.className = 'py-2.5 text-sm font-bold rounded-md transition-all bg-red-600 text-white shadow-lg shadow-red-500/20 ring-1 ring-red-500';
+            btnBuy.className = 'py-2.5 text-sm font-bold rounded-md transition-all text-slate-400 hover:text-white hover:bg-slate-800';
+            btnSave.className = 'px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold shadow-lg shadow-red-500/20 transition-all text-sm';
+            btnSave.innerText = 'Confirmar Venda';
+        }
+    }
+
+    document.getElementById('transactionForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('token');
+
+        const ticker = document.getElementById('ticker').value.toUpperCase();
+        const quantity = parseInt(document.getElementById('quantity').value);
+        const price = parseFloat(document.getElementById('price').value);
+        const type = document.getElementById('transaction-type').value;
+        const date = document.getElementById('date').value;
+
+        try {
+            const res = await fetch('/api/v1/portfolio/transaction', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ ticker, type, quantity, price, date })
+            });
+
+            if (res.ok) {
+                closeModal();
+                loadPortfolio();
+                // alert('Movimentação registrada com sucesso!'); // Removed alert for cleaner UX
+            } else {
+                const err = await res.json();
+                alert('Erro: ' + (err.detail || 'Falha ao salvar.'));
+            }
+        } catch (err) {
+            alert('Erro de conexão.');
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', loadPortfolio);
+</script>
+{% endblock %}
