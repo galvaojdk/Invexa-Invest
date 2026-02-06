@@ -9,6 +9,7 @@
 /api/v1/auth/me -> read_users_me
 /api/v1/dashboard/summary -> get_dashboard_summary
 /api/v1/assets/ -> read_assets
+/api/v1/assets/update_all -> update_all_assets
 /api/v1/portfolio/ -> read_portfolio
 /api/v1/portfolio/ -> add_to_portfolio
 /api/v1/portfolio/transaction -> create_transaction

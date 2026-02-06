@@ -5,6 +5,31 @@ from typing import List
 from app.core import database, security
 from app.models.asset import Asset
 from app.schemas import AssetResponse
+from app.services.market_data import fetch_batch_brapi
+import asyncio
+
+# Hardcoded list of assets to seed/monitor (Top B3)
+TICKERS = [
+    # Acoes (IBOVESPA Selection)
+    "WEGE3", "PETR4", "VALE3", "ITUB4", "BBAS3", 
+    "BBDC4", "RENT3", "PRIO3", "EGIE3", "TAEE11",
+    "ABEV3", "AZUL4", "B3SA3", "BBSE3", "BPAC11",
+    "CMIG4", "CSAN3", "CSNA3", "CVCB3", "CYRE3",
+    "ELET3", "EMBR3", "EQTL3", "GGBR4", "GOAU4",
+    "HAPV3", "HYPE3", "JBSS3", "KLBN11", "LREN3",
+    "MGLU3", "MRFG3", "NTCO3", "PETR3", "RADL3",
+    "RAIL3", "SBSP3", "SUZB3", "TOTS3", "UGPA3",
+    "USIM5", "VBBR3", "VIVT3", "YDUQ3",
+    
+    # FIIs (IFIX Selection)
+    "HGLG11", "KNIP11", "MXRF11", "VISC11", "XPLG11",
+    "BTLG11", "CPTS11", "BCFF11", "HGRU11", "IRDM11",
+    "ALZR11", "BRCO11", "BRCR11", "DEVA11", "GAME11",
+    "GGRC11", "HCTR11", "HGBS11", "HGCR11", "HGRE11",
+    "JSRE11", "KNHY11", "KNRI11", "MALL11", "RBRP11",
+    "RBRR11", "RECR11", "TGAR11", "TRXF11", "VILG11",
+    "VINC11", "VINO11", "VRTA11", "VSLH11", "XPML11"
+]
 
 router = APIRouter()
 
@@ -62,3 +87,30 @@ def read_assets(skip: int = 0, limit: int = 100, asset_type: str = None, db: Ses
                  asset.status = "Bom Pagador"
                  
     return assets
+
+@router.post("/update_all")
+async def update_all_assets(db: Session = Depends(database.get_db)):
+    """
+    Triggers a full update of all monitored assets.
+    Useful for seeding the database on first run.
+    """
+    print(f"Update All triggered. Processing {len(TICKERS)} assets...")
+    
+    # Process in chunks of 15 to respect Brapi limits/performance
+    chunk_size = 15
+    import math
+    
+    # Filter tickers that might already have the suffix (just in case)
+    clean_tickers = [t.replace(".SA", "") for t in TICKERS]
+    
+    count = 0
+    for i in range(0, len(clean_tickers), chunk_size):
+        chunk = clean_tickers[i:min(i + chunk_size, len(clean_tickers))]
+        chunk_str = ",".join(chunk)
+        print(f"Updating batch: {chunk_str}...")
+        
+        # fetch_batch_brapi is async and handles DB commit
+        await fetch_batch_brapi(db, chunk_str)
+        count += len(chunk)
+        
+    return {"status": "success", "message": f"Updated {count} assets"}
