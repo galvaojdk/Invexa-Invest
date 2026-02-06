@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+import os
 # Invexa Main Application
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -11,7 +12,7 @@ from app.api.routes import auth, views, dashboard, assets, portfolio as portfoli
 
 app = FastAPI(title=config.settings.PROJECT_NAME)
 
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/static", StaticFiles(directory="app/static"), name="static") if os.path.exists("app/static") else print("WARN: static directory not found, skipping mount")
 templates = Jinja2Templates(directory="app/templates")
 
 # Incluir Routers
