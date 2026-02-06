@@ -38,6 +38,16 @@ async def startup_event():
     max_retries = 5
     for attempt in range(max_retries):
         try:
+            # Debug: Imprimir URL mascarada para verificar o host
+            from app.core import config
+            db_url = config.settings.SQLALCHEMY_DATABASE_URI
+            if "@" in db_url:
+                # Mascarar senha: postgresql://user:pass@host:port/db -> postgresql://user:***@host:port/db
+                part1, part2 = db_url.split("@", 1)
+                protocol_user = part1.split(":")[0] 
+                print(f"DEBUG: Connecting to DB Host: {part2.split('/')[0]}")
+                print(f"DEBUG: Full URL (Masked): {part1.split(':')[0]}:***@{part2}")
+            
             from app.models.alert import Alert
             from app.models.setting import Setting
             print(f"Connecting to database (Attempt {attempt + 1}/{max_retries})...")
