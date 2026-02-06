@@ -109,8 +109,13 @@ async def update_all_assets(db: Session = Depends(database.get_db)):
         chunk_str = ",".join(chunk)
         print(f"Updating batch: {chunk_str}...")
         
-        # fetch_batch_brapi is async and handles DB commit
-        await fetch_batch_brapi(db, chunk_str)
-        count += len(chunk)
+        try:
+            # fetch_batch_brapi is async and handles DB commit
+            await fetch_batch_brapi(db, chunk_str)
+            count += len(chunk)
+        except Exception as e:
+            print(f"Error updating batch {chunk_str}: {e}")
+            # Continue to next batch instead of crashing
+            continue
         
     return {"status": "success", "message": f"Updated {count} assets"}
