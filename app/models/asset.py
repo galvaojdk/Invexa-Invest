@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy import Column, Integer, String, Float, DateTime, BigInteger
 from sqlalchemy.sql import func
 from app.core.database import Base
 
@@ -20,7 +20,7 @@ class Asset(Base):
     liquidity_avg_2m = Column(Float, default=0.0) # Liquidez média diária
     vacancy = Column(Float, default=0.0) # Vacância (apenas FIIs)
     num_properties = Column(Integer, default=0) # Qtd Imóveis (FIIs)
-    shares_outstanding = Column(Integer, default=0) # Numero de papeis
+    shares_outstanding = Column(BigInteger, default=0) # Numero de papeis
     net_income = Column(Float, default=0.0) # Lucro Liquido (12m)
     
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), default=func.now())
