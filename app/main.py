@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 import os
+import time
 # Invexa Main Application
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -34,17 +35,26 @@ def read_root(request: Request):
 async def startup_event():
     # Cria tabelas no banco de dados (para MVP)
     # Isso garante que a tentativa de conexão ocorra apenas quando o app estiver rodando
-    try:
-        from app.models.alert import Alert
-        from app.models.setting import Setting
-        user.Base.metadata.create_all(bind=database.engine)
-        asset.Base.metadata.create_all(bind=database.engine)
-        portfolio.Base.metadata.create_all(bind=database.engine)
-        Alert.metadata.create_all(bind=database.engine)
-        Setting.metadata.create_all(bind=database.engine)
-        print("TABLES CREATED SUCCESSFULLY")
-    except Exception as e:
-        print(f"ERROR CREATING TABLES: {e}")
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            from app.models.alert import Alert
+            from app.models.setting import Setting
+            print(f"Connecting to database (Attempt {attempt + 1}/{max_retries})...")
+            user.Base.metadata.create_all(bind=database.engine)
+            asset.Base.metadata.create_all(bind=database.engine)
+            portfolio.Base.metadata.create_all(bind=database.engine)
+            Alert.metadata.create_all(bind=database.engine)
+            Setting.metadata.create_all(bind=database.engine)
+            print("TABLES CREATED SUCCESSFULLY")
+            break
+        except Exception as e:
+            print(f"ERROR CREATING TABLES (Attempt {attempt + 1}): {e}")
+            if attempt < max_retries - 1:
+                print("Retrying in 2 seconds...")
+                time.sleep(2)
+            else:
+                print("FAILED TO CONNECT TO DATABASE AFTER MULTIPLE ATTEMPTS.")
 
     print("\n" + "="*50)
     print("SERVER STARTED - CHECKING ROUTES")
