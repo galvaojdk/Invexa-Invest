@@ -39,11 +39,14 @@ class Settings(BaseSettings):
                 
                 if ":" in host_part:
                     host_only = host_part.split(":")[0] # host
-                    if "dpg-" in host_only and "." not in host_only:
-                        # Rebuild URL
-                        new_host = f"{host_only}.ohio-postgres.render.com"
-                        self.SQLALCHEMY_DATABASE_URI = self.SQLALCHEMY_DATABASE_URI.replace(host_only, new_host, 1)
-                        print(f"WARN: Fixed Render Hostname: {host_only} -> {new_host}")
+                else:
+                    host_only = host_part
+                
+                if "dpg-" in host_only and "." not in host_only:
+                    # Rebuild URL
+                    new_host = f"{host_only}.ohio-postgres.render.com"
+                    self.SQLALCHEMY_DATABASE_URI = self.SQLALCHEMY_DATABASE_URI.replace(host_only, new_host, 1)
+                    print(f"WARN: Fixed Render Hostname: {host_only} -> {new_host}")
             except Exception as e:
                 print(f"WARN: Failed to fix Render URL: {e}")
 
