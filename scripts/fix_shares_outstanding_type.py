@@ -9,13 +9,20 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from app.core.database import SessionLocal, engine
 
 def fix_migration():
-    with engine.connect() as con:
+    # Usar engine.begin() para garantir commit da transação
+    with engine.begin() as con:
         try:
-            # PostgreSQL syntax to alter column type
+            # PostgreSQL: Alterar para BIGINT
             con.execute(text("ALTER TABLE assets ALTER COLUMN shares_outstanding TYPE BIGINT"))
-            print("Coluna 'shares_outstanding' alterada para BIGINT com sucesso.")
+            print("SUCESSO: Coluna 'shares_outstanding' alterada para BIGINT.")
+            
+            # Verificação
+            result = con.execute(text("SELECT data_type FROM information_schema.columns WHERE table_name = 'assets' AND column_name = 'shares_outstanding'"))
+            row = result.fetchone()
+            print(f"VERIFICAÇÃO: Tipo atual da coluna: {row[0]}")
+            
         except Exception as e:
-            print(f"Erro ao alterar coluna: {e}")
+            print(f"ERRO: {e}")
 
 if __name__ == "__main__":
     fix_migration()
