@@ -6,14 +6,8 @@ from app.core import config, database
 from app.models import user, asset, portfolio
 from app.api.routes import auth, views, dashboard, assets, portfolio as portfolio_routes, admin, premium, payments, profile
 
-# Cria tabelas no banco de dados (para MVP - em prod usar Alembic)
-user.Base.metadata.create_all(bind=database.engine)
-asset.Base.metadata.create_all(bind=database.engine)
-portfolio.Base.metadata.create_all(bind=database.engine)
-from app.models.alert import Alert
-from app.models.setting import Setting
-Alert.metadata.create_all(bind=database.engine)
-Setting.metadata.create_all(bind=database.engine)
+# Criação de tabelas movida para o evento de startup para evitar erros de importação
+# se o banco ainda não estiver acessível.
 
 app = FastAPI(title=config.settings.PROJECT_NAME)
 
@@ -37,6 +31,20 @@ def read_root(request: Request):
 
 @app.on_event("startup")
 async def startup_event():
+    # Cria tabelas no banco de dados (para MVP)
+    # Isso garante que a tentativa de conexão ocorra apenas quando o app estiver rodando
+    try:
+        from app.models.alert import Alert
+        from app.models.setting import Setting
+        user.Base.metadata.create_all(bind=database.engine)
+        asset.Base.metadata.create_all(bind=database.engine)
+        portfolio.Base.metadata.create_all(bind=database.engine)
+        Alert.metadata.create_all(bind=database.engine)
+        Setting.metadata.create_all(bind=database.engine)
+        print("TABLES CREATED SUCCESSFULLY")
+    except Exception as e:
+        print(f"ERROR CREATING TABLES: {e}")
+
     print("\n" + "="*50)
     print("SERVER STARTED - CHECKING ROUTES")
     print("="*50)
