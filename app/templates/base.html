@@ -286,7 +286,7 @@
             </h2>
             <div class="flex items-center gap-4">
                 <div class="relative group">
-                    <input type="text" placeholder="Buscar ativo..."
+                    <input type="text" id="global-search" placeholder="Buscar ativo..."
                         class="pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-64 transition-all group-hover:bg-slate-800">
                     <svg class="w-4 h-4 text-slate-500 absolute left-3 top-2.5" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24">
@@ -414,6 +414,18 @@
                 } catch (e) { console.error("Auth Check Failed", e); }
             }
         });
+        // Global Search Logic
+        const globalSearch = document.getElementById('global-search');
+        if (globalSearch) {
+            globalSearch.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const ticker = e.target.value.trim().toUpperCase();
+                    if (ticker) {
+                        window.location.href = `/ferramentas/valuation?ticker=${ticker}`;
+                    }
+                }
+            });
+        }
     </script>
 </body>
 

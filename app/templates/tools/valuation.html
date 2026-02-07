@@ -138,7 +138,18 @@
         } catch (e) { console.error(e); }
     }
 
-    document.addEventListener('DOMContentLoaded', checkPremiumAccess);
+    document.addEventListener('DOMContentLoaded', () => {
+        checkPremiumAccess();
+
+        // Check for Ticker param (from Global Search)
+        const urlParams = new URLSearchParams(window.location.search);
+        const ticker = urlParams.get('ticker');
+        if (ticker) {
+            document.getElementById('ticker-input').value = ticker;
+            // Short delay to ensure Auth check doesn't block (though analyzeValuation handles its own auth)
+            setTimeout(analyzeValuation, 500);
+        }
+    });
 
     async function analyzeValuation() {
         const ticker = document.getElementById('ticker-input').value;
