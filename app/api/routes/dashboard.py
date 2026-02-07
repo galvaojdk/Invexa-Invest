@@ -75,8 +75,12 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
     for item in portfolio_items:
         asset = item.asset
         
+        # Safety check: if asset was deleted but portfolio item remains
+        if not asset:
+            continue
+        
         # Valores
-        current_val = item.quantity * asset.price
+        current_val = item.quantity * (asset.price or 0.0) # Handle None price
         cost_val = item.quantity * item.average_price
         
         total_equity += current_val
@@ -89,7 +93,7 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
         # Proventos (Estimativa 12m baseada no DY)
         # DY é anual. Valor bruto anual = Valor investido (ou atual?) * DY.
         # Geralmente DY é sobre preço atual.
-        yearly_earnings = current_val * (asset.dy_12m / 100)
+        yearly_earnings = current_val * ((asset.dy_12m or 0.0) / 100)
         total_earnings_12m += yearly_earnings
         
         # Alocação por Tipo
@@ -103,7 +107,7 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
             "ticker": asset.ticker,
             "quantity": item.quantity,
             "average_price": item.average_price,
-            "current_price": asset.price,
+            "current_price": asset.price or 0.0,
             "total_value": current_val,
             "profit_val": profit,
             "profit_pct": profit_pct,

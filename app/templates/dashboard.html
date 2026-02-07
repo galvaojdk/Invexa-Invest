@@ -442,6 +442,19 @@
             // Logic removed to avoid legal issues.
         } catch (error) {
             console.error("Dashboard Error:", error);
+            document.getElementById('card-equity').innerText = "Erro";
+            document.getElementById('card-equity').classList.add('text-red-500');
+
+            // Show a more user-friendly toast or alert
+            // Creating a simple toast dynamically since this is an error state
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-4 right-4 bg-red-600 text-white px-6 py-4 rounded-xl shadow-2xl z-50 animate-bounce";
+            toast.innerHTML = `
+                <div class="font-bold mb-1">Erro ao carregar dados</div>
+                <div class="text-xs">Não foi possível buscar as informações da carteira.</div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
         }
     }
 
