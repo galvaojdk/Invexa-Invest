@@ -142,8 +142,25 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
     
     if current_user.is_premium and current_user.subscription_end_date:
         from datetime import datetime
-        delta = current_user.subscription_end_date - datetime.now()
-        sub_status["days_remaining"] = delta.days
+        now = datetime.now()
+        delta = current_user.subscription_end_date - now
+        
+        # If delta.days is 0 but it's positive (e.g. 23 hours left), we should show 1 day or < 1 day.
+        # But commonly 'days' property of timedelta just gives full days.
+        # If it's less than 24h, delta.days is 0.
+        
+        # Adjust logic: if end_date > now, at least 1 day or "Expires Today"
+        # However, user likely wants to see "30 days" right after purchase.
+        
+        # Calculate total seconds and convert to days rounding up
+        total_seconds = delta.total_seconds()
+        if total_seconds > 0:
+             import math
+             days_remaining = math.ceil(total_seconds / 86400)
+             sub_status["days_remaining"] = days_remaining
+        else:
+             sub_status["days_remaining"] = 0
+             
         sub_status["end_date"] = current_user.subscription_end_date.strftime("%d/%m/%Y")
 
     return {
