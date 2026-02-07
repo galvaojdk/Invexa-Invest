@@ -240,13 +240,33 @@
 
             if (!filterType) {
                 // "Ativos em Alta" Page (No Type Filter) -> Apply Hybrid Logic
-                // Liquidity > 1M, Price > 0 and Sort by Discount
-                recs = allAssets.filter(asset => (asset.liquidity_avg_2m || 0) > 1000000 && (asset.price || 0) > 0);
+                // Liquidity > 1M, Price > 0 and Valid Fundamentals (Graham)
+                recs = allAssets.filter(asset => {
+                    const liqOk = (asset.liquidity_avg_2m || 0) > 1000000;
+                    const priceOk = (asset.price || 0) > 0;
+
+                    if (!liqOk || !priceOk) return false;
+
+                    if (asset.type === 'stock') {
+                        // Graham requires positive LPA/VPA
+                        if ((asset.lpa || 0) <= 0 || (asset.vpa || 0) <= 0) return false;
+                    }
+                    return true;
+                });
                 recs.sort((a, b) => b.safe_margin - a.safe_margin);
             } else {
                 // Specific Rankings (FIIs or Stocks) -> Show All (server already filtered by type)
-                // Filter out invalid prices (0.00)
-                recs = allAssets.filter(asset => (asset.price || 0) > 0);
+                // Filter out invalid prices (0.00) and if stock, lpa/vpa <= 0
+                recs = allAssets.filter(asset => {
+                    const priceOk = (asset.price || 0) > 0;
+                    if (!priceOk) return false;
+
+                    if (asset.type === 'stock') {
+                        // Graham requires positive LPA/VPA
+                        if ((asset.lpa || 0) <= 0 || (asset.vpa || 0) <= 0) return false;
+                    }
+                    return true;
+                });
                 recs.sort((a, b) => b.safe_margin - a.safe_margin);
             }
 
