@@ -122,48 +122,10 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
     chart_labels = [k for k, v in sorted_alloc]
     chart_values = [v for k, v in sorted_alloc]
 
-    # --- Recommendations Feature ---
-    # Calculate simplistic upside based on P/VP and average price (MVP logic)
-    # Real app would use the sophisticated Valuation service
+    # --- Recommendations Feature REMOVED at User Request (Legal compliance) ---
     recommendations = []
-    
-    for item in portfolio_items:
-        asset = item.asset
-        # Simple Logic: If P/VP < 0.8 and Price < Avg Price => Buy
-        # Or use Graham number (22.5 * LPA * VPA)^0.5
-        
-        fair_price = 0.0
-        if asset.lpa > 0 and asset.vpa > 0:
-            fair_price = (22.5 * asset.lpa * asset.vpa) ** 0.5
-            
-        upside = 0.0
-        if fair_price > 0:
-            upside = ((fair_price - asset.price) / asset.price) * 100
-            
-        if upside > 15: # Valid recommendation
-            recommendations.append({
-                "ticker": asset.ticker,
-                "action": "COMPRA",
-                "upside": upside,
-                "fair_price": fair_price,
-                "current_price": asset.price,
-                "reason": "Preço abaixo do valor intrínseco (Graham)"
-            })
-            
-    # Sort by highest upside
-    recommendations.sort(key=lambda x: x['upside'], reverse=True)
-    
-    # Freemium Filter
-    is_premium = current_user.is_premium or current_user.is_admin
     visible_recs = []
     hidden_count = 0
-    
-    if recommendations:
-        if is_premium:
-            visible_recs = recommendations
-        else:
-            visible_recs = recommendations[:1]
-            hidden_count = len(recommendations) - 1
 
     # Subscription Status
     sub_status = {
