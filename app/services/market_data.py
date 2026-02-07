@@ -171,6 +171,18 @@ async def fetch_batch_brapi(db: Session, tickers: str):
                 if dy and dy > 0: asset_obj.dy_12m = dy
                 if p_vp and p_vp > 0: asset_obj.p_vp = p_vp
                 
+                # Liquidity (Financial Volume = Volume * Price)
+                # averageDailyVolume3Month is usually in defaultKeyStatistics or summaryDetail
+                # regularMarketVolume is in root
+                vol = item.get('regularMarketVolume') or 0
+                avg_vol_3m = dk_stats.get('averageDailyVolume3Month') or 0
+                
+                # Use 3M avg if available for stability, else daily volume
+                used_vol = avg_vol_3m if avg_vol_3m > 0 else vol
+                
+                if used_vol and used_vol > 0 and asset_obj.price > 0:
+                     asset_obj.liquidity_avg_2m = float(used_vol * asset_obj.price)
+                
             db.commit()
 
         except Exception as e:
