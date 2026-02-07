@@ -27,6 +27,10 @@ class UserResponse(UserBase):
     is_admin: bool = False
     is_premium: bool = False
     role: str = "user"
+    subscription_status: Optional[str] = None
+    subscription_plan: Optional[str] = None
+    subscription_end_date: Optional[datetime] = None
+
     class Config:
         from_attributes = True
 

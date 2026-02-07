@@ -120,7 +120,7 @@
                         Minha Carteira
                     </a>
                 </div>
-                <a href="/premium/subscribe"
+                <a href="/premium/subscribe" id="premium-menu-link"
                     class="group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {% if '/premium/subscribe' in request.url.path %}bg-purple-600/10 text-purple-400 border border-purple-500/20{% else %}text-purple-400 hover:bg-purple-900/20 hover:text-purple-300{% endif %}">
                     <svg class="w-5 h-5 {% if '/premium/subscribe' in request.url.path %}text-purple-400{% else %}text-purple-500 group-hover:text-purple-300{% endif %} transition-colors"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -415,6 +415,12 @@
                         // Show Admin Menu
                         if (user.is_admin) {
                             document.getElementById('admin-menu').classList.remove('hidden');
+                        }
+
+                        // Hide Premium Link if already Premium and Active
+                        if (user.is_premium && user.subscription_status !== 'expired') {
+                            const premiumLink = document.getElementById('premium-menu-link');
+                            if (premiumLink) premiumLink.classList.add('hidden');
                         }
                     }
                 } catch (e) { console.error("Auth Check Failed", e); }
