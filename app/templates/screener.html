@@ -301,7 +301,8 @@
             if (divProfit) divProfit.style.display = 'block';
         }
 
-        document.getElementById('val-price').innerText = `R$ ${asset.price.toFixed(2)}`;
+        const price = asset.price || 0;
+        document.getElementById('val-price').innerText = `R$ ${price.toFixed(2)}`;
         document.getElementById('val-shares').innerText = asset.shares_outstanding ? asset.shares_outstanding.toLocaleString('pt-BR') : 'N/A';
 
         let payout = isFii ? 100 : 50;
