@@ -25,6 +25,8 @@ app.include_router(admin.router, prefix=config.settings.API_V1_STR + "/admin", t
 app.include_router(premium.router, prefix=config.settings.API_V1_STR + "/premium", tags=["premium"])
 app.include_router(payments.router, prefix=config.settings.API_V1_STR + "/payments", tags=["payments"])
 app.include_router(profile.router, prefix=config.settings.API_V1_STR + "/profile", tags=["profile"])
+from app.api.routes import favorites
+app.include_router(favorites.router, prefix=config.settings.API_V1_STR + "/favorites", tags=["favorites"])
 app.include_router(views.router, tags=["views"])
 
 @app.get("/debug-brapi")
