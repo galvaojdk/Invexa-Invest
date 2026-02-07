@@ -162,7 +162,7 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
         "recommendations": {
             "items": visible_recs,
             "hidden_count": hidden_count,
-            "is_premium": is_premium
+            "is_premium": current_user.is_premium
         },
         "subscription": sub_status
     }
