@@ -71,6 +71,24 @@ async def debug_brapi():
         "is_greater_than_1M": calculated_liquidity > 1000000
     }
 
+@app.get("/debug-db")
+def debug_db():
+    from app.core import database
+    from app.models.asset import Asset
+    
+    db = next(database.get_db())
+    asset = db.query(Asset).filter(Asset.ticker == "PETR4").first()
+    
+    if not asset:
+        return {"error": "PETR4 not found in DB"}
+        
+    return {
+        "ticker": asset.ticker,
+        "price": asset.price,
+        "liquidity_avg_2m": asset.liquidity_avg_2m,
+        "type": asset.type_asset
+    }
+
 @app.get("/")
 def read_root(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
