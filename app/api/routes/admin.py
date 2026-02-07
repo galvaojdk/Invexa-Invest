@@ -20,6 +20,7 @@ def get_all_users(
 
 @router.post("/users/{user_id}/toggle-premium")
 def toggle_premium_status(
+    user_id: int,
     duration_days: int = 30,
     db: Session = Depends(database.get_db),
     current_admin: User = Depends(get_current_admin_user)
