@@ -71,6 +71,36 @@ async def debug_brapi():
         "is_greater_than_1M": calculated_liquidity > 1000000
     }
 
+@app.get("/force-update-petr4")
+async def force_update_petr4():
+    from app.core import database
+    from app.services.market_data import fetch_batch_brapi
+    from app.models.asset import Asset
+    
+    db = next(database.get_db())
+    try:
+        # Pre-check
+        before = db.query(Asset).filter(Asset.ticker == "PETR4").first()
+        val_before = before.liquidity_avg_2m if before else "Not Found"
+        
+        # Run update
+        await fetch_batch_brapi(db, "PETR4")
+        
+        # Post-check
+        db.expire_all() # Force reload
+        after = db.query(Asset).filter(Asset.ticker == "PETR4").first()
+        val_after = after.liquidity_avg_2m if after else "Not Found"
+        
+        return {
+            "status": "done",
+            "before_liquidity": val_before,
+            "after_liquidity": val_after,
+            "success": val_after > 0 if isinstance(val_after, (int, float)) else False
+        }
+    except Exception as e:
+        import traceback
+        return {"error": str(e), "traceback": traceback.format_exc()}
+
 @app.get("/debug-db")
 def debug_db():
     from app.core.database import SessionLocal
