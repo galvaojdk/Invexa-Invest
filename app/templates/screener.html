@@ -39,11 +39,121 @@
     <!-- Hidden List -->
 </div>
 
-<!-- Details Modal (Keep Existing Code ...) -->
-<!-- ... skipping unchanged modal code ... -->
-<!-- (Using context to locate next relevant block) -->
+<!-- Details Modal -->
+<div id="detailsModal"
+    class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+    <div
+        class="relative w-full max-w-2xl bg-[#0f172a] border border-slate-700 shadow-2xl rounded-xl overflow-hidden flex flex-col max-h-[85vh]">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center p-3 border-b border-slate-800 bg-[#0b1120] shrink-0 z-10">
+            <div class="flex items-center gap-2">
+                <h3 class="text-base font-bold text-white" id="modal-title">
+                    Preço Teto
+                </h3>
+                <span
+                    class="text-[10px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">Graham/Bazin</span>
+            </div>
+            <button onclick="closeDetails()"
+                class="text-slate-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-800">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
 
-<!-- ... -->
+        <div
+            class="grid grid-cols-12 gap-0 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
+            <!-- Left Config -->
+            <div
+                class="col-span-12 sm:col-span-4 p-4 border-b sm:border-b-0 sm:border-r border-slate-800 bg-slate-900/30 space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Payout
+                        (%)</label>
+                    <input type="number" id="inp-payout"
+                        class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-600"
+                        value="50">
+                </div>
+                <div id="div-profit-input">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Lucro Líq.
+                        (R$)</label>
+                    <input type="text" id="inp-profit"
+                        class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-600"
+                        placeholder="Ex: 50000000">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Yield Mín.
+                        (%)</label>
+                    <input type="number" id="inp-yield"
+                        class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-600"
+                        value="6">
+                </div>
+
+                <button onclick="recalculate()"
+                    class="w-full group bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg shadow-lg shadow-blue-500/20 transition-all mt-1 text-xs">
+                    Recalcular
+                </button>
+            </div>
+
+            <!-- Right Results -->
+            <div class="col-span-12 sm:col-span-8 p-4 space-y-4 bg-[#0f172a]">
+                <!-- Top Cards -->
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Cotação</p>
+                        <p class="text-xs font-bold text-white" id="val-price">R$ 0,00</p>
+                    </div>
+                    <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">LPA (Proj.)
+                        </p>
+                        <p class="text-xs font-bold text-white" id="val-lpa">R$ 0,00</p>
+                    </div>
+                    <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Papéis</p>
+                        <p class="text-[10px] font-bold text-slate-300 truncate" id="val-shares">0</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">DPA (Proj.)
+                        </p>
+                        <p class="text-sm font-bold text-emerald-400" id="val-dpa">R$ 0,00</p>
+                    </div>
+                    <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Yield (Proj.)
+                        </p>
+                        <p class="text-sm font-bold text-emerald-400" id="val-yield-proj">0,00%</p>
+                    </div>
+                </div>
+
+                <!-- Green Result Box -->
+                <div
+                    class="bg-emerald-900/10 border border-emerald-500/20 p-4 rounded-xl text-center relative overflow-hidden group">
+                    <div
+                        class="absolute inset-0 bg-emerald-500/5 blur-xl group-hover:bg-emerald-500/10 transition-colors duration-700">
+                    </div>
+                    <div class="relative z-10">
+                        <p class="text-[9px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Preço Justo
+                            (Teto)
+                        </p>
+                        <p class="text-3xl font-black text-emerald-400 mb-1 tracking-tight" id="val-fair-price">R$ 00,00
+                        </p>
+                        <p class="text-[10px] font-medium" id="val-margin">Margem: 0%</p>
+                    </div>
+                </div>
+
+                <!-- Calculation Explanation -->
+                <div id="explanation-box"
+                    class="bg-blue-900/10 border border-blue-500/20 p-3 rounded-lg text-xs text-slate-300 mt-2 hidden">
+                    <h4 class="font-bold text-blue-400 border-b border-blue-500/20 pb-1 mb-2 text-[10px] uppercase">
+                        Entenda o Cálculo</h4>
+                    <div id="explanation-text" class="whitespace-pre-line leading-relaxed space-y-0.5"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
     // ... (Keep existing setup) ...
