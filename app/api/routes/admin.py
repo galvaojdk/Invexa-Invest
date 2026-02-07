@@ -20,7 +20,7 @@ def get_all_users(
 
 @router.post("/users/{user_id}/toggle-premium")
 def toggle_premium_status(
-    user_id: int,
+    duration_days: int = 30,
     db: Session = Depends(database.get_db),
     current_admin: User = Depends(get_current_admin_user)
 ):
@@ -28,11 +28,25 @@ def toggle_premium_status(
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
     
-    # Toggle
-    user.is_premium = not user.is_premium
+    # Toggle (If sending specific duration, assume we want to turn ON or extend)
+    # But to keep simple compatible logic:
+    # If currently Free -> Make Premium with duration
+    # If currently Premium -> Make Free (toggle off) OR Extend?
+    # Let's assume Toggle behavior:
     
-    # If premium, ensure role is at least user (or specialized role)
-    # Keeping role logic simple for now
+    if user.is_premium:
+        # Turn OFF
+        user.is_premium = False
+        user.subscription_status = "inactive"
+        user.subscription_end_date = None
+        user.subscription_plan = "free"
+    else:
+        # Turn ON
+        user.is_premium = True
+        from datetime import datetime, timedelta
+        user.subscription_status = "active"
+        user.subscription_plan = "manual_admin"
+        user.subscription_end_date = datetime.now() + timedelta(days=duration_days)
     
     db.commit()
     db.refresh(user)
