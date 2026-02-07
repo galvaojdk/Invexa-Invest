@@ -157,7 +157,10 @@
                 showPremiumModal();
                 return;
             }
-            if (!response.ok) throw new Error("Erro ao analisar ativo.");
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.detail || "Erro ao analisar ativo.");
+            }
 
             const data = await response.json();
             renderValuation(data);

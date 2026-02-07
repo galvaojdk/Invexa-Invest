@@ -12,7 +12,7 @@ class Asset(Base):
     sector = Column(String, nullable=True)
     
     # Financial Data
-    price = Column(Float, nullable=False)
+    price = Column(Float, nullable=True)
     dy_12m = Column(Float, default=0.0)  # Dividend Yield 12m (%)
     p_vp = Column(Float, default=0.0)    # Preço / Valor Patrimonial
     lpa = Column(Float, default=0.0)     # Lucro por Ação
