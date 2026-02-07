@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block header_title %}Ativos em Alta: Liquidez + Desconto{% endblock %}
+{% block header_title %}{{ page_title if page_title else 'Ativos em Alta' }}{% endblock %}
 
 {% block content %}
 <input type="hidden" id="filter-asset-type" value="{{ asset_type if asset_type else '' }}">
@@ -100,11 +100,21 @@
         container.innerHTML = '';
         const wrapper = document.getElementById('recommendations-container');
 
-        // HYBRID LOGIC: Liquidity > 1M and Sort by Discount
-        let recs = allAssets.filter(asset => (asset.liquidity_avg_2m || 0) > 1000000);
+        const filterType = document.getElementById('filter-asset-type').value;
+        let recs = [];
 
-        // Sort descending by Safe Margin
-        recs.sort((a, b) => b.safe_margin - a.safe_margin);
+        if (!filterType) {
+            // "Ativos em Alta" Page (No Type Filter) -> Apply Hybrid Logic
+            // Liquidity > 1M and Sort by Discount
+            recs = allAssets.filter(asset => (asset.liquidity_avg_2m || 0) > 1000000);
+            recs.sort((a, b) => b.safe_margin - a.safe_margin);
+        } else {
+            // Specific Rankings (FIIs or Stocks) -> Show All (server already filtered by type)
+            // Default sort by Margin for now, or keep server order? Server returns ID order usually.
+            // Let's sort by Margin to be helpful.
+            recs = [...allAssets];
+            recs.sort((a, b) => b.safe_margin - a.safe_margin);
+        }
 
         // Take top 100
         recs = recs.slice(0, 100);
