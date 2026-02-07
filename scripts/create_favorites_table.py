@@ -4,5 +4,5 @@ from app.models.asset import Asset
 
 print("Creating favorites table...")
 # Create specifically the new table
-user_favorites.create(database.engine)
+user_favorites.create(database.engine, checkfirst=True)
 print("Table created successfully!")
