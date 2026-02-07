@@ -135,8 +135,9 @@ def get_valuation(
     dy_12m = asset.dy_12m if asset.dy_12m else 0.0
 
     # Formula de Graham: V = Sqrt(22.5 * LPA * VPA)
-    fair_graham = 0.0
-    if lpa > 0 and vpa > 0:
+    # Graham não se aplica a FIIs (LPA/VPA distorcidos) ou empresas com prejuízo (LPA < 0)
+    fair_graham = None
+    if asset.type != 'fii' and lpa > 0 and vpa > 0:
         fair_graham = (22.5 * lpa * vpa) ** 0.5
 
     # Metodo de Bazin: Preço Justo = Dividend Yield Médio / 0.06
@@ -148,15 +149,15 @@ def get_valuation(
 
     # Margem de Segurança (Graham)
     margin_graham = 0.0
-    if fair_graham > 0 and price > 0:
+    if fair_graham and fair_graham > 0 and price > 0:
         margin_graham = ((fair_graham - price) / fair_graham) * 100
 
     return {
         "ticker": asset.ticker,
         "price": price,
         "graham": {
-            "fair_price": round(fair_graham, 2),
-            "margin": round(margin_graham, 2)
+            "fair_price": round(fair_graham, 2) if fair_graham else None,
+            "margin": round(margin_graham, 2) if fair_graham else None
         },
         "bazin": {
             "fair_price": round(fair_bazin, 2),
