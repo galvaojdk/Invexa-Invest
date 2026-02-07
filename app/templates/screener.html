@@ -47,6 +47,11 @@
         <!-- Hidden List -->
     </div>
 
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
+        id="recommendations-list">
+        <!-- Recommended Cards injected here -->
+    </div>
+
     <!-- Details Modal -->
     <div id="detailsModal"
         class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
@@ -217,8 +222,12 @@
         }
 
         function renderRecommendations() {
+            // Update Results Count
+            const elCount = document.getElementById('results-count');
+
             const container = document.getElementById('recommendations-list');
-            container.innerHTML = '';
+            if (container) container.innerHTML = '';
+
             const wrapper = document.getElementById('recommendations-container');
 
             const filterType = document.getElementById('filter-asset-type').value;
@@ -240,12 +249,25 @@
             // Take top 100
             recs = recs.slice(0, 100);
 
-            if (recs.length === 0) {
-                wrapper.classList.add('hidden');
-                return;
-            }
+            // Update Count Text
+            if (elCount) elCount.innerText = `${recs.length}`;
 
             wrapper.classList.remove('hidden');
+
+            if (recs.length === 0) {
+                if (container) {
+                    container.innerHTML = `
+                        <div class="col-span-full flex flex-col items-center justify-center p-12 text-slate-500">
+                            <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <p class="text-lg font-medium">Nenhum ativo encontrado</p>
+                            <p class="text-xs">Tente atualizar as cotações.</p>
+                        </div>
+                    `;
+                }
+                return;
+            }
 
             // Freemium Logic
             const freeLimit = parseInt("{{ free_limit if free_limit else 1 }}");
