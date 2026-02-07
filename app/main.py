@@ -73,21 +73,24 @@ async def debug_brapi():
 
 @app.get("/debug-db")
 def debug_db():
-    from app.core import database
+    from app.core.database import SessionLocal
     from app.models.asset import Asset
     
-    db = next(database.get_db())
-    asset = db.query(Asset).filter(Asset.ticker == "PETR4").first()
-    
-    if not asset:
-        return {"error": "PETR4 not found in DB"}
+    db = SessionLocal()
+    try:
+        asset = db.query(Asset).filter(Asset.ticker == "PETR4").first()
         
-    return {
-        "ticker": asset.ticker,
-        "price": asset.price,
-        "liquidity_avg_2m": asset.liquidity_avg_2m,
-        "type": asset.type_asset
-    }
+        if not asset:
+            return {"error": "PETR4 not found in DB"}
+            
+        return {
+            "ticker": asset.ticker,
+            "price": asset.price,
+            "liquidity_avg_2m": asset.liquidity_avg_2m,
+            "type": asset.type
+        }
+    finally:
+        db.close()
 
 @app.get("/")
 def read_root(request: Request):
