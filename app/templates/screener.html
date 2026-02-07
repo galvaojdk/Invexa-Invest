@@ -5,315 +5,313 @@
 {% block content %}
 <input type="hidden" id="filter-asset-type" value="{{ asset_type if asset_type else '' }}">
 
-<!-- Ativos em Alta -->
-<div class="mb-8" id="recommendations-container">
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
-        id="recommendations-list">
-        <!-- Recommended Cards injected here -->
+<!-- Header / Update Button -->
+<div class="flex justify-between items-center mb-6 px-1">
+    <div class="flex items-center gap-4">
+        <p class="text-sm text-slate-400" id="results-count">Carregando...</p>
+        <button onclick="updateData()" id="btn-update"
+            class="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold rounded-lg hover:bg-emerald-500/20 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                </path>
+            </svg>
+            Atualizar Cotações
+        </button>
     </div>
 </div>
 
-<div class="hidden">
-    <!-- Hiding Filters and List -->
+<!-- Ativos em Alta -->
+<div class="mb-8" id="recommendations-container">
 
-    <!-- Filtros / Totais -->
-    <div class="flex justify-between items-center mb-6">
-        <div class="flex items-center gap-4">
-            <p class="text-sm text-slate-400" id="results-count">Carregando...</p>
-            <button onclick="updateData()" id="btn-update"
-                class="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold rounded-lg hover:bg-emerald-500/20 transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                    </path>
-                </svg>
-                Atualizar Cotações
-            </button>
-        </div>
+    <div class="hidden">
+        <!-- Hiding Filters and List -->
+        <!-- Helper Divs -->
         <div class="flex gap-1" id="pagination-placeholder"></div>
     </div>
 
-</div>
+    <div class="space-y-4 hidden" id="assets-list">
+        <!-- Hidden List -->
+    </div>
 
-<div class="space-y-4 hidden" id="assets-list">
-    <!-- Hidden List -->
-</div>
-
-<!-- Details Modal -->
-<div id="detailsModal"
-    class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-    <div
-        class="relative w-full max-w-2xl bg-[#0f172a] border border-slate-700 shadow-2xl rounded-xl overflow-hidden flex flex-col max-h-[85vh]">
-        <!-- Modal Header -->
-        <div class="flex justify-between items-center p-3 border-b border-slate-800 bg-[#0b1120] shrink-0 z-10">
-            <div class="flex items-center gap-2">
-                <h3 class="text-base font-bold text-white" id="modal-title">
-                    Preço Teto
-                </h3>
-                <span
-                    class="text-[10px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">Graham/Bazin</span>
-            </div>
-            <button onclick="closeDetails()"
-                class="text-slate-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-800">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                    </path>
-                </svg>
-            </button>
-        </div>
-
+    <!-- Details Modal -->
+    <div id="detailsModal"
+        class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
         <div
-            class="grid grid-cols-12 gap-0 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
-            <!-- Left Config -->
-            <div
-                class="col-span-12 sm:col-span-4 p-4 border-b sm:border-b-0 sm:border-r border-slate-800 bg-slate-900/30 space-y-3">
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Payout
-                        (%)</label>
-                    <input type="number" id="inp-payout"
-                        class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-600"
-                        value="50">
+            class="relative w-full max-w-2xl bg-[#0f172a] border border-slate-700 shadow-2xl rounded-xl overflow-hidden flex flex-col max-h-[85vh]">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center p-3 border-b border-slate-800 bg-[#0b1120] shrink-0 z-10">
+                <div class="flex items-center gap-2">
+                    <h3 class="text-base font-bold text-white" id="modal-title">
+                        Preço Teto
+                    </h3>
+                    <span
+                        class="text-[10px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">Graham/Bazin</span>
                 </div>
-                <div id="div-profit-input">
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Lucro Líq.
-                        (R$)</label>
-                    <input type="text" id="inp-profit"
-                        class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-600"
-                        placeholder="Ex: 50000000">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Yield Mín.
-                        (%)</label>
-                    <input type="number" id="inp-yield"
-                        class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-600"
-                        value="6">
-                </div>
-
-                <button onclick="recalculate()"
-                    class="w-full group bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg shadow-lg shadow-blue-500/20 transition-all mt-1 text-xs">
-                    Recalcular
+                <button onclick="closeDetails()"
+                    class="text-slate-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-800">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
                 </button>
             </div>
 
-            <!-- Right Results -->
-            <div class="col-span-12 sm:col-span-8 p-4 space-y-4 bg-[#0f172a]">
-                <!-- Top Cards -->
-                <div class="grid grid-cols-3 gap-2">
-                    <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Cotação</p>
-                        <p class="text-xs font-bold text-white" id="val-price">R$ 0,00</p>
-                    </div>
-                    <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">LPA (Proj.)
-                        </p>
-                        <p class="text-xs font-bold text-white" id="val-lpa">R$ 0,00</p>
-                    </div>
-                    <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Papéis</p>
-                        <p class="text-[10px] font-bold text-slate-300 truncate" id="val-shares">0</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">DPA (Proj.)
-                        </p>
-                        <p class="text-sm font-bold text-emerald-400" id="val-dpa">R$ 0,00</p>
-                    </div>
-                    <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Yield (Proj.)
-                        </p>
-                        <p class="text-sm font-bold text-emerald-400" id="val-yield-proj">0,00%</p>
-                    </div>
-                </div>
-
-                <!-- Green Result Box -->
+            <div
+                class="grid grid-cols-12 gap-0 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
+                <!-- Left Config -->
                 <div
-                    class="bg-emerald-900/10 border border-emerald-500/20 p-4 rounded-xl text-center relative overflow-hidden group">
-                    <div
-                        class="absolute inset-0 bg-emerald-500/5 blur-xl group-hover:bg-emerald-500/10 transition-colors duration-700">
+                    class="col-span-12 sm:col-span-4 p-4 border-b sm:border-b-0 sm:border-r border-slate-800 bg-slate-900/30 space-y-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Payout
+                            (%)</label>
+                        <input type="number" id="inp-payout"
+                            class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-600"
+                            value="50">
                     </div>
-                    <div class="relative z-10">
-                        <p class="text-[9px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Preço Justo
-                            (Teto)
-                        </p>
-                        <p class="text-3xl font-black text-emerald-400 mb-1 tracking-tight" id="val-fair-price">R$ 00,00
-                        </p>
-                        <p class="text-[10px] font-medium" id="val-margin">Margem: 0%</p>
+                    <div id="div-profit-input">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Lucro
+                            Líq.
+                            (R$)</label>
+                        <input type="text" id="inp-profit"
+                            class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-600"
+                            placeholder="Ex: 50000000">
                     </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Yield
+                            Mín.
+                            (%)</label>
+                        <input type="number" id="inp-yield"
+                            class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-600"
+                            value="6">
+                    </div>
+
+                    <button onclick="recalculate()"
+                        class="w-full group bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg shadow-lg shadow-blue-500/20 transition-all mt-1 text-xs">
+                        Recalcular
+                    </button>
                 </div>
 
-                <!-- Calculation Explanation -->
-                <div id="explanation-box"
-                    class="bg-blue-900/10 border border-blue-500/20 p-3 rounded-lg text-xs text-slate-300 mt-2 hidden">
-                    <h4 class="font-bold text-blue-400 border-b border-blue-500/20 pb-1 mb-2 text-[10px] uppercase">
-                        Entenda o Cálculo</h4>
-                    <div id="explanation-text" class="whitespace-pre-line leading-relaxed space-y-0.5"></div>
+                <!-- Right Results -->
+                <div class="col-span-12 sm:col-span-8 p-4 space-y-4 bg-[#0f172a]">
+                    <!-- Top Cards -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
+                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Cotação</p>
+                            <p class="text-xs font-bold text-white" id="val-price">R$ 0,00</p>
+                        </div>
+                        <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
+                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">LPA (Proj.)
+                            </p>
+                            <p class="text-xs font-bold text-white" id="val-lpa">R$ 0,00</p>
+                        </div>
+                        <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
+                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Papéis</p>
+                            <p class="text-[10px] font-bold text-slate-300 truncate" id="val-shares">0</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
+                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">DPA (Proj.)
+                            </p>
+                            <p class="text-sm font-bold text-emerald-400" id="val-dpa">R$ 0,00</p>
+                        </div>
+                        <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 text-center">
+                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Yield (Proj.)
+                            </p>
+                            <p class="text-sm font-bold text-emerald-400" id="val-yield-proj">0,00%</p>
+                        </div>
+                    </div>
+
+                    <!-- Green Result Box -->
+                    <div
+                        class="bg-emerald-900/10 border border-emerald-500/20 p-4 rounded-xl text-center relative overflow-hidden group">
+                        <div
+                            class="absolute inset-0 bg-emerald-500/5 blur-xl group-hover:bg-emerald-500/10 transition-colors duration-700">
+                        </div>
+                        <div class="relative z-10">
+                            <p class="text-[9px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Preço Justo
+                                (Teto)
+                            </p>
+                            <p class="text-3xl font-black text-emerald-400 mb-1 tracking-tight" id="val-fair-price">R$
+                                00,00
+                            </p>
+                            <p class="text-[10px] font-medium" id="val-margin">Margem: 0%</p>
+                        </div>
+                    </div>
+
+                    <!-- Calculation Explanation -->
+                    <div id="explanation-box"
+                        class="bg-blue-900/10 border border-blue-500/20 p-3 rounded-lg text-xs text-slate-300 mt-2 hidden">
+                        <h4 class="font-bold text-blue-400 border-b border-blue-500/20 pb-1 mb-2 text-[10px] uppercase">
+                            Entenda o Cálculo</h4>
+                        <div id="explanation-text" class="whitespace-pre-line leading-relaxed space-y-0.5"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    // ... (Keep existing setup) ...
-    let currentAsset = null;
-    let allAssets = [];
-    let currentPage = 1;
-    const itemsPerPage = 21;
-    const fmtMoneyShort = (val) => {
-        if (!val) return 'R$ 0';
-        if (val >= 1000000000) return 'R$ ' + (val / 1000000000).toFixed(1) + 'B';
-        if (val >= 1000000) return 'R$ ' + (val / 1000000).toFixed(1) + 'M';
-        return 'R$ ' + (val / 1000).toFixed(1) + 'K';
-    };
+    <script>
+        // ... (Keep existing setup) ...
+        let currentAsset = null;
+        let allAssets = [];
+        let currentPage = 1;
+        const itemsPerPage = 21;
+        const fmtMoneyShort = (val) => {
+            if (!val) return 'R$ 0';
+            if (val >= 1000000000) return 'R$ ' + (val / 1000000000).toFixed(1) + 'B';
+            if (val >= 1000000) return 'R$ ' + (val / 1000000).toFixed(1) + 'M';
+            return 'R$ ' + (val / 1000).toFixed(1) + 'K';
+        };
 
-    async function loadAssets() {
-        // ... (Keep existing loadAssets) ...
-        try {
-            await checkUserStatus(); // Ensure we know if user is premium
+        async function loadAssets() {
+            // ... (Keep existing loadAssets) ...
+            try {
+                await checkUserStatus(); // Ensure we know if user is premium
+
+                const filterType = document.getElementById('filter-asset-type').value;
+                let url = '/api/v1/assets/?limit=300';
+                if (filterType) url += `&asset_type=${filterType}`;
+
+                const response = await fetch(url);
+                allAssets = await response.json();
+
+                currentPage = 1;
+                renderRecommendations();
+                renderPage();
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('assets-list').innerHTML = '<div class="p-6 text-center text-red-500">Erro ao carregar lista de ativos.</div>';
+            }
+        }
+
+        let isPremiumUser = false; // Global State
+
+        async function checkUserStatus() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const res = await fetch('/api/v1/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
+                    if (res.ok) {
+                        const user = await res.json();
+                        isPremiumUser = user.is_premium || user.is_admin;
+                    }
+                } catch (e) { console.error(e); }
+            }
+        }
+
+        function renderRecommendations() {
+            const container = document.getElementById('recommendations-list');
+            container.innerHTML = '';
+            const wrapper = document.getElementById('recommendations-container');
 
             const filterType = document.getElementById('filter-asset-type').value;
-            let url = '/api/v1/assets/?limit=300';
-            if (filterType) url += `&asset_type=${filterType}`;
+            let recs = [];
 
-            const response = await fetch(url);
-            allAssets = await response.json();
+            if (!filterType) {
+                // "Ativos em Alta" Page (No Type Filter) -> Apply Hybrid Logic
+                // Liquidity > 1M and Sort by Discount
+                recs = allAssets.filter(asset => (asset.liquidity_avg_2m || 0) > 1000000);
+                recs.sort((a, b) => b.safe_margin - a.safe_margin);
+            } else {
+                // Specific Rankings (FIIs or Stocks) -> Show All (server already filtered by type)
+                // Default sort by Margin for now, or keep server order? Server returns ID order usually.
+                // Let's sort by Margin to be helpful.
+                recs = [...allAssets];
+                recs.sort((a, b) => b.safe_margin - a.safe_margin);
+            }
 
-            currentPage = 1;
-            renderRecommendations();
-            renderPage();
+            // Take top 100
+            recs = recs.slice(0, 100);
 
-        } catch (e) {
-            console.error(e);
-            document.getElementById('assets-list').innerHTML = '<div class="p-6 text-center text-red-500">Erro ao carregar lista de ativos.</div>';
-        }
-    }
+            if (recs.length === 0) {
+                wrapper.classList.add('hidden');
+                return;
+            }
 
-    let isPremiumUser = false; // Global State
+            wrapper.classList.remove('hidden');
 
-    async function checkUserStatus() {
-        const token = localStorage.getItem('token');
-        if (token) {
-            try {
-                const res = await fetch('/api/v1/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
-                if (res.ok) {
-                    const user = await res.json();
-                    isPremiumUser = user.is_premium || user.is_admin;
+            // Freemium Logic
+            const freeLimit = parseInt("{{ free_limit if free_limit else 1 }}");
+            const displayLimit = isPremiumUser ? recs.length : freeLimit;
+
+            recs.slice(0, displayLimit).forEach(asset => {
+                // Card HTML (Normal)
+                const card = document.createElement('div');
+                card.className = 'bg-[#0f172a] p-5 rounded-2xl border border-slate-800 flex flex-col items-center justify-between hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all cursor-pointer h-full group relative overflow-hidden';
+
+                card.onclick = () => openDetails(asset);
+
+                // Icon mapping based on sector
+                let iconPath = "M13 10V3L4 14h7v7l9-11h-7z"; // Bolt
+                let iconLabel = "DIVERSOS";
+                let iconColor = "text-blue-400";
+                let bgIcon = "bg-blue-500/10";
+
+                const sec = (asset.sector || "").toUpperCase();
+                if (sec.includes('ENERGIA') || sec.includes('UTILIDADE')) {
+                    iconPath = "M13 10V3L4 14h7v7l9-11h-7z"; // Bolt
+                    iconLabel = "ENERGIA";
+                    iconColor = "text-yellow-400";
+                    bgIcon = "bg-yellow-500/10";
+                } else if (sec.includes('FINANCEIRO') || sec.includes('BANCO')) {
+                    iconPath = "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z";
+                    iconLabel = "FINANCEIRO";
+                    iconColor = "text-green-400";
+                    bgIcon = "bg-green-500/10";
+                } else if (sec.includes('IMOBILI') || asset.type === 'fii') {
+                    iconPath = "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 2 0 011 1v5m-4 0h4";
+                    iconLabel = "FII / IMOB";
+                    iconColor = "text-purple-400";
+                    bgIcon = "bg-purple-500/10";
+                } else if (sec.includes('CONSUMO') || sec.includes('ALIMENTOS')) {
+                    iconPath = "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z";
+                    iconLabel = "CONSUMO";
+                    iconColor = "text-orange-400";
+                    bgIcon = "bg-orange-500/10";
+                } else if (sec.includes('SAUDE')) {
+                    iconPath = "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z";
+                    iconLabel = "SAÚDE";
+                    iconColor = "text-rose-400";
+                    bgIcon = "bg-rose-500/10";
+                } else if (sec.includes('MATERIA') || sec.includes('AGR')) {
+                    iconPath = "M12 19l9 2-9-18-9 18 9-2zm0 0v-8";
+                    iconLabel = "MATERIAIS";
+                    iconColor = "text-emerald-400";
+                    bgIcon = "bg-emerald-500/10";
                 }
-            } catch (e) { console.error(e); }
-        }
-    }
 
-    function renderRecommendations() {
-        const container = document.getElementById('recommendations-list');
-        container.innerHTML = '';
-        const wrapper = document.getElementById('recommendations-container');
+                // Dynamic color for potential
+                const safeMargin = asset.safe_margin || 0;
+                const isPositive = safeMargin > 0;
+                const potentialColor = isPositive ? 'text-emerald-400' : 'text-red-400';
+                const potentialSign = isPositive ? '+' : '';
 
-        const filterType = document.getElementById('filter-asset-type').value;
-        let recs = [];
+                // Status Logic
+                let statusLabel = "MANTER";
+                let statusClass = "text-slate-600 font-bold";
+                let statusBg = "bg-slate-800";
 
-        if (!filterType) {
-            // "Ativos em Alta" Page (No Type Filter) -> Apply Hybrid Logic
-            // Liquidity > 1M and Sort by Discount
-            recs = allAssets.filter(asset => (asset.liquidity_avg_2m || 0) > 1000000);
-            recs.sort((a, b) => b.safe_margin - a.safe_margin);
-        } else {
-            // Specific Rankings (FIIs or Stocks) -> Show All (server already filtered by type)
-            // Default sort by Margin for now, or keep server order? Server returns ID order usually.
-            // Let's sort by Margin to be helpful.
-            recs = [...allAssets];
-            recs.sort((a, b) => b.safe_margin - a.safe_margin);
-        }
+                if (asset.status === 'Descontado') {
+                    statusLabel = "DESCONTADO";
+                    statusClass = "text-emerald-400 font-bold animate-pulse";
+                    statusBg = "bg-emerald-500/20";
+                } else if (asset.status === 'Bom Pagador') {
+                    statusLabel = "RENDA";
+                    statusClass = "text-blue-400 font-bold";
+                    statusBg = "bg-blue-500/20";
+                } else if (asset.status === 'Caro') {
+                    statusLabel = "AGUARDAR"; // or NÃO COMPRAR
+                    statusClass = "text-red-400 font-bold";
+                    statusBg = "bg-red-500/20";
+                }
 
-        // Take top 100
-        recs = recs.slice(0, 100);
+                const liquidity = fmtMoneyShort(asset.liquidity_avg_2m); // Helper function
 
-        if (recs.length === 0) {
-            wrapper.classList.add('hidden');
-            return;
-        }
-
-        wrapper.classList.remove('hidden');
-
-        // Freemium Logic
-        const freeLimit = parseInt("{{ free_limit if free_limit else 1 }}");
-        const displayLimit = isPremiumUser ? recs.length : freeLimit;
-
-        recs.slice(0, displayLimit).forEach(asset => {
-            // Card HTML (Normal)
-            const card = document.createElement('div');
-            card.className = 'bg-[#0f172a] p-5 rounded-2xl border border-slate-800 flex flex-col items-center justify-between hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all cursor-pointer h-full group relative overflow-hidden';
-
-            card.onclick = () => openDetails(asset);
-
-            // Icon mapping based on sector
-            let iconPath = "M13 10V3L4 14h7v7l9-11h-7z"; // Bolt
-            let iconLabel = "DIVERSOS";
-            let iconColor = "text-blue-400";
-            let bgIcon = "bg-blue-500/10";
-
-            const sec = (asset.sector || "").toUpperCase();
-            if (sec.includes('ENERGIA') || sec.includes('UTILIDADE')) {
-                iconPath = "M13 10V3L4 14h7v7l9-11h-7z"; // Bolt
-                iconLabel = "ENERGIA";
-                iconColor = "text-yellow-400";
-                bgIcon = "bg-yellow-500/10";
-            } else if (sec.includes('FINANCEIRO') || sec.includes('BANCO')) {
-                iconPath = "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z";
-                iconLabel = "FINANCEIRO";
-                iconColor = "text-green-400";
-                bgIcon = "bg-green-500/10";
-            } else if (sec.includes('IMOBILI') || asset.type === 'fii') {
-                iconPath = "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 2 0 011 1v5m-4 0h4";
-                iconLabel = "FII / IMOB";
-                iconColor = "text-purple-400";
-                bgIcon = "bg-purple-500/10";
-            } else if (sec.includes('CONSUMO') || sec.includes('ALIMENTOS')) {
-                iconPath = "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z";
-                iconLabel = "CONSUMO";
-                iconColor = "text-orange-400";
-                bgIcon = "bg-orange-500/10";
-            } else if (sec.includes('SAUDE')) {
-                iconPath = "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z";
-                iconLabel = "SAÚDE";
-                iconColor = "text-rose-400";
-                bgIcon = "bg-rose-500/10";
-            } else if (sec.includes('MATERIA') || sec.includes('AGR')) {
-                iconPath = "M12 19l9 2-9-18-9 18 9-2zm0 0v-8";
-                iconLabel = "MATERIAIS";
-                iconColor = "text-emerald-400";
-                bgIcon = "bg-emerald-500/10";
-            }
-
-            // Dynamic color for potential
-            const safeMargin = asset.safe_margin || 0;
-            const isPositive = safeMargin > 0;
-            const potentialColor = isPositive ? 'text-emerald-400' : 'text-red-400';
-            const potentialSign = isPositive ? '+' : '';
-
-            // Status Logic
-            let statusLabel = "MANTER";
-            let statusClass = "text-slate-600 font-bold";
-            let statusBg = "bg-slate-800";
-
-            if (asset.status === 'Descontado') {
-                statusLabel = "DESCONTADO";
-                statusClass = "text-emerald-400 font-bold animate-pulse";
-                statusBg = "bg-emerald-500/20";
-            } else if (asset.status === 'Bom Pagador') {
-                statusLabel = "RENDA";
-                statusClass = "text-blue-400 font-bold";
-                statusBg = "bg-blue-500/20";
-            } else if (asset.status === 'Caro') {
-                statusLabel = "AGUARDAR"; // or NÃO COMPRAR
-                statusClass = "text-red-400 font-bold";
-                statusBg = "bg-red-500/20";
-            }
-
-            const liquidity = fmtMoneyShort(asset.liquidity_avg_2m); // Helper function
-
-            card.innerHTML = `
+                card.innerHTML = `
                 <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0 pointer-events-none"></div>
                 
                 <div class="flex flex-col items-center gap-3 mb-2 w-full pt-1 relative z-10 pointer-events-none">
@@ -343,30 +341,30 @@
                 </div>
              `;
 
-            // Debug click
-            card.addEventListener('click', (e) => {
-                console.log('Clicked card:', asset.ticker);
-                try {
-                    openDetails(asset);
-                } catch (err) {
-                    console.error('Error opening details:', err);
-                    alert('Erro ao abrir detalhes: ' + err.message);
-                }
+                // Debug click
+                card.addEventListener('click', (e) => {
+                    console.log('Clicked card:', asset.ticker);
+                    try {
+                        openDetails(asset);
+                    } catch (err) {
+                        console.error('Error opening details:', err);
+                        alert('Erro ao abrir detalhes: ' + err.message);
+                    }
+                });
+
+                container.appendChild(card);
             });
 
-            container.appendChild(card);
-        });
+            // Blurred Cards for Free Users
+            if (!isPremiumUser && recs.length > 1) {
+                const blurredCount = Math.min(recs.length - 1, 11); // Show limited number of blurred cards (e.g. 11 + 1 = 12 total grid)
 
-        // Blurred Cards for Free Users
-        if (!isPremiumUser && recs.length > 1) {
-            const blurredCount = Math.min(recs.length - 1, 11); // Show limited number of blurred cards (e.g. 11 + 1 = 12 total grid)
+                for (let i = 0; i < blurredCount; i++) {
+                    const blurred = document.createElement('div');
+                    blurred.className = 'bg-[#0f172a] p-5 rounded-2xl border border-slate-800 flex flex-col items-center justify-between relative overflow-hidden cursor-pointer group';
+                    blurred.onclick = showPremiumModal; // Trigger Global Modal
 
-            for (let i = 0; i < blurredCount; i++) {
-                const blurred = document.createElement('div');
-                blurred.className = 'bg-[#0f172a] p-5 rounded-2xl border border-slate-800 flex flex-col items-center justify-between relative overflow-hidden cursor-pointer group';
-                blurred.onclick = showPremiumModal; // Trigger Global Modal
-
-                blurred.innerHTML = `
+                    blurred.innerHTML = `
                     <div class="filter blur-md select-none opacity-40 w-full h-full flex flex-col items-center gap-4">
                         <div class="w-full h-4 bg-slate-700 rounded"></div>
                         <div class="w-16 h-16 bg-slate-800 rounded-xl"></div>
@@ -382,174 +380,174 @@
                          <span class="text-xs font-bold text-white uppercase tracking-wider text-shadow">Premium</span>
                     </div>
                 `;
-                container.appendChild(blurred);
+                    container.appendChild(blurred);
+                }
             }
         }
-    }
 
-    function renderPage() {
-        const container = document.getElementById('assets-list');
-        container.innerHTML = '';
-        renderPaginationControls();
-    }
-
-    function renderPaginationControls() {
-        // Keeps the existing hidden functionality
-        const ph = document.getElementById('pagination-placeholder');
-        ph.innerHTML = '';
-    }
-
-    function openDetails(asset) {
-        currentAsset = asset;
-        const modal = document.getElementById('detailsModal');
-        modal.classList.remove('hidden');
-
-        // Reset stale data
-        document.getElementById('explanation-box').classList.add('hidden');
-        document.getElementById('val-fair-price').innerText = '...';
-        const elMargin = document.getElementById('val-margin');
-        elMargin.innerText = 'Calculando...';
-        elMargin.className = 'text-sm text-slate-500';
-
-        const isFii = asset.type === 'fii';
-
-        if (isFii) {
-            document.getElementById('modal-title').innerHTML = `Preço Teto (Bazin) <span class="text-blue-400 ml-2">${asset.ticker}</span>`;
-            const divProfit = document.getElementById('div-profit-input');
-            if (divProfit) divProfit.style.display = 'none';
-        } else {
-            document.getElementById('modal-title').innerHTML = `Preço Teto Projetivo <span class="text-blue-400 ml-2">${asset.ticker}</span>`;
-            const divProfit = document.getElementById('div-profit-input');
-            if (divProfit) divProfit.style.display = 'block';
+        function renderPage() {
+            const container = document.getElementById('assets-list');
+            container.innerHTML = '';
+            renderPaginationControls();
         }
 
-        const price = asset.price || 0;
-        document.getElementById('val-price').innerText = `R$ ${price.toFixed(2)}`;
-        document.getElementById('val-shares').innerText = asset.shares_outstanding ? asset.shares_outstanding.toLocaleString('pt-BR') : 'N/A';
+        function renderPaginationControls() {
+            // Keeps the existing hidden functionality
+            const ph = document.getElementById('pagination-placeholder');
+            ph.innerHTML = '';
+        }
 
-        let payout = isFii ? 100 : 50;
-        document.getElementById('inp-payout').value = payout;
-        document.getElementById('inp-yield').value = 6;
+        function openDetails(asset) {
+            currentAsset = asset;
+            const modal = document.getElementById('detailsModal');
+            modal.classList.remove('hidden');
 
-        let estimatedProfit = currentAsset.net_income || 0;
-        document.getElementById('inp-profit').value = estimatedProfit.toLocaleString('pt-BR');
+            // Reset stale data
+            document.getElementById('explanation-box').classList.add('hidden');
+            document.getElementById('val-fair-price').innerText = '...';
+            const elMargin = document.getElementById('val-margin');
+            elMargin.innerText = 'Calculando...';
+            elMargin.className = 'text-sm text-slate-500';
 
-        recalculate();
-    }
+            const isFii = asset.type === 'fii';
 
-    function closeDetails() {
-        document.getElementById('detailsModal').classList.add('hidden');
-    }
-
-    function parseLocalFloat(val) {
-        if (!val) return 0;
-        if (typeof val === 'number') return val;
-        // Remove dots (thousands) and replace comma with dot (decimal)
-        let clean = val.replace(/\./g, '').replace(',', '.');
-        return parseFloat(clean) || 0;
-    }
-
-    function recalculate() {
-        if (!currentAsset) return;
-
-        // Payout is usually integer 0-100, but handle string
-        const payout = parseLocalFloat(document.getElementById('inp-payout').value) || 0;
-        const minYield = parseLocalFloat(document.getElementById('inp-yield').value) || 6;
-        const paramYield = minYield / 100;
-
-        const isFii = currentAsset.type === 'fii';
-        let dpa = 0;
-        let lpa = 0;
-        let fairPrice = 0;
-        let explanation = "";
-
-        const currentPrice = currentAsset.price || 0;
-
-        if (isFii) {
-            // Logic for FII: Base on Dividend Yield (Projected/Current)
-            const dyPct = (currentAsset.dy_12m || 0) / 100;
-            dpa = currentPrice * dyPct;
-            lpa = dpa; // Approx
-
-            if (paramYield > 0) {
-                fairPrice = dpa / paramYield;
+            if (isFii) {
+                document.getElementById('modal-title').innerHTML = `Preço Teto (Bazin) <span class="text-blue-400 ml-2">${asset.ticker}</span>`;
+                const divProfit = document.getElementById('div-profit-input');
+                if (divProfit) divProfit.style.display = 'none';
+            } else {
+                document.getElementById('modal-title').innerHTML = `Preço Teto Projetivo <span class="text-blue-400 ml-2">${asset.ticker}</span>`;
+                const divProfit = document.getElementById('div-profit-input');
+                if (divProfit) divProfit.style.display = 'block';
             }
 
-            document.getElementById('val-lpa').innerText = `R$ ${lpa.toFixed(2)} (Est.)`;
+            const price = asset.price || 0;
+            document.getElementById('val-price').innerText = `R$ ${price.toFixed(2)}`;
+            document.getElementById('val-shares').innerText = asset.shares_outstanding ? asset.shares_outstanding.toLocaleString('pt-BR') : 'N/A';
 
-            explanation = `<strong class="text-emerald-400">Cálculo (Método Bazin para FIIs):</strong>\n`;
-            explanation += `Utiliza o rendimento anual projetado para encontrar o preço teto.\n\n`;
-            explanation += `1. <span class="text-slate-400">DPA (Dividendo por Ação):</span> R$ ${dpa.toFixed(2)} (Baseado no DY atual de ${(dyPct * 100).toFixed(2)}%)\n`;
-            explanation += `2. <span class="text-slate-400">Yield Mínimo Desejado:</span> ${minYield}%\n`;
-            explanation += `3. <span class="text-slate-400">Fórmula:</span> Preço Justo = DPA / Yield\n`;
-            explanation += `   R$ ${fairPrice.toFixed(2)} = ${dpa.toFixed(2)} / ${paramYield}\n`;
+            let payout = isFii ? 100 : 50;
+            document.getElementById('inp-payout').value = payout;
+            document.getElementById('inp-yield').value = 6;
 
-        } else {
-            // Logic for Stock
-            const profit = parseLocalFloat(document.getElementById('inp-profit').value) || 0;
-            const shares = currentAsset.shares_outstanding || 1;
-            const totalDividends = profit * (payout / 100);
+            let estimatedProfit = currentAsset.net_income || 0;
+            document.getElementById('inp-profit').value = estimatedProfit.toLocaleString('pt-BR');
 
-            dpa = totalDividends / shares;
-            lpa = profit / shares;
+            recalculate();
+        }
 
-            if (paramYield > 0) {
-                fairPrice = dpa / paramYield;
+        function closeDetails() {
+            document.getElementById('detailsModal').classList.add('hidden');
+        }
+
+        function parseLocalFloat(val) {
+            if (!val) return 0;
+            if (typeof val === 'number') return val;
+            // Remove dots (thousands) and replace comma with dot (decimal)
+            let clean = val.replace(/\./g, '').replace(',', '.');
+            return parseFloat(clean) || 0;
+        }
+
+        function recalculate() {
+            if (!currentAsset) return;
+
+            // Payout is usually integer 0-100, but handle string
+            const payout = parseLocalFloat(document.getElementById('inp-payout').value) || 0;
+            const minYield = parseLocalFloat(document.getElementById('inp-yield').value) || 6;
+            const paramYield = minYield / 100;
+
+            const isFii = currentAsset.type === 'fii';
+            let dpa = 0;
+            let lpa = 0;
+            let fairPrice = 0;
+            let explanation = "";
+
+            const currentPrice = currentAsset.price || 0;
+
+            if (isFii) {
+                // Logic for FII: Base on Dividend Yield (Projected/Current)
+                const dyPct = (currentAsset.dy_12m || 0) / 100;
+                dpa = currentPrice * dyPct;
+                lpa = dpa; // Approx
+
+                if (paramYield > 0) {
+                    fairPrice = dpa / paramYield;
+                }
+
+                document.getElementById('val-lpa').innerText = `R$ ${lpa.toFixed(2)} (Est.)`;
+
+                explanation = `<strong class="text-emerald-400">Cálculo (Método Bazin para FIIs):</strong>\n`;
+                explanation += `Utiliza o rendimento anual projetado para encontrar o preço teto.\n\n`;
+                explanation += `1. <span class="text-slate-400">DPA (Dividendo por Ação):</span> R$ ${dpa.toFixed(2)} (Baseado no DY atual de ${(dyPct * 100).toFixed(2)}%)\n`;
+                explanation += `2. <span class="text-slate-400">Yield Mínimo Desejado:</span> ${minYield}%\n`;
+                explanation += `3. <span class="text-slate-400">Fórmula:</span> Preço Justo = DPA / Yield\n`;
+                explanation += `   R$ ${fairPrice.toFixed(2)} = ${dpa.toFixed(2)} / ${paramYield}\n`;
+
+            } else {
+                // Logic for Stock
+                const profit = parseLocalFloat(document.getElementById('inp-profit').value) || 0;
+                const shares = currentAsset.shares_outstanding || 1;
+                const totalDividends = profit * (payout / 100);
+
+                dpa = totalDividends / shares;
+                lpa = profit / shares;
+
+                if (paramYield > 0) {
+                    fairPrice = dpa / paramYield;
+                }
+
+                document.getElementById('val-lpa').innerText = `R$ ${lpa.toFixed(2)}`;
+
+                explanation = `<strong class="text-blue-400">Cálculo (Modelo de Gordon/Bazin Projetivo):</strong>\n`;
+                explanation += `Estima o preço justo baseando-se no lucro e payout projetados.\n\n`;
+                explanation += `1. <span class="text-slate-400">Lucro Projetado:</span> R$ ${profit.toLocaleString('pt-BR')}\n`;
+                explanation += `2. <span class="text-slate-400">Payout:</span> ${payout}% (Distribuição de Dividendos)\n`;
+                explanation += `3. <span class="text-slate-400">DPA Projetado:</span> R$ ${dpa.toFixed(4)}\n`;
+                explanation += `4. <span class="text-slate-400">Fórmula:</span> Preço Justo = DPA / Yield Mínimo\n`;
+                explanation += `   R$ ${fairPrice.toFixed(2)} = ${dpa.toFixed(4)} / ${paramYield}\n`;
             }
 
-            document.getElementById('val-lpa').innerText = `R$ ${lpa.toFixed(2)}`;
+            const projYield = (currentPrice > 0) ? (dpa / currentPrice) * 100 : 0;
+            const margin = (currentPrice > 0 && fairPrice > 0) ? ((fairPrice - currentPrice) / fairPrice) * 100 : 0;
 
-            explanation = `<strong class="text-blue-400">Cálculo (Modelo de Gordon/Bazin Projetivo):</strong>\n`;
-            explanation += `Estima o preço justo baseando-se no lucro e payout projetados.\n\n`;
-            explanation += `1. <span class="text-slate-400">Lucro Projetado:</span> R$ ${profit.toLocaleString('pt-BR')}\n`;
-            explanation += `2. <span class="text-slate-400">Payout:</span> ${payout}% (Distribuição de Dividendos)\n`;
-            explanation += `3. <span class="text-slate-400">DPA Projetado:</span> R$ ${dpa.toFixed(4)}\n`;
-            explanation += `4. <span class="text-slate-400">Fórmula:</span> Preço Justo = DPA / Yield Mínimo\n`;
-            explanation += `   R$ ${fairPrice.toFixed(2)} = ${dpa.toFixed(4)} / ${paramYield}\n`;
+            document.getElementById('val-dpa').innerText = `R$ ${dpa.toFixed(2)}`;
+            document.getElementById('val-yield-proj').innerText = `${projYield.toFixed(2)}%`;
+            document.getElementById('val-fair-price').innerText = `R$ ${fairPrice.toFixed(2)}`;
+
+            const elMargin = document.getElementById('val-margin');
+            elMargin.innerText = `Margem de segurança: ${margin.toFixed(2)}%`;
+
+            explanation += `\n<strong class="text-white">Resultado:</strong>\n`;
+            explanation += `Preço Atual: R$ ${currentPrice.toFixed(2)}\n`;
+            if (margin > 0) {
+                elMargin.className = "text-sm text-emerald-400 font-bold";
+                explanation += `O ativo está <strong class="text-emerald-400">${margin.toFixed(2)}% descontado</strong> em relação ao preço teto.`;
+            } else {
+                elMargin.className = "text-sm text-red-400 font-bold";
+                explanation += `O ativo está <strong class="text-red-400">${Math.abs(margin).toFixed(2)}% acima</strong> do preço teto.`;
+            }
+
+            // Populate and show explanation
+            const expBox = document.getElementById('explanation-box');
+            const expText = document.getElementById('explanation-text');
+            expText.innerHTML = explanation;
+            expBox.classList.remove('hidden');
         }
 
-        const projYield = (currentPrice > 0) ? (dpa / currentPrice) * 100 : 0;
-        const margin = (currentPrice > 0 && fairPrice > 0) ? ((fairPrice - currentPrice) / fairPrice) * 100 : 0;
-
-        document.getElementById('val-dpa').innerText = `R$ ${dpa.toFixed(2)}`;
-        document.getElementById('val-yield-proj').innerText = `${projYield.toFixed(2)}%`;
-        document.getElementById('val-fair-price').innerText = `R$ ${fairPrice.toFixed(2)}`;
-
-        const elMargin = document.getElementById('val-margin');
-        elMargin.innerText = `Margem de segurança: ${margin.toFixed(2)}%`;
-
-        explanation += `\n<strong class="text-white">Resultado:</strong>\n`;
-        explanation += `Preço Atual: R$ ${currentPrice.toFixed(2)}\n`;
-        if (margin > 0) {
-            elMargin.className = "text-sm text-emerald-400 font-bold";
-            explanation += `O ativo está <strong class="text-emerald-400">${margin.toFixed(2)}% descontado</strong> em relação ao preço teto.`;
-        } else {
-            elMargin.className = "text-sm text-red-400 font-bold";
-            explanation += `O ativo está <strong class="text-red-400">${Math.abs(margin).toFixed(2)}% acima</strong> do preço teto.`;
+        async function updateData() {
+            const btn = document.getElementById('btn-update');
+            btn.disabled = true;
+            btn.innerHTML = 'Atualizando...';
+            try {
+                await fetch('/api/v1/assets/update_all', { method: 'POST' });
+                alert('Dados atualizados com sucesso!');
+                loadAssets();
+            } catch (e) {
+                alert('Erro ao atualizar: ' + e);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Atualizar Cotações`;
+            }
         }
-
-        // Populate and show explanation
-        const expBox = document.getElementById('explanation-box');
-        const expText = document.getElementById('explanation-text');
-        expText.innerHTML = explanation;
-        expBox.classList.remove('hidden');
-    }
-
-    async function updateData() {
-        const btn = document.getElementById('btn-update');
-        btn.disabled = true;
-        btn.innerHTML = 'Atualizando...';
-        try {
-            await fetch('/api/v1/assets/update_all', { method: 'POST' });
-            alert('Dados atualizados com sucesso!');
-            loadAssets();
-        } catch (e) {
-            alert('Erro ao atualizar: ' + e);
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Atualizar Cotações`;
-        }
-    }
-    document.addEventListener('DOMContentLoaded', loadAssets);
-</script>
-{% endblock %}
+        document.addEventListener('DOMContentLoaded', loadAssets);
+    </script>
+    {% endblock %}
