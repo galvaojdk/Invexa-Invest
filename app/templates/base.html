@@ -369,15 +369,21 @@
 
         if (btn && sidebar) {
             btn.addEventListener('click', () => {
+                // Toggle visibility
+                sidebar.classList.toggle('hidden');
+                sidebar.classList.toggle('flex');
+
+                // Toggle slide animation and positioning
                 sidebar.classList.toggle('-translate-x-full');
                 sidebar.classList.toggle('fixed');
-                sidebar.classList.toggle('bg-[#0f172a]');
-                sidebar.classList.toggle('h-full');
                 sidebar.classList.toggle('z-40');
+                sidebar.classList.toggle('h-full');
+                sidebar.classList.toggle('w-64'); // Ensure width is maintained
+
+                // Adjustments for mobile layout
                 sidebar.classList.toggle('top-0');
                 sidebar.classList.toggle('left-0');
-                // Ajustes para mobile
-                sidebar.classList.toggle('pt-16');
+                sidebar.classList.toggle('pt-20'); // More padding to clear header
             });
         }
 
