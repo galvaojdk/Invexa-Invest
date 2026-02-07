@@ -46,6 +46,8 @@ class AssetResponse(BaseModel):
     shares_outstanding: Optional[int] = 0
     net_income: Optional[float] = 0.0
     liquidity_avg_2m: Optional[float] = 0.0
+    lpa: Optional[float] = 0.0
+    vpa: Optional[float] = 0.0
     # Runtime fields
     fair_price_graham: Optional[float] = 0.0
     fair_price_bazin: Optional[float] = 0.0

@@ -80,29 +80,34 @@
                 <!-- Left Config -->
                 <div
                     class="col-span-12 sm:col-span-4 p-4 border-b sm:border-b-0 sm:border-r border-slate-800 bg-slate-900/30 space-y-3">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Payout
-                            (%)</label>
-                        <input type="number" id="inp-payout"
-                            class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-600"
-                            value="50">
-                    </div>
-                    <div id="div-profit-input">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Lucro
-                            Líq.
-                            (R$)</label>
-                        <input type="text" id="inp-profit"
-                            class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-600"
-                            placeholder="Ex: 50000000">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Yield
-                            Mín.
-                            (%)</label>
-                        <input type="number" id="inp-yield"
-                            class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-600"
-                            value="6">
-                    </div>
+                    <div id="div-inputs-projective"> <!-- Wrapper for Projective Inputs -->
+                        <div>
+                            <label
+                                class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Payout
+                                (%)</label>
+                            <input type="number" id="inp-payout"
+                                class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-600"
+                                value="50">
+                        </div>
+                        <div id="div-profit-input">
+                            <label
+                                class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Lucro
+                                Líq.
+                                (R$)</label>
+                            <input type="text" id="inp-profit"
+                                class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-600"
+                                placeholder="Ex: 50000000">
+                        </div>
+                        <div>
+                            <label
+                                class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Yield
+                                Mín.
+                                (%)</label>
+                            <input type="number" id="inp-yield"
+                                class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-600"
+                                value="6">
+                        </div>
+                    </div> <!-- End Wrapper -->
 
                     <button onclick="recalculate()"
                         class="w-full group bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg shadow-lg shadow-blue-500/20 transition-all mt-1 text-xs">
@@ -448,22 +453,25 @@
 
             if (isFii) {
                 document.getElementById('modal-title').innerHTML = `Preço Teto (Bazin) <span class="text-blue-400 ml-2">${asset.ticker}</span>`;
-                const divProfit = document.getElementById('div-profit-input');
-                if (divProfit) divProfit.style.display = 'none';
+                document.getElementById('div-inputs-projective').classList.remove('hidden');
+                document.getElementById('div-profit-input').style.display = 'none';
+
+                let payout = 100;
+                document.getElementById('inp-payout').value = payout;
+                document.getElementById('inp-yield').value = 6;
+
             } else {
-                document.getElementById('modal-title').innerHTML = `Preço Teto Projetivo <span class="text-blue-400 ml-2">${asset.ticker}</span>`;
-                const divProfit = document.getElementById('div-profit-input');
-                if (divProfit) divProfit.style.display = 'block';
+                // Graham (Default for Stocks)
+                document.getElementById('modal-title').innerHTML = `Preço Justo (Graham) <span class="text-blue-400 ml-2">${asset.ticker}</span>`;
+                // Hide Projective inputs for Graham
+                document.getElementById('div-inputs-projective').classList.add('hidden');
             }
 
             const price = asset.price || 0;
             document.getElementById('val-price').innerText = `R$ ${price.toFixed(2)}`;
             document.getElementById('val-shares').innerText = asset.shares_outstanding ? asset.shares_outstanding.toLocaleString('pt-BR') : 'N/A';
 
-            let payout = isFii ? 100 : 50;
-            document.getElementById('inp-payout').value = payout;
-            document.getElementById('inp-yield').value = 6;
-
+            // Only populate profit if needed (for switching back to projective later? For now simplistic)
             let estimatedProfit = currentAsset.net_income || 0;
             document.getElementById('inp-profit').value = estimatedProfit.toLocaleString('pt-BR');
 
@@ -509,6 +517,8 @@
                 }
 
                 document.getElementById('val-lpa').innerText = `R$ ${lpa.toFixed(2)} (Est.)`;
+                document.getElementById('val-dpa').innerText = `R$ ${dpa.toFixed(2)}`;
+                document.getElementById('val-yield-proj').innerText = `${((currentPrice > 0) ? (dpa / currentPrice) * 100 : 0).toFixed(2)}%`;
 
                 explanation = `<strong class="text-emerald-400">Cálculo (Método Bazin para FIIs):</strong>\n`;
                 explanation += `Utiliza o rendimento anual projetado para encontrar o preço teto.\n\n`;
@@ -518,34 +528,34 @@
                 explanation += `   R$ ${fairPrice.toFixed(2)} = ${dpa.toFixed(2)} / ${paramYield}\n`;
 
             } else {
-                // Logic for Stock
-                const profit = parseLocalFloat(document.getElementById('inp-profit').value) || 0;
-                const shares = currentAsset.shares_outstanding || 1;
-                const totalDividends = profit * (payout / 100);
+                // Logic for Stock (Graham)
+                // Use backend provided LPA/VPA or calculate? Backend provides it in AssetResponse now.
+                lpa = currentAsset.lpa || 0;
+                let vpa = currentAsset.vpa || 0;
 
-                dpa = totalDividends / shares;
-                lpa = profit / shares;
-
-                if (paramYield > 0) {
-                    fairPrice = dpa / paramYield;
+                // Validate if Graham applies
+                if (lpa > 0 && vpa > 0) {
+                    fairPrice = Math.sqrt(22.5 * lpa * vpa);
+                    explanation = `<strong class="text-blue-400">Cálculo (Graham de Benjamin):</strong>\n`;
+                    explanation += `Estima o preço justo baseando-se no Lucro e Valor Patrimonial.\n\n`;
+                    explanation += `1. <span class="text-slate-400">LPA (Lucro p/ Ação):</span> R$ ${lpa.toFixed(2)}\n`;
+                    explanation += `2. <span class="text-slate-400">VPA (Valor Patr. p/ Ação):</span> R$ ${vpa.toFixed(2)}\n`;
+                    explanation += `3. <span class="text-slate-400">Constante de Graham:</span> 22.5\n`;
+                    explanation += `4. <span class="text-slate-400">Fórmula:</span> √ (22.5 * LPA * VPA)\n`;
+                    explanation += `   R$ ${fairPrice.toFixed(2)} = √ (22.5 * ${lpa.toFixed(2)} * ${vpa.toFixed(2)})\n`;
+                } else {
+                    fairPrice = 0;
+                    explanation = `<strong class="text-red-400">Não foi possível calcular (Graham):</strong>\n`;
+                    explanation += `O ativo possui LPA ou VPA negativos/zerados.\n\n`;
+                    explanation += `LPA: ${lpa.toFixed(2)} | VPA: ${vpa.toFixed(2)}`;
                 }
 
                 document.getElementById('val-lpa').innerText = `R$ ${lpa.toFixed(2)}`;
-
-                explanation = `<strong class="text-blue-400">Cálculo (Modelo de Gordon/Bazin Projetivo):</strong>\n`;
-                explanation += `Estima o preço justo baseando-se no lucro e payout projetados.\n\n`;
-                explanation += `1. <span class="text-slate-400">Lucro Projetado:</span> R$ ${profit.toLocaleString('pt-BR')}\n`;
-                explanation += `2. <span class="text-slate-400">Payout:</span> ${payout}% (Distribuição de Dividendos)\n`;
-                explanation += `3. <span class="text-slate-400">DPA Projetado:</span> R$ ${dpa.toFixed(4)}\n`;
-                explanation += `4. <span class="text-slate-400">Fórmula:</span> Preço Justo = DPA / Yield Mínimo\n`;
-                explanation += `   R$ ${fairPrice.toFixed(2)} = ${dpa.toFixed(4)} / ${paramYield}\n`;
+                document.getElementById('val-dpa').innerText = `R$ ${(lpa * (currentAsset.p_vp || 1)).toFixed(2)}`; // Placeholder logic for now? Or just hide?
+                document.getElementById('val-yield-proj').innerText = `N/A`;
             }
 
-            const projYield = (currentPrice > 0) ? (dpa / currentPrice) * 100 : 0;
             const margin = (currentPrice > 0 && fairPrice > 0) ? ((fairPrice - currentPrice) / fairPrice) * 100 : 0;
-
-            document.getElementById('val-dpa').innerText = `R$ ${dpa.toFixed(2)}`;
-            document.getElementById('val-yield-proj').innerText = `${projYield.toFixed(2)}%`;
             document.getElementById('val-fair-price').innerText = `R$ ${fairPrice.toFixed(2)}`;
 
             const elMargin = document.getElementById('val-margin');
@@ -555,10 +565,10 @@
             explanation += `Preço Atual: R$ ${currentPrice.toFixed(2)}\n`;
             if (margin > 0) {
                 elMargin.className = "text-sm text-emerald-400 font-bold";
-                explanation += `O ativo está <strong class="text-emerald-400">${margin.toFixed(2)}% descontado</strong> em relação ao preço teto.`;
+                explanation += `O ativo está <strong class="text-emerald-400">${margin.toFixed(2)}% descontado</strong> em relação ao preço justo.`;
             } else {
                 elMargin.className = "text-sm text-red-400 font-bold";
-                explanation += `O ativo está <strong class="text-red-400">${Math.abs(margin).toFixed(2)}% acima</strong> do preço teto.`;
+                explanation += `O ativo está <strong class="text-red-400">${Math.abs(margin).toFixed(2)}% acima</strong> do preço justo.`;
             }
 
             // Populate and show explanation
