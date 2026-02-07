@@ -202,167 +202,166 @@
         async function loadAssets() {
             // ... (Keep existing loadAssets) ...
             try {
-                try {
-                    await checkUserStatus(); // Ensure we know if user is premium
-                    await loadFavorites(); // Load favorites
+                await checkUserStatus(); // Ensure we know if user is premium
+                await loadFavorites(); // Load favorites
 
-                    const filterType = document.getElementById('filter-asset-type').value;
-                    let url = '/api/v1/assets/?limit=300';
-                    if (filterType) url += `&asset_type=${filterType}`;
+                const filterType = document.getElementById('filter-asset-type').value;
+                let url = '/api/v1/assets/?limit=300';
+                if (filterType) url += `&asset_type=${filterType}`;
 
-                    const response = await fetch(url);
-                    allAssets = await response.json();
+                const response = await fetch(url);
+                allAssets = await response.json();
 
-                    currentPage = 1;
-                    renderRecommendations();
-                    renderPage();
-
-                } catch (e) {
-                    console.error(e);
-                    document.getElementById('assets-list').innerHTML = '<div class="p-6 text-center text-red-500">Erro ao carregar lista de ativos.</div>';
-                }
-            }
-
-        let isPremiumUser = false;
-            let favoriteTickers = new Set();
-            let showFavoritesOnly = false;
-
-            function toggleFavoritesFilter() {
-                showFavoritesOnly = !showFavoritesOnly;
-                const btn = document.getElementById('btn-favorites');
-                const txt = document.getElementById('txt-favorites');
-
-                if (showFavoritesOnly) {
-                    btn.classList.replace('bg-slate-700', 'bg-yellow-500/20');
-                    btn.classList.replace('border-slate-600', 'border-yellow-500/50');
-                    txt.innerText = "Todos os Ativos";
-                    txt.classList.add('text-yellow-400');
-                } else {
-                    btn.classList.replace('bg-yellow-500/20', 'bg-slate-700');
-                    btn.classList.replace('border-yellow-500/50', 'border-slate-600');
-                    txt.innerText = "Ver Favoritos";
-                    txt.classList.remove('text-yellow-400');
-                }
                 currentPage = 1;
                 renderRecommendations();
                 renderPage();
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('assets-list').innerHTML = '<div class="p-6 text-center text-red-500">Erro ao carregar lista de ativos.</div>';
+            }
+        }
+
+        let isPremiumUser = false;
+        let favoriteTickers = new Set();
+        let showFavoritesOnly = false;
+
+        function toggleFavoritesFilter() {
+            showFavoritesOnly = !showFavoritesOnly;
+            const btn = document.getElementById('btn-favorites');
+            const txt = document.getElementById('txt-favorites');
+
+            if (showFavoritesOnly) {
+                btn.classList.replace('bg-slate-700', 'bg-yellow-500/20');
+                btn.classList.replace('border-slate-600', 'border-yellow-500/50');
+                txt.innerText = "Todos os Ativos";
+                txt.classList.add('text-yellow-400');
+            } else {
+                btn.classList.replace('bg-yellow-500/20', 'bg-slate-700');
+                btn.classList.replace('border-yellow-500/50', 'border-slate-600');
+                txt.innerText = "Ver Favoritos";
+                txt.classList.remove('text-yellow-400');
+            }
+            currentPage = 1;
+            renderRecommendations();
+            renderPage();
+        }
+
+        async function loadFavorites() {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            try {
+                const res = await fetch('/api/v1/favorites/', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.ok) {
+                    const favs = await res.json();
+                    favoriteTickers = new Set(favs.map(f => f.ticker));
+                }
+            } catch (e) { console.error("Error loading favorites", e); }
+        }
+
+        async function toggleFavorite(ticker, event) {
+            event.stopPropagation(); // Stop card click
+            const token = localStorage.getItem('token');
+            if (!token) return alert("Faça login para favoritar.");
+
+            // Optimistic UI
+            const icon = document.getElementById(`fav-icon-${ticker}`);
+            const isFav = favoriteTickers.has(ticker);
+
+            if (isFav) {
+                favoriteTickers.delete(ticker);
+                if (icon) icon.classList.replace('text-yellow-400', 'text-slate-600');
+            } else {
+                favoriteTickers.add(ticker);
+                if (icon) icon.classList.replace('text-slate-600', 'text-yellow-400');
             }
 
-            async function loadFavorites() {
-                const token = localStorage.getItem('token');
-                if (!token) return;
+            try {
+                const res = await fetch(`/api/v1/favorites/toggle/${ticker}`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error("Falha ao salvar");
+                // Optional: Sync real state if needed
+            } catch (e) {
+                console.error(e);
+                alert("Erro ao favoritar.");
+                // Revert
+                if (isFav) favoriteTickers.add(ticker); else favoriteTickers.delete(ticker);
+                renderRecommendations(); // Re-render to fix icon
+            }
+        }
+
+        async function checkUserStatus() {
+            const token = localStorage.getItem('token');
+            if (token) {
                 try {
-                    const res = await fetch('/api/v1/favorites/', { headers: { 'Authorization': `Bearer ${token}` } });
+                    const res = await fetch('/api/v1/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
                     if (res.ok) {
-                        const favs = await res.json();
-                        favoriteTickers = new Set(favs.map(f => f.ticker));
+                        const user = await res.json();
+                        isPremiumUser = user.is_premium || user.is_admin;
                     }
-                } catch (e) { console.error("Error loading favorites", e); }
+                } catch (e) { console.error(e); }
+            }
+        }
+
+        function renderRecommendations() {
+            // Update Results Count
+            const elCount = document.getElementById('results-count');
+
+            const container = document.getElementById('recommendations-list');
+            if (container) container.innerHTML = '';
+
+            const wrapper = document.getElementById('recommendations-container');
+
+            const filterType = document.getElementById('filter-asset-type').value;
+            let recs = [];
+
+            if (!filterType) {
+                // "Ativos em Alta" Page (No Type Filter) -> Apply Hybrid Logic
+                // Liquidity > 1M, Price > 0 and Valid Fundamentals (Graham)
+                recs = allAssets.filter(asset => {
+                    const liqOk = (asset.liquidity_avg_2m || 0) > 1000000;
+                    const priceOk = (asset.price || 0) > 0;
+
+                    if (!liqOk || !priceOk) return false;
+
+                    if (asset.type === 'stock') {
+                        // Graham requires positive LPA/VPA
+                        if ((asset.lpa || 0) <= 0 || (asset.vpa || 0) <= 0) return false;
+                    }
+                    return true;
+                });
+                recs.sort((a, b) => b.safe_margin - a.safe_margin);
+            } else {
+                // Specific Rankings (FIIs or Stocks) -> Show All (server already filtered by type)
+                // Filter out invalid prices (0.00) and if stock, lpa/vpa <= 0
+                recs = allAssets.filter(asset => {
+                    const priceOk = (asset.price || 0) > 0;
+                    if (!priceOk) return false;
+
+                    if (asset.type === 'stock') {
+                        // Graham requires positive LPA/VPA
+                        if ((asset.lpa || 0) <= 0 || (asset.vpa || 0) <= 0) return false;
+                    }
+                    return true;
+                });
+                recs.sort((a, b) => b.safe_margin - a.safe_margin);
             }
 
-            async function toggleFavorite(ticker, event) {
-                event.stopPropagation(); // Stop card click
-                const token = localStorage.getItem('token');
-                if (!token) return alert("Faça login para favoritar.");
-
-                // Optimistic UI
-                const icon = document.getElementById(`fav-icon-${ticker}`);
-                const isFav = favoriteTickers.has(ticker);
-
-                if (isFav) {
-                    favoriteTickers.delete(ticker);
-                    if (icon) icon.classList.replace('text-yellow-400', 'text-slate-600');
-                } else {
-                    favoriteTickers.add(ticker);
-                    if (icon) icon.classList.replace('text-slate-600', 'text-yellow-400');
-                }
-
-                try {
-                    const res = await fetch(`/api/v1/favorites/toggle/${ticker}`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
-                    if (!res.ok) throw new Error("Falha ao salvar");
-                    // Optional: Sync real state if needed
-                } catch (e) {
-                    console.error(e);
-                    alert("Erro ao favoritar.");
-                    // Revert
-                    if (isFav) favoriteTickers.add(ticker); else favoriteTickers.delete(ticker);
-                    renderRecommendations(); // Re-render to fix icon
-                }
+            // Filter by Favorites if enabled
+            if (showFavoritesOnly) {
+                recs = recs.filter(a => favoriteTickers.has(a.ticker));
             }
 
-            async function checkUserStatus() {
-                const token = localStorage.getItem('token');
-                if (token) {
-                    try {
-                        const res = await fetch('/api/v1/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
-                        if (res.ok) {
-                            const user = await res.json();
-                            isPremiumUser = user.is_premium || user.is_admin;
-                        }
-                    } catch (e) { console.error(e); }
-                }
-            }
+            // Take top 100
+            recs = recs.slice(0, 100);
 
-            function renderRecommendations() {
-                // Update Results Count
-                const elCount = document.getElementById('results-count');
+            // Update Count Text
+            if (elCount) elCount.innerText = `${recs.length}`;
 
-                const container = document.getElementById('recommendations-list');
-                if (container) container.innerHTML = '';
+            wrapper.classList.remove('hidden');
 
-                const wrapper = document.getElementById('recommendations-container');
-
-                const filterType = document.getElementById('filter-asset-type').value;
-                let recs = [];
-
-                if (!filterType) {
-                    // "Ativos em Alta" Page (No Type Filter) -> Apply Hybrid Logic
-                    // Liquidity > 1M, Price > 0 and Valid Fundamentals (Graham)
-                    recs = allAssets.filter(asset => {
-                        const liqOk = (asset.liquidity_avg_2m || 0) > 1000000;
-                        const priceOk = (asset.price || 0) > 0;
-
-                        if (!liqOk || !priceOk) return false;
-
-                        if (asset.type === 'stock') {
-                            // Graham requires positive LPA/VPA
-                            if ((asset.lpa || 0) <= 0 || (asset.vpa || 0) <= 0) return false;
-                        }
-                        return true;
-                    });
-                    recs.sort((a, b) => b.safe_margin - a.safe_margin);
-                } else {
-                    // Specific Rankings (FIIs or Stocks) -> Show All (server already filtered by type)
-                    // Filter out invalid prices (0.00) and if stock, lpa/vpa <= 0
-                    recs = allAssets.filter(asset => {
-                        const priceOk = (asset.price || 0) > 0;
-                        if (!priceOk) return false;
-
-                        if (asset.type === 'stock') {
-                            // Graham requires positive LPA/VPA
-                            if ((asset.lpa || 0) <= 0 || (asset.vpa || 0) <= 0) return false;
-                        }
-                        return true;
-                    });
-                    recs.sort((a, b) => b.safe_margin - a.safe_margin);
-                }
-
-                // Filter by Favorites if enabled
-                if (showFavoritesOnly) {
-                    recs = recs.filter(a => favoriteTickers.has(a.ticker));
-                }
-
-                // Take top 100
-                recs = recs.slice(0, 100);
-
-                // Update Count Text
-                if (elCount) elCount.innerText = `${recs.length}`;
-
-                wrapper.classList.remove('hidden');
-
-                if (recs.length === 0) {
-                    if (container) {
-                        container.innerHTML = `
+            if (recs.length === 0) {
+                if (container) {
+                    container.innerHTML = `
                         <div class="col-span-full flex flex-col items-center justify-center p-12 text-slate-500">
                             <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -371,88 +370,88 @@
                             <p class="text-xs">Tente atualizar as cotações.</p>
                         </div>
                     `;
-                    }
-                    return;
+                }
+                return;
+            }
+
+            // Freemium Logic
+            const freeLimit = parseInt("{{ free_limit if free_limit else 1 }}");
+            const displayLimit = isPremiumUser ? recs.length : freeLimit;
+
+            recs.slice(0, displayLimit).forEach(asset => {
+                // Card HTML (Normal)
+                const card = document.createElement('div');
+                card.className = 'bg-[#0f172a] p-5 rounded-2xl border border-slate-800 flex flex-col items-center justify-between hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all cursor-pointer h-full group relative overflow-hidden';
+
+                card.onclick = () => openDetails(asset);
+
+                // Icon mapping based on sector
+                let iconPath = "M13 10V3L4 14h7v7l9-11h-7z"; // Bolt
+                let iconLabel = "DIVERSOS";
+                let iconColor = "text-blue-400";
+                let bgIcon = "bg-blue-500/10";
+
+                const sec = (asset.sector || "").toUpperCase();
+                if (sec.includes('ENERGIA') || sec.includes('UTILIDADE')) {
+                    iconPath = "M13 10V3L4 14h7v7l9-11h-7z"; // Bolt
+                    iconLabel = "ENERGIA";
+                    iconColor = "text-yellow-400";
+                    bgIcon = "bg-yellow-500/10";
+                } else if (sec.includes('FINANCEIRO') || sec.includes('BANCO')) {
+                    iconPath = "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z";
+                    iconLabel = "FINANCEIRO";
+                    iconColor = "text-green-400";
+                    bgIcon = "bg-green-500/10";
+                } else if (sec.includes('IMOBILI') || asset.type === 'fii') {
+                    iconPath = "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 2 0 011 1v5m-4 0h4";
+                    iconLabel = "FII / IMOB";
+                    iconColor = "text-purple-400";
+                    bgIcon = "bg-purple-500/10";
+                } else if (sec.includes('CONSUMO') || sec.includes('ALIMENTOS')) {
+                    iconPath = "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z";
+                    iconLabel = "CONSUMO";
+                    iconColor = "text-orange-400";
+                    bgIcon = "bg-orange-500/10";
+                } else if (sec.includes('SAUDE')) {
+                    iconPath = "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z";
+                    iconLabel = "SAÚDE";
+                    iconColor = "text-rose-400";
+                    bgIcon = "bg-rose-500/10";
+                } else if (sec.includes('MATERIA') || sec.includes('AGR')) {
+                    iconPath = "M12 19l9 2-9-18-9 18 9-2zm0 0v-8";
+                    iconLabel = "MATERIAIS";
+                    iconColor = "text-emerald-400";
+                    bgIcon = "bg-emerald-500/10";
                 }
 
-                // Freemium Logic
-                const freeLimit = parseInt("{{ free_limit if free_limit else 1 }}");
-                const displayLimit = isPremiumUser ? recs.length : freeLimit;
+                // Dynamic color for potential
+                const safeMargin = asset.safe_margin || 0;
+                const isPositive = safeMargin > 0;
+                const potentialColor = isPositive ? 'text-emerald-400' : 'text-red-400';
+                const potentialSign = isPositive ? '+' : '';
 
-                recs.slice(0, displayLimit).forEach(asset => {
-                    // Card HTML (Normal)
-                    const card = document.createElement('div');
-                    card.className = 'bg-[#0f172a] p-5 rounded-2xl border border-slate-800 flex flex-col items-center justify-between hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all cursor-pointer h-full group relative overflow-hidden';
+                // Status Logic
+                let statusLabel = "MANTER";
+                let statusClass = "text-slate-600 font-bold";
+                let statusBg = "bg-slate-800";
 
-                    card.onclick = () => openDetails(asset);
+                if (asset.status === 'Descontado') {
+                    statusLabel = "DESCONTADO";
+                    statusClass = "text-emerald-400 font-bold animate-pulse";
+                    statusBg = "bg-emerald-500/20";
+                } else if (asset.status === 'Bom Pagador') {
+                    statusLabel = "RENDA";
+                    statusClass = "text-blue-400 font-bold";
+                    statusBg = "bg-blue-500/20";
+                } else if (asset.status === 'Caro') {
+                    statusLabel = "ALTO RISCO"; // Changed from AGUARDAR
+                    statusClass = "text-red-400 font-bold";
+                    statusBg = "bg-red-500/20";
+                }
 
-                    // Icon mapping based on sector
-                    let iconPath = "M13 10V3L4 14h7v7l9-11h-7z"; // Bolt
-                    let iconLabel = "DIVERSOS";
-                    let iconColor = "text-blue-400";
-                    let bgIcon = "bg-blue-500/10";
+                const liquidity = fmtMoneyShort(asset.liquidity_avg_2m); // Helper function
 
-                    const sec = (asset.sector || "").toUpperCase();
-                    if (sec.includes('ENERGIA') || sec.includes('UTILIDADE')) {
-                        iconPath = "M13 10V3L4 14h7v7l9-11h-7z"; // Bolt
-                        iconLabel = "ENERGIA";
-                        iconColor = "text-yellow-400";
-                        bgIcon = "bg-yellow-500/10";
-                    } else if (sec.includes('FINANCEIRO') || sec.includes('BANCO')) {
-                        iconPath = "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z";
-                        iconLabel = "FINANCEIRO";
-                        iconColor = "text-green-400";
-                        bgIcon = "bg-green-500/10";
-                    } else if (sec.includes('IMOBILI') || asset.type === 'fii') {
-                        iconPath = "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 2 0 011 1v5m-4 0h4";
-                        iconLabel = "FII / IMOB";
-                        iconColor = "text-purple-400";
-                        bgIcon = "bg-purple-500/10";
-                    } else if (sec.includes('CONSUMO') || sec.includes('ALIMENTOS')) {
-                        iconPath = "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z";
-                        iconLabel = "CONSUMO";
-                        iconColor = "text-orange-400";
-                        bgIcon = "bg-orange-500/10";
-                    } else if (sec.includes('SAUDE')) {
-                        iconPath = "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z";
-                        iconLabel = "SAÚDE";
-                        iconColor = "text-rose-400";
-                        bgIcon = "bg-rose-500/10";
-                    } else if (sec.includes('MATERIA') || sec.includes('AGR')) {
-                        iconPath = "M12 19l9 2-9-18-9 18 9-2zm0 0v-8";
-                        iconLabel = "MATERIAIS";
-                        iconColor = "text-emerald-400";
-                        bgIcon = "bg-emerald-500/10";
-                    }
-
-                    // Dynamic color for potential
-                    const safeMargin = asset.safe_margin || 0;
-                    const isPositive = safeMargin > 0;
-                    const potentialColor = isPositive ? 'text-emerald-400' : 'text-red-400';
-                    const potentialSign = isPositive ? '+' : '';
-
-                    // Status Logic
-                    let statusLabel = "MANTER";
-                    let statusClass = "text-slate-600 font-bold";
-                    let statusBg = "bg-slate-800";
-
-                    if (asset.status === 'Descontado') {
-                        statusLabel = "DESCONTADO";
-                        statusClass = "text-emerald-400 font-bold animate-pulse";
-                        statusBg = "bg-emerald-500/20";
-                    } else if (asset.status === 'Bom Pagador') {
-                        statusLabel = "RENDA";
-                        statusClass = "text-blue-400 font-bold";
-                        statusBg = "bg-blue-500/20";
-                    } else if (asset.status === 'Caro') {
-                        statusLabel = "ALTO RISCO"; // Changed from AGUARDAR
-                        statusClass = "text-red-400 font-bold";
-                        statusBg = "bg-red-500/20";
-                    }
-
-                    const liquidity = fmtMoneyShort(asset.liquidity_avg_2m); // Helper function
-
-                    card.innerHTML = `
+                card.innerHTML = `
                 <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0 pointer-events-none"></div>
                 
                 <div class="flex flex-col items-center gap-3 mb-2 w-full pt-1 relative z-10 pointer-events-none">
@@ -489,30 +488,30 @@
                 </div>
              `;
 
-                    // Debug click
-                    card.addEventListener('click', (e) => {
-                        console.log('Clicked card:', asset.ticker);
-                        try {
-                            openDetails(asset);
-                        } catch (err) {
-                            console.error('Error opening details:', err);
-                            alert('Erro ao abrir detalhes: ' + err.message);
-                        }
-                    });
-
-                    container.appendChild(card);
+                // Debug click
+                card.addEventListener('click', (e) => {
+                    console.log('Clicked card:', asset.ticker);
+                    try {
+                        openDetails(asset);
+                    } catch (err) {
+                        console.error('Error opening details:', err);
+                        alert('Erro ao abrir detalhes: ' + err.message);
+                    }
                 });
 
-                // Blurred Cards for Free Users
-                if (!isPremiumUser && recs.length > 1) {
-                    const blurredCount = Math.min(recs.length - 1, 11); // Show limited number of blurred cards (e.g. 11 + 1 = 12 total grid)
+                container.appendChild(card);
+            });
 
-                    for (let i = 0; i < blurredCount; i++) {
-                        const blurred = document.createElement('div');
-                        blurred.className = 'bg-[#0f172a] p-5 rounded-2xl border border-slate-800 flex flex-col items-center justify-between relative overflow-hidden cursor-pointer group';
-                        blurred.onclick = showPremiumModal; // Trigger Global Modal
+            // Blurred Cards for Free Users
+            if (!isPremiumUser && recs.length > 1) {
+                const blurredCount = Math.min(recs.length - 1, 11); // Show limited number of blurred cards (e.g. 11 + 1 = 12 total grid)
 
-                        blurred.innerHTML = `
+                for (let i = 0; i < blurredCount; i++) {
+                    const blurred = document.createElement('div');
+                    blurred.className = 'bg-[#0f172a] p-5 rounded-2xl border border-slate-800 flex flex-col items-center justify-between relative overflow-hidden cursor-pointer group';
+                    blurred.onclick = showPremiumModal; // Trigger Global Modal
+
+                    blurred.innerHTML = `
                     <div class="filter blur-md select-none opacity-40 w-full h-full flex flex-col items-center gap-4">
                         <div class="w-full h-4 bg-slate-700 rounded"></div>
                         <div class="w-16 h-16 bg-slate-800 rounded-xl"></div>
@@ -528,185 +527,185 @@
                          <span class="text-xs font-bold text-white uppercase tracking-wider text-shadow">Premium</span>
                     </div>
                 `;
-                        container.appendChild(blurred);
-                    }
+                    container.appendChild(blurred);
                 }
             }
+        }
 
-            function renderPage() {
-                const container = document.getElementById('assets-list');
-                container.innerHTML = '';
-                renderPaginationControls();
+        function renderPage() {
+            const container = document.getElementById('assets-list');
+            container.innerHTML = '';
+            renderPaginationControls();
+        }
+
+        function renderPaginationControls() {
+            // Keeps the existing hidden functionality
+            const ph = document.getElementById('pagination-placeholder');
+            ph.innerHTML = '';
+        }
+
+        function openDetails(asset) {
+            currentAsset = asset;
+            const modal = document.getElementById('detailsModal');
+            modal.classList.remove('hidden');
+
+            // Reset stale data
+            document.getElementById('explanation-box').classList.add('hidden');
+            document.getElementById('val-fair-price').innerText = '...';
+            const elMargin = document.getElementById('val-margin');
+            elMargin.innerText = 'Calculando...';
+            elMargin.className = 'text-sm text-slate-500';
+
+            const isFii = asset.type === 'fii';
+
+            if (isFii) {
+                document.getElementById('modal-title').innerHTML = `Preço Teto (Bazin) <span class="text-blue-400 ml-2">${asset.ticker}</span>`;
+                document.getElementById('div-inputs-projective').classList.remove('hidden');
+                document.getElementById('div-profit-input').style.display = 'none';
+
+                let payout = 100;
+                document.getElementById('inp-payout').value = payout;
+                document.getElementById('inp-yield').value = 6;
+
+            } else {
+                // Graham (Default for Stocks)
+                document.getElementById('modal-title').innerHTML = `Preço Justo (Graham) <span class="text-blue-400 ml-2">${asset.ticker}</span>`;
+                // Hide Projective inputs for Graham
+                document.getElementById('div-inputs-projective').classList.add('hidden');
             }
 
-            function renderPaginationControls() {
-                // Keeps the existing hidden functionality
-                const ph = document.getElementById('pagination-placeholder');
-                ph.innerHTML = '';
-            }
+            const price = asset.price || 0;
+            document.getElementById('val-price').innerText = `R$ ${price.toFixed(2)}`;
+            document.getElementById('val-shares').innerText = asset.shares_outstanding ? asset.shares_outstanding.toLocaleString('pt-BR') : 'N/A';
 
-            function openDetails(asset) {
-                currentAsset = asset;
-                const modal = document.getElementById('detailsModal');
-                modal.classList.remove('hidden');
+            // Only populate profit if needed (for switching back to projective later? For now simplistic)
+            let estimatedProfit = currentAsset.net_income || 0;
+            document.getElementById('inp-profit').value = estimatedProfit.toLocaleString('pt-BR');
 
-                // Reset stale data
-                document.getElementById('explanation-box').classList.add('hidden');
-                document.getElementById('val-fair-price').innerText = '...';
-                const elMargin = document.getElementById('val-margin');
-                elMargin.innerText = 'Calculando...';
-                elMargin.className = 'text-sm text-slate-500';
+            recalculate();
+        }
 
-                const isFii = asset.type === 'fii';
+        function closeDetails() {
+            document.getElementById('detailsModal').classList.add('hidden');
+        }
 
-                if (isFii) {
-                    document.getElementById('modal-title').innerHTML = `Preço Teto (Bazin) <span class="text-blue-400 ml-2">${asset.ticker}</span>`;
-                    document.getElementById('div-inputs-projective').classList.remove('hidden');
-                    document.getElementById('div-profit-input').style.display = 'none';
+        function parseLocalFloat(val) {
+            if (!val) return 0;
+            if (typeof val === 'number') return val;
+            // Remove dots (thousands) and replace comma with dot (decimal)
+            let clean = val.replace(/\./g, '').replace(',', '.');
+            return parseFloat(clean) || 0;
+        }
 
-                    let payout = 100;
-                    document.getElementById('inp-payout').value = payout;
-                    document.getElementById('inp-yield').value = 6;
+        function recalculate() {
+            if (!currentAsset) return;
 
+            // Payout is usually integer 0-100, but handle string
+            const payout = parseLocalFloat(document.getElementById('inp-payout').value) || 0;
+            const minYield = parseLocalFloat(document.getElementById('inp-yield').value) || 6;
+            const paramYield = minYield / 100;
+
+            const isFii = currentAsset.type === 'fii';
+            let dpa = 0;
+            let lpa = 0;
+            let fairPrice = 0;
+            let explanation = "";
+
+            const currentPrice = currentAsset.price || 0;
+
+            if (isFii) {
+                // Logic for FII: Base on Dividend Yield (Projected/Current)
+                const dyPct = (currentAsset.dy_12m || 0) / 100;
+                dpa = currentPrice * dyPct;
+                lpa = dpa; // Approx
+
+                if (paramYield > 0) {
+                    fairPrice = dpa / paramYield;
+                }
+
+                document.getElementById('val-lpa').innerText = `R$ ${lpa.toFixed(2)} (Est.)`;
+                document.getElementById('val-dpa').innerText = `R$ ${dpa.toFixed(2)}`;
+                document.getElementById('val-yield-proj').innerText = `${((currentPrice > 0) ? (dpa / currentPrice) * 100 : 0).toFixed(2)}%`;
+
+                explanation = `<strong class="text-emerald-400">Cálculo (Método Bazin para FIIs):</strong>\n`;
+                explanation += `Utiliza o rendimento anual projetado para encontrar o preço teto.\n\n`;
+                explanation += `1. <span class="text-slate-400">DPA (Dividendo por Ação):</span> R$ ${dpa.toFixed(2)} (Baseado no DY atual de ${(dyPct * 100).toFixed(2)}%)\n`;
+                explanation += `2. <span class="text-slate-400">Yield Mínimo Desejado:</span> ${minYield}%\n`;
+                explanation += `3. <span class="text-slate-400">Fórmula:</span> Preço Justo = DPA / Yield\n`;
+                explanation += `   R$ ${fairPrice.toFixed(2)} = ${dpa.toFixed(2)} / ${paramYield}\n`;
+
+            } else {
+                // Logic for Stock (Graham)
+                // Use backend provided LPA/VPA or calculate? Backend provides it in AssetResponse now.
+                lpa = currentAsset.lpa || 0;
+                let vpa = currentAsset.vpa || 0;
+
+                // Validate if Graham applies
+                if (lpa > 0 && vpa > 0) {
+                    fairPrice = Math.sqrt(22.5 * lpa * vpa);
+                    explanation = `<strong class="text-blue-400">Cálculo (Graham de Benjamin):</strong>\n`;
+                    explanation += `Estima o preço justo baseando-se no Lucro e Valor Patrimonial.\n\n`;
+                    explanation += `1. <span class="text-slate-400">LPA (Lucro p/ Ação):</span> R$ ${lpa.toFixed(2)}\n`;
+                    explanation += `2. <span class="text-slate-400">VPA (Valor Patr. p/ Ação):</span> R$ ${vpa.toFixed(2)}\n`;
+                    explanation += `3. <span class="text-slate-400">Constante de Graham:</span> 22.5\n`;
+                    explanation += `4. <span class="text-slate-400">Fórmula:</span> √ (22.5 * LPA * VPA)\n`;
+                    explanation += `   R$ ${fairPrice.toFixed(2)} = √ (22.5 * ${lpa.toFixed(2)} * ${vpa.toFixed(2)})\n`;
                 } else {
-                    // Graham (Default for Stocks)
-                    document.getElementById('modal-title').innerHTML = `Preço Justo (Graham) <span class="text-blue-400 ml-2">${asset.ticker}</span>`;
-                    // Hide Projective inputs for Graham
-                    document.getElementById('div-inputs-projective').classList.add('hidden');
+                    fairPrice = 0;
+                    explanation = `<strong class="text-red-400">Não foi possível calcular (Graham):</strong>\n`;
+                    explanation += `O ativo possui LPA ou VPA negativos/zerados.\n\n`;
+                    explanation += `LPA: ${lpa.toFixed(2)} | VPA: ${vpa.toFixed(2)}`;
                 }
 
-                const price = asset.price || 0;
-                document.getElementById('val-price').innerText = `R$ ${price.toFixed(2)}`;
-                document.getElementById('val-shares').innerText = asset.shares_outstanding ? asset.shares_outstanding.toLocaleString('pt-BR') : 'N/A';
-
-                // Only populate profit if needed (for switching back to projective later? For now simplistic)
-                let estimatedProfit = currentAsset.net_income || 0;
-                document.getElementById('inp-profit').value = estimatedProfit.toLocaleString('pt-BR');
-
-                recalculate();
+                document.getElementById('val-lpa').innerText = `R$ ${lpa.toFixed(2)}`;
+                document.getElementById('val-dpa').innerText = `R$ ${(lpa * (currentAsset.p_vp || 1)).toFixed(2)}`; // Placeholder logic for now? Or just hide?
+                document.getElementById('val-yield-proj').innerText = `N/A`;
             }
 
-            function closeDetails() {
-                document.getElementById('detailsModal').classList.add('hidden');
+            const margin = (currentPrice > 0 && fairPrice > 0) ? ((fairPrice - currentPrice) / fairPrice) * 100 : 0;
+            document.getElementById('val-fair-price').innerText = `R$ ${fairPrice.toFixed(2)}`;
+
+            const elMargin = document.getElementById('val-margin');
+            elMargin.innerText = `Margem de segurança: ${margin.toFixed(2)}%`;
+
+            explanation += `\n<strong class="text-white">Resultado:</strong>\n`;
+            explanation += `Preço Atual: R$ ${currentPrice.toFixed(2)}\n`;
+            if (margin > 0) {
+                elMargin.className = "text-sm text-emerald-400 font-bold";
+                explanation += `O ativo está <strong class="text-emerald-400">${margin.toFixed(2)}% descontado</strong> em relação ao preço justo.`;
+            } else {
+                elMargin.className = "text-sm text-red-400 font-bold";
+                explanation += `O ativo está <strong class="text-red-400">${Math.abs(margin).toFixed(2)}% acima</strong> do preço justo.`;
             }
 
-            function parseLocalFloat(val) {
-                if (!val) return 0;
-                if (typeof val === 'number') return val;
-                // Remove dots (thousands) and replace comma with dot (decimal)
-                let clean = val.replace(/\./g, '').replace(',', '.');
-                return parseFloat(clean) || 0;
+            // Populate and show explanation
+            const expBox = document.getElementById('explanation-box');
+            const expText = document.getElementById('explanation-text');
+            expText.innerHTML = explanation;
+            expBox.classList.remove('hidden');
+        }
+
+        async function updateData() {
+            const btn = document.getElementById('btn-update');
+            const iconSpin = document.getElementById('icon-spin');
+            const iconRefresh = document.getElementById('icon-refresh');
+
+            btn.disabled = true;
+            if (iconSpin) iconSpin.classList.remove('hidden');
+            if (iconRefresh) iconRefresh.classList.add('hidden');
+
+            try {
+                await fetch('/api/v1/assets/update_all', { method: 'POST' });
+                alert('Dados atualizados com sucesso!');
+                loadAssets();
+            } catch (e) {
+                alert('Erro ao atualizar: ' + e);
+            } finally {
+                btn.disabled = false;
+                if (iconSpin) iconSpin.classList.add('hidden');
+                if (iconRefresh) iconRefresh.classList.remove('hidden');
             }
-
-            function recalculate() {
-                if (!currentAsset) return;
-
-                // Payout is usually integer 0-100, but handle string
-                const payout = parseLocalFloat(document.getElementById('inp-payout').value) || 0;
-                const minYield = parseLocalFloat(document.getElementById('inp-yield').value) || 6;
-                const paramYield = minYield / 100;
-
-                const isFii = currentAsset.type === 'fii';
-                let dpa = 0;
-                let lpa = 0;
-                let fairPrice = 0;
-                let explanation = "";
-
-                const currentPrice = currentAsset.price || 0;
-
-                if (isFii) {
-                    // Logic for FII: Base on Dividend Yield (Projected/Current)
-                    const dyPct = (currentAsset.dy_12m || 0) / 100;
-                    dpa = currentPrice * dyPct;
-                    lpa = dpa; // Approx
-
-                    if (paramYield > 0) {
-                        fairPrice = dpa / paramYield;
-                    }
-
-                    document.getElementById('val-lpa').innerText = `R$ ${lpa.toFixed(2)} (Est.)`;
-                    document.getElementById('val-dpa').innerText = `R$ ${dpa.toFixed(2)}`;
-                    document.getElementById('val-yield-proj').innerText = `${((currentPrice > 0) ? (dpa / currentPrice) * 100 : 0).toFixed(2)}%`;
-
-                    explanation = `<strong class="text-emerald-400">Cálculo (Método Bazin para FIIs):</strong>\n`;
-                    explanation += `Utiliza o rendimento anual projetado para encontrar o preço teto.\n\n`;
-                    explanation += `1. <span class="text-slate-400">DPA (Dividendo por Ação):</span> R$ ${dpa.toFixed(2)} (Baseado no DY atual de ${(dyPct * 100).toFixed(2)}%)\n`;
-                    explanation += `2. <span class="text-slate-400">Yield Mínimo Desejado:</span> ${minYield}%\n`;
-                    explanation += `3. <span class="text-slate-400">Fórmula:</span> Preço Justo = DPA / Yield\n`;
-                    explanation += `   R$ ${fairPrice.toFixed(2)} = ${dpa.toFixed(2)} / ${paramYield}\n`;
-
-                } else {
-                    // Logic for Stock (Graham)
-                    // Use backend provided LPA/VPA or calculate? Backend provides it in AssetResponse now.
-                    lpa = currentAsset.lpa || 0;
-                    let vpa = currentAsset.vpa || 0;
-
-                    // Validate if Graham applies
-                    if (lpa > 0 && vpa > 0) {
-                        fairPrice = Math.sqrt(22.5 * lpa * vpa);
-                        explanation = `<strong class="text-blue-400">Cálculo (Graham de Benjamin):</strong>\n`;
-                        explanation += `Estima o preço justo baseando-se no Lucro e Valor Patrimonial.\n\n`;
-                        explanation += `1. <span class="text-slate-400">LPA (Lucro p/ Ação):</span> R$ ${lpa.toFixed(2)}\n`;
-                        explanation += `2. <span class="text-slate-400">VPA (Valor Patr. p/ Ação):</span> R$ ${vpa.toFixed(2)}\n`;
-                        explanation += `3. <span class="text-slate-400">Constante de Graham:</span> 22.5\n`;
-                        explanation += `4. <span class="text-slate-400">Fórmula:</span> √ (22.5 * LPA * VPA)\n`;
-                        explanation += `   R$ ${fairPrice.toFixed(2)} = √ (22.5 * ${lpa.toFixed(2)} * ${vpa.toFixed(2)})\n`;
-                    } else {
-                        fairPrice = 0;
-                        explanation = `<strong class="text-red-400">Não foi possível calcular (Graham):</strong>\n`;
-                        explanation += `O ativo possui LPA ou VPA negativos/zerados.\n\n`;
-                        explanation += `LPA: ${lpa.toFixed(2)} | VPA: ${vpa.toFixed(2)}`;
-                    }
-
-                    document.getElementById('val-lpa').innerText = `R$ ${lpa.toFixed(2)}`;
-                    document.getElementById('val-dpa').innerText = `R$ ${(lpa * (currentAsset.p_vp || 1)).toFixed(2)}`; // Placeholder logic for now? Or just hide?
-                    document.getElementById('val-yield-proj').innerText = `N/A`;
-                }
-
-                const margin = (currentPrice > 0 && fairPrice > 0) ? ((fairPrice - currentPrice) / fairPrice) * 100 : 0;
-                document.getElementById('val-fair-price').innerText = `R$ ${fairPrice.toFixed(2)}`;
-
-                const elMargin = document.getElementById('val-margin');
-                elMargin.innerText = `Margem de segurança: ${margin.toFixed(2)}%`;
-
-                explanation += `\n<strong class="text-white">Resultado:</strong>\n`;
-                explanation += `Preço Atual: R$ ${currentPrice.toFixed(2)}\n`;
-                if (margin > 0) {
-                    elMargin.className = "text-sm text-emerald-400 font-bold";
-                    explanation += `O ativo está <strong class="text-emerald-400">${margin.toFixed(2)}% descontado</strong> em relação ao preço justo.`;
-                } else {
-                    elMargin.className = "text-sm text-red-400 font-bold";
-                    explanation += `O ativo está <strong class="text-red-400">${Math.abs(margin).toFixed(2)}% acima</strong> do preço justo.`;
-                }
-
-                // Populate and show explanation
-                const expBox = document.getElementById('explanation-box');
-                const expText = document.getElementById('explanation-text');
-                expText.innerHTML = explanation;
-                expBox.classList.remove('hidden');
-            }
-
-            async function updateData() {
-                const btn = document.getElementById('btn-update');
-                const iconSpin = document.getElementById('icon-spin');
-                const iconRefresh = document.getElementById('icon-refresh');
-
-                btn.disabled = true;
-                if (iconSpin) iconSpin.classList.remove('hidden');
-                if (iconRefresh) iconRefresh.classList.add('hidden');
-
-                try {
-                    await fetch('/api/v1/assets/update_all', { method: 'POST' });
-                    alert('Dados atualizados com sucesso!');
-                    loadAssets();
-                } catch (e) {
-                    alert('Erro ao atualizar: ' + e);
-                } finally {
-                    btn.disabled = false;
-                    if (iconSpin) iconSpin.classList.add('hidden');
-                    if (iconRefresh) iconRefresh.classList.remove('hidden');
-                }
-            }
-            document.addEventListener('DOMContentLoaded', loadAssets);
+        }
+        document.addEventListener('DOMContentLoaded', loadAssets);
     </script>
     {% endblock %}
