@@ -129,6 +129,12 @@
 
 <script>
     async function loadAdminData() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
+
         // Fetch users from API (Need to implement GET /api/v1/admin/users)
         // For now, let's assume the template receives 'users' from backend or fetches it.
         // Implementing client-side fetch for cleaner architecture if API exists.

@@ -124,7 +124,10 @@
     async function checkPremiumAccess() {
         try {
             const token = localStorage.getItem('token');
-            if (!token) return;
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
 
             const res = await fetch('/api/v1/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
             if (res.ok) {
