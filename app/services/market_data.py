@@ -178,10 +178,12 @@ async def fetch_batch_brapi(db: Session, tickers: str):
                 avg_vol_3m = dk_stats.get('averageDailyVolume3Month') or 0
                 
                 # Use 3M avg if available for stability, else daily volume
-                used_vol = avg_vol_3m if avg_vol_3m > 0 else vol
+                used_vol = avg_vol_3m if (avg_vol_3m and avg_vol_3m > 0) else vol
                 
-                if used_vol and used_vol > 0 and asset_obj.price > 0:
-                     asset_obj.liquidity_avg_2m = float(used_vol * asset_obj.price)
+                # Ensure we have valid numbers
+                clean_price = asset_obj.price or 0
+                if used_vol and used_vol > 0 and clean_price > 0:
+                     asset_obj.liquidity_avg_2m = float(used_vol * clean_price)
                 
             db.commit()
 
