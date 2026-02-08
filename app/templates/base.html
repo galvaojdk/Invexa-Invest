@@ -354,6 +354,53 @@
         </div>
     </div>
 
+    <!-- Mobile Bottom Navigation (App-Like) -->
+    <nav
+        class="md:hidden fixed bottom-0 left-0 w-full bg-[#0f172a]/95 backdrop-blur-lg border-t border-slate-800 z-50 pb-safe">
+        <div class="grid grid-cols-4 h-16">
+            <a href="/dashboard"
+                class="flex flex-col items-center justify-center text-xs gap-1 {% if request.url.path == '/dashboard' %}text-blue-400{% else %}text-slate-500 hover:text-white{% endif %} transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                    </path>
+                </svg>
+                <span>Início</span>
+            </a>
+            <a href="/portfolio"
+                class="flex flex-col items-center justify-center text-xs gap-1 {% if request.url.path == '/portfolio' %}text-blue-400{% else %}text-slate-500 hover:text-white{% endif %} transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                    </path>
+                </svg>
+                <span>Carteira</span>
+            </a>
+            <a href="/rankings/fiis"
+                class="flex flex-col items-center justify-center text-xs gap-1 {% if '/rankings/' in request.url.path %}text-blue-400{% else %}text-slate-500 hover:text-white{% endif %} transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+                <span>Rankings</span>
+            </a>
+            <button id="mobile-menu-trigger"
+                class="flex flex-col items-center justify-center text-xs gap-1 text-slate-500 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                    </path>
+                </svg>
+                <span>Menu</span>
+            </button>
+        </div>
+    </nav>
+    <style>
+        /* Safe area for iPhone home bar */
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    </style>
+
     <script>
         // Global Modal Controls
         function showPremiumModal() {
@@ -363,29 +410,32 @@
             document.getElementById('premium-modal').classList.add('hidden');
         }
 
-        // Mobile menu toggle
-        const btn = document.getElementById('mobile-menu-btn');
+        // Mobile menu toggle (Sidebar)
+        const btn = document.getElementById('mobile-menu-btn'); // Top button
+        const bottomBtn = document.getElementById('mobile-menu-trigger'); // Bottom button
         const sidebar = document.getElementById('sidebar');
 
-        if (btn && sidebar) {
-            btn.addEventListener('click', () => {
-                // Toggle visibility
-                sidebar.classList.toggle('hidden');
-                sidebar.classList.toggle('flex');
+        function toggleSidebar() {
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('flex');
+            sidebar.classList.toggle('-translate-x-full');
+            sidebar.classList.toggle('fixed');
+            sidebar.classList.toggle('z-40');
+            sidebar.classList.toggle('h-full');
+            sidebar.classList.toggle('w-64');
+            sidebar.classList.toggle('top-0');
+            sidebar.classList.toggle('left-0');
+            sidebar.classList.toggle('pt-0');
 
-                // Toggle slide animation and positioning
-                sidebar.classList.toggle('-translate-x-full');
-                sidebar.classList.toggle('fixed');
-                sidebar.classList.toggle('z-40');
-                sidebar.classList.toggle('h-full');
-                sidebar.classList.toggle('w-64'); // Ensure width is maintained
-
-                // Adjustments for mobile layout
-                sidebar.classList.toggle('top-0');
-                sidebar.classList.toggle('left-0');
-                sidebar.classList.toggle('pt-20'); // More padding to clear header
-            });
+            // If opening from bottom bar, we need to make sure it covers properly
+            if (!sidebar.classList.contains('hidden')) {
+                sidebar.style.paddingBottom = "80px"; // Space for bottom bar
+            }
         }
+
+        if (btn && sidebar) btn.addEventListener('click', toggleSidebar);
+        if (bottomBtn && sidebar) bottomBtn.addEventListener('click', toggleSidebar);
+
 
         // Check Auth & Admin Status
         document.addEventListener('DOMContentLoaded', async () => {

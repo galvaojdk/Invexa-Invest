@@ -233,6 +233,73 @@
             <canvas id="allocationChart"></canvas>
         </div>
     </div>
+
+    <!-- Dividend Agenda (Mockup) -->
+    <div class="md:col-span-1 bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50 shadow-xl backdrop-blur-sm">
+        <h3 class="text-slate-400 text-sm font-medium mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            Agenda de Proventos (Fev/26)
+        </h3>
+        <div class="space-y-4">
+            <!-- Mock Item 1 -->
+            <div class="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-800/50">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 ring-1 ring-slate-700">
+                        MXRF
+                    </div>
+                    <div>
+                        <span class="block text-white font-bold text-sm">MXRF11</span>
+                        <span class="block text-xs text-slate-500">Data Com: 31/01</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="block text-emerald-400 font-bold font-mono text-sm">+ R$ 45,00</span>
+                    <span class="block text-xs text-slate-400">Pagamento: 14/02</span>
+                </div>
+            </div>
+            <!-- Mock Item 2 -->
+            <div class="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-800/50">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 ring-1 ring-slate-700">
+                        HGLG
+                    </div>
+                    <div>
+                        <span class="block text-white font-bold text-sm">HGLG11</span>
+                        <span class="block text-xs text-slate-500">Data Com: 31/01</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="block text-emerald-400 font-bold font-mono text-sm">+ R$ 120,50</span>
+                    <span class="block text-xs text-slate-400">Pagamento: 15/02</span>
+                </div>
+            </div>
+            <!-- Mock Item 3 -->
+            <div class="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-800/50">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 ring-1 ring-slate-700">
+                        WEGE
+                    </div>
+                    <div>
+                        <span class="block text-white font-bold text-sm">WEGE3</span>
+                        <span class="block text-xs text-slate-500">JCP Anunciado</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="block text-emerald-400 font-bold font-mono text-sm">+ R$ 15,30</span>
+                    <span class="block text-xs text-slate-400">Pagamento: 15/03</span>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 text-center">
+            <a href="#" class="text-xs text-blue-400 hover:text-blue-300">Ver calendário completo -></a>
+        </div>
+    </div>
 </div>
 
 <!-- Assets Table -->
@@ -254,26 +321,67 @@
         </div>
     </div>
 
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto hidden md:block">
         <table class="w-full text-sm text-left">
             <thead
-                class="text-xs text-slate-500 uppercase bg-slate-900/80 border-b border-slate-800 font-medium tracking-wider">
+                class="text-xs text-slate-500 uppercase bg-slate-900/80 border-b border-slate-800 font-medium tracking-wider select-none">
                 <tr>
-                    <th class="px-6 py-4">Ativo</th>
-                    <th class="px-6 py-4 text-center">Qtde</th>
-                    <th class="px-6 py-4 text-right">Médio</th>
-                    <th class="px-6 py-4 text-right">Atual</th>
-                    <th class="px-6 py-4 text-center">Variação</th>
-                    <th class="px-6 py-4 text-center">Rentabilidade</th>
-                    <th class="px-6 py-4 text-center">Insights</th>
-                    <th class="px-6 py-4 text-right">Total</th>
-                    <th class="px-6 py-4 text-center">%</th>
+                    <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('ticker')">
+                        <div class="flex items-center gap-1">Ativo <span id="sort-icon-ticker"
+                                class="text-[10px] opacity-50">↕</span></div>
+                    </th>
+                    <th class="px-6 py-4 text-center cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('quantity')">
+                        <div class="flex items-center justify-center gap-1">Qtde <span id="sort-icon-quantity"
+                                class="text-[10px] opacity-50">↕</span></div>
+                    </th>
+                    <th class="px-6 py-4 text-right cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('average_price')">
+                        <div class="flex items-center justify-end gap-1">Médio <span id="sort-icon-average_price"
+                                class="text-[10px] opacity-50">↕</span></div>
+                    </th>
+                    <th class="px-6 py-4 text-right cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('current_price')">
+                        <div class="flex items-center justify-end gap-1">Atual <span id="sort-icon-current_price"
+                                class="text-[10px] opacity-50">↕</span></div>
+                    </th>
+                    <th class="px-6 py-4 text-center cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('profit_pct')">
+                        <div class="flex items-center justify-center gap-1">Variação <span id="sort-icon-profit_pct"
+                                class="text-[10px] opacity-50">↕</span></div>
+                    </th>
+                    <th class="px-6 py-4 text-center cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('rentability')">
+                        <div class="flex items-center justify-center gap-1">Rentabilidade <span
+                                id="sort-icon-rentability" class="text-[10px] opacity-50">↕</span></div>
+                    </th>
+                    <th class="px-6 py-4 text-center cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('magic_number_progress')">
+                        <div class="flex items-center justify-center gap-1">Insights <span
+                                id="sort-icon-magic_number_progress" class="text-[10px] opacity-50">↕</span></div>
+                    </th>
+                    <th class="px-6 py-4 text-right cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('total_value')">
+                        <div class="flex items-center justify-end gap-1">Total <span id="sort-icon-total_value"
+                                class="text-[10px] opacity-50">↕</span></div>
+                    </th>
+                    <th class="px-6 py-4 text-center cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('wallet_pct')">
+                        <div class="flex items-center justify-center gap-1">% <span id="sort-icon-wallet_pct"
+                                class="text-[10px] opacity-50">↕</span></div>
+                    </th>
                 </tr>
             </thead>
             <tbody id="assets-table-body" class="divide-y divide-slate-800/50 bg-slate-900/20">
                 <!-- Javascript will populate -->
             </tbody>
         </table>
+    </div>
+
+    <!-- Mobile Card View -->
+    <div id="assets-mobile-list" class="md:hidden divide-y divide-slate-800">
+        <!-- Javascript will populate -->
     </div>
 </div>
 
@@ -283,6 +391,10 @@
     // Formatters
     const fmtBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
     const fmtPct = new Intl.NumberFormat('pt-BR', { style: 'percent', minimumFractionDigits: 2 });
+
+    // Global State for Sorting
+    let currentAssets = [];
+    let sortConfig = { key: 'total_value', direction: 'desc' }; // Default sort
 
     async function loadDashboardData() {
         const token = localStorage.getItem('token');
@@ -302,6 +414,9 @@
             }
 
             const data = await response.json();
+
+            // Store assets globally
+            currentAssets = data.assets || [];
 
             // --- Update Top Cards ---
 
@@ -396,26 +511,98 @@
                 }
             });
 
-            // --- Asset Table ---
-            const tableBody = document.getElementById('assets-table-body');
-            document.getElementById('table-asset-count').innerText = `(${data.assets.length})`;
-            document.getElementById('table-total-val').innerText = fmtBRL.format(data.equity);
+            // Initial Render (Sorted)
+            renderAssetsTable();
 
-            tableBody.innerHTML = '';
+            // --- Sparkline Charts ---
+            const history = data.history || {};
+            const dates = history.dates || [];
 
-            data.assets.forEach(asset => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-800/50 transition-colors group border-b border-slate-800/50 last:border-0";
+            if (dates.length > 0) {
+                renderSparkline('chartEquity', history.equity, 'rgba(59, 130, 246, 0.5)', '#3b82f6'); // Blue
+                renderSparkline('chartProfit', history.profit, 'rgba(16, 185, 129, 0.5)', '#10b981'); // Emerald
+                renderSparkline('chartEarnings', history.earnings, 'rgba(245, 158, 11, 0.5)', '#f59e0b'); // Amber
+                renderSparkline('chartRentability', history.rentability, 'rgba(139, 92, 246, 0.5)', '#8b5cf6'); // Violet
+            }
 
-                // Color for Profit/Loss
-                const profitClass = asset.profit_val >= 0 ? 'text-emerald-400' : 'text-red-400';
-                const bgProfitClass = asset.profit_val >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400';
+            // --- Recommendations (Removed) ---
+            // const recsContainer = document.getElementById('recommendations-container');
+            // Logic removed to avoid legal issues.
+        } catch (error) {
+            console.error("Dashboard Error:", error);
+            document.getElementById('card-equity').innerText = "Erro";
+            document.getElementById('card-equity').classList.add('text-red-500');
 
-                const arrowIcon = asset.profit_val >= 0
-                    ? '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>'
-                    : '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>';
+            // Show a more user-friendly toast or alert
+            // Creating a simple toast dynamically since this is an error state
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-4 right-4 bg-red-600 text-white px-6 py-4 rounded-xl shadow-2xl z-50 animate-bounce";
+            toast.innerHTML = `
+                <div class="font-bold mb-1">Erro ao carregar dados</div>
+                <div class="text-xs">Não foi possível buscar as informações da carteira.</div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+    }
 
-                tr.innerHTML = `
+    function sortAssets(key) {
+        // Toggle direction if clicking same key
+        if (sortConfig.key === key) {
+            sortConfig.direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            sortConfig.key = key;
+            sortConfig.direction = 'desc'; // Default desc for new columns usually better (high val first)
+            if (key === 'ticker') sortConfig.direction = 'asc'; // Except ticker
+        }
+        renderAssetsTable();
+    }
+
+    function renderAssetsTable() {
+        const tableBody = document.getElementById('assets-table-body');
+        const mobileList = document.getElementById('assets-mobile-list');
+
+        // Update header icons
+        document.querySelectorAll('[id^="sort-icon-"]').forEach(el => el.innerText = '↕');
+        const currentIcon = document.getElementById(`sort-icon-${sortConfig.key}`);
+        if (currentIcon) currentIcon.innerText = sortConfig.direction === 'asc' ? '↑' : '↓';
+
+
+        // Sort Data
+        const sortedAssets = [...currentAssets].sort((a, b) => {
+            let valA = a[sortConfig.key];
+            let valB = b[sortConfig.key];
+
+            // Handle strings (ticker)
+            if (typeof valA === 'string') {
+                valA = valA.toLowerCase();
+                valB = valB.toLowerCase();
+            }
+
+            if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        document.getElementById('table-asset-count').innerText = `(${sortedAssets.length})`;
+        document.getElementById('table-total-val').innerText = fmtBRL.format(currentAssets.reduce((sum, asset) => sum + asset.total_value, 0));
+
+        // Render Table (Desktop)
+        tableBody.innerHTML = '';
+        sortedAssets.forEach(asset => {
+            // Table Row (Desktop)
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-800/50 transition-colors group border-b border-slate-800/50 last:border-0";
+
+            // Color for Profit/Loss
+            const profitClass = asset.profit_val >= 0 ? 'text-emerald-400' : 'text-red-400';
+            const bgProfitClass = asset.profit_val >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400';
+
+            const arrowIcon = asset.profit_val >= 0
+                ? '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>'
+                : '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>';
+
+            tr.innerHTML = `
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400 ring-1 ring-slate-700">
@@ -451,16 +638,16 @@
                         <div class="flex flex-col gap-2">
                             <!-- Badges -->
                             ${asset.badges && asset.badges.length > 0 ?
-                        `<div class="flex flex-wrap gap-1 justify-center">
+                    `<div class="flex flex-wrap gap-1 justify-center">
                                     ${asset.badges.map(b =>
-                            `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-${b.color}-500/20 text-${b.color}-400 border border-${b.color}-500/30" title="${b.full}">${b.label}</span>`
-                        ).join('')}
+                        `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-${b.color}-500/20 text-${b.color}-400 border border-${b.color}-500/30" title="${b.full}">${b.label}</span>`
+                    ).join('')}
                                 </div>`
-                        : ''}
+                    : ''}
                             
                             <!-- Magic Number Progress -->
                             ${asset.magic_number > 0 ?
-                        `<div class="w-full" title="Faltam ${asset.magic_number_remain} cotas para comprar 1 nova com dividendos (Meta: ${asset.magic_number})">
+                    `<div class="w-full" title="Faltam ${asset.magic_number_remain} cotas para comprar 1 nova com dividendos (Meta: ${asset.magic_number})">
                                     <div class="flex justify-between items-center mb-1">
                                         <span class="text-[10px] text-slate-500">Bola de Neve</span>
                                         <span class="text-[10px] text-blue-400 font-mono">${asset.quantity}/${asset.magic_number}</span>
@@ -469,7 +656,7 @@
                                         <div class="h-full bg-gradient-to-r from-blue-600 to-cyan-400" style="width: ${asset.magic_number_progress}%"></div>
                                     </div>
                                 </div>`
-                        : ''}
+                    : ''}
                         </div>
                     </td>
                     
@@ -483,39 +670,124 @@
                         </div>
                     </td>
                 `;
-                tableBody.appendChild(tr);
-            });
+            tableBody.appendChild(tr);
+        });
 
-            // --- Sparkline Charts ---
-            const history = data.history || {};
-            const dates = history.dates || [];
+        // Render Mobile List (Also sorted)
+        mobileList.innerHTML = '';
+        sortedAssets.forEach(asset => {
+            const profitClass = asset.profit_val >= 0 ? 'text-emerald-400' : 'text-red-400';
 
-            if (dates.length > 0) {
-                renderSparkline('chartEquity', history.equity, 'rgba(59, 130, 246, 0.5)', '#3b82f6'); // Blue
-                renderSparkline('chartProfit', history.profit, 'rgba(16, 185, 129, 0.5)', '#10b981'); // Emerald
-                renderSparkline('chartEarnings', history.earnings, 'rgba(245, 158, 11, 0.5)', '#f59e0b'); // Amber
-                renderSparkline('chartRentability', history.rentability, 'rgba(139, 92, 246, 0.5)', '#8b5cf6'); // Violet
+            // Badges HTML for Mobile
+            const badgesHtml = asset.badges && asset.badges.length > 0
+                ? `<div class="flex flex-wrap gap-1 mt-1">
+                            ${asset.badges.map(b =>
+                    `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-${b.color}-500/20 text-${b.color}-400 border border-${b.color}-500/30">${b.label}</span>`
+                ).join('')}
+                        </div>`
+                : '';
+
+            // Magic Number for Mobile
+            const magicHtml = asset.magic_number > 0
+                ? `<div class="mt-2 pt-2 border-t border-slate-800/50">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-[10px] text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                    Bola de Neve
+                                </span>
+                                <span class="text-[10px] text-blue-400 font-mono">${asset.quantity}/${asset.magic_number}</span>
+                            </div>
+                            <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-blue-500" style="width: ${asset.magic_number_progress}%"></div>
+                            </div>
+                       </div>`
+                : '';
+                            </div >
+                <span class="text-[10px] text-slate-500">${fmtPct.format(asset.wallet_pct / 100)}</span>
+                        </div >
+                    </td >
+                `;
+            tableBody.appendChild(tr);
+        });
+
+        // Render Mobile List (Also sorted)
+        mobileList.innerHTML = '';
+        sortedAssets.forEach(asset => {
+            const card = document.createElement('div');
+            card.className = "p-4 space-y-3";
+
+            // Badges HTML for Mobile
+            const badgesHtml = asset.badges && asset.badges.length > 0
+                ? `< div class="flex flex-wrap gap-1 mt-1" >
+                ${
+                asset.badges.map(b =>
+                    `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-${b.color}-500/20 text-${b.color}-400 border border-${b.color}-500/30">${b.label}</span>`
+                ).join('')
             }
+                        </div > `
+                : '';
+
+            // Magic Number for Mobile
+            const magicHtml = asset.magic_number > 0
+                ? `< div class="mt-2 pt-2 border-t border-slate-800/50" >
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-[10px] text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                    Bola de Neve
+                                </span>
+                                <span class="text-[10px] text-blue-400 font-mono">${asset.quantity}/${asset.magic_number}</span>
+                            </div>
+                            <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-blue-500" style="width: ${asset.magic_number_progress}%"></div>
+                            </div>
+                       </div > `
+                : '';
+
+            card.innerHTML = `
+                < div class="flex justify-between items-start" >
+                        <div class="flex gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 ring-1 ring-slate-700">
+                                ${asset.ticker.substring(0, 2)}
+                            </div>
+                            <div>
+                                <span class="block text-white font-bold">${asset.ticker}</span>
+                                <span class="block text-xs text-slate-400">${asset.quantity} cotas</span>
+                                ${badgesHtml}
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-white font-bold font-mono">${fmtBRL.format(asset.total_value)}</span>
+                            <span class="block text-xs ${profitClass} font-medium">${fmtBRL.format(asset.profit_val)} (${fmtPct.format(asset.profit_pct / 100)})</span>
+                        </div>
+                    </div >
+                ${ magicHtml }
+            `;
+            mobileList.appendChild(card);
+            renderSparkline('chartEquity', history.equity, 'rgba(59, 130, 246, 0.5)', '#3b82f6'); // Blue
+            renderSparkline('chartProfit', history.profit, 'rgba(16, 185, 129, 0.5)', '#10b981'); // Emerald
+            renderSparkline('chartEarnings', history.earnings, 'rgba(245, 158, 11, 0.5)', '#f59e0b'); // Amber
+            renderSparkline('chartRentability', history.rentability, 'rgba(139, 92, 246, 0.5)', '#8b5cf6'); // Violet
+        }
 
             // --- Recommendations (Removed) ---
             // const recsContainer = document.getElementById('recommendations-container');
             // Logic removed to avoid legal issues.
         } catch (error) {
-            console.error("Dashboard Error:", error);
-            document.getElementById('card-equity').innerText = "Erro";
-            document.getElementById('card-equity').classList.add('text-red-500');
+        console.error("Dashboard Error:", error);
+        document.getElementById('card-equity').innerText = "Erro";
+        document.getElementById('card-equity').classList.add('text-red-500');
 
-            // Show a more user-friendly toast or alert
-            // Creating a simple toast dynamically since this is an error state
-            const toast = document.createElement('div');
-            toast.className = "fixed bottom-4 right-4 bg-red-600 text-white px-6 py-4 rounded-xl shadow-2xl z-50 animate-bounce";
-            toast.innerHTML = `
-                <div class="font-bold mb-1">Erro ao carregar dados</div>
-                <div class="text-xs">Não foi possível buscar as informações da carteira.</div>
+        // Show a more user-friendly toast or alert
+        // Creating a simple toast dynamically since this is an error state
+        const toast = document.createElement('div');
+        toast.className = "fixed bottom-4 right-4 bg-red-600 text-white px-6 py-4 rounded-xl shadow-2xl z-50 animate-bounce";
+        toast.innerHTML = `
+                < div class="font-bold mb-1" > Erro ao carregar dados</div >
+                    <div class="text-xs">Não foi possível buscar as informações da carteira.</div>
             `;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 5000);
-        }
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
     }
 
     function renderSparkline(canvasId, dataPoints, areaColor, lineColor) {
