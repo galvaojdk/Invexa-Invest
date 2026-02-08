@@ -509,7 +509,8 @@
                         return gradient;
                     },
                     borderWidth: 2,
-                    pointRadius: 0,
+                    // Show a dot if only 1 point, otherwise hide points for sparkline look
+                    pointRadius: dataPoints.length === 1 ? 4 : 0,
                     pointHoverRadius: 4,
                     fill: true,
                     tension: 0.4
