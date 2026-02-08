@@ -163,6 +163,51 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
              
         sub_status["end_date"] = current_user.subscription_end_date.strftime("%d/%m/%Y")
 
+    # --- History Snapshot Logic ---
+    from datetime import date
+    from app.models.portfolio_history import PortfolioSnapshot
+    
+    today = date.today()
+    
+    # Check if snapshot exists for today
+    existing_snapshot = db.query(PortfolioSnapshot).filter(
+        PortfolioSnapshot.user_id == current_user.id,
+        PortfolioSnapshot.snapshot_date == today
+    ).first()
+    
+    if not existing_snapshot:
+        # Create new snapshot
+        new_snapshot = PortfolioSnapshot(
+            user_id=current_user.id,
+            snapshot_date=today,
+            total_equity=total_equity,
+            total_profit=total_profit_val,
+            total_earnings=total_earnings_12m,
+            rentability_pct=total_profit_pct
+        )
+        db.add(new_snapshot)
+        db.commit()
+    else:
+        # Update existing snapshot (in case values changed during the day)
+        existing_snapshot.total_equity = total_equity
+        existing_snapshot.total_profit = total_profit_val
+        existing_snapshot.total_earnings = total_earnings_12m
+        existing_snapshot.rentability_pct = total_profit_pct
+        db.commit()
+        
+    # Fetch History (Last 30 days)
+    history_records = db.query(PortfolioSnapshot).filter(
+        PortfolioSnapshot.user_id == current_user.id
+    ).order_by(PortfolioSnapshot.snapshot_date.asc()).limit(30).all()
+    
+    history_data = {
+        "dates": [h.snapshot_date.strftime("%d/%m") for h in history_records],
+        "equity": [h.total_equity for h in history_records],
+        "profit": [h.total_profit for h in history_records],
+        "earnings": [h.total_earnings for h in history_records],
+        "rentability": [h.rentability_pct for h in history_records]
+    }
+
     return {
         "equity": total_equity,
         "total_cost": total_cost,
@@ -175,6 +220,7 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
             "labels": chart_labels,
             "values": chart_values
         },
+        "history": history_data,
         "assets": sorted(assets_list, key=lambda x: x['total_value'], reverse=True),
         "recommendations": {
             "items": visible_recs,
