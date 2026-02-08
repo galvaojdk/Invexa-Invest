@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, BigInteger
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
 
@@ -24,3 +25,5 @@ class Asset(Base):
     net_income = Column(Float, default=0.0) # Lucro Liquido (12m)
     
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), default=func.now())
+    
+    dividends = relationship("DividendEvent", back_populates="asset")

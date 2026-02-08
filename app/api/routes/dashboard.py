@@ -7,6 +7,8 @@ from app.core import database, security
 from app.models.user import User
 from app.models.portfolio import Portfolio
 from app.models.asset import Asset
+from app.models.dividend import DividendEvent
+from datetime import date, timedelta
 from app.api.routes.auth import get_user_by_email # Helper temporário ou mover auth dependencies
 
 router = APIRouter()
@@ -259,6 +261,35 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
         "rentability": [h.rentability_pct for h in history_records]
     }
 
+    # --- Agenda de Proventos (Real Data) ---
+    today_date = date.today()
+    agenda_data = []
+    
+    asset_ids = [item.asset_id for item in portfolio_items] if portfolio_items else []
+    
+    if asset_ids:
+        # Fetch future dividends (and maybe recent past like last 30 days context?)
+        # Let's show upcoming for now as per "Agenda"
+        future_events = db.query(DividendEvent).filter(
+            DividendEvent.asset_id.in_(asset_ids),
+            DividendEvent.pay_date >= today_date
+        ).order_by(DividendEvent.pay_date.asc()).limit(20).all()
+        
+        for ev in future_events:
+            # Find associated portfolio item to get quantity
+            p_item = next((i for i in portfolio_items if i.asset_id == ev.asset_id), None)
+            if p_item and p_item.asset:
+                total_recv = ev.amount * p_item.quantity
+                agenda_data.append({
+                    "ticker": p_item.asset.ticker,
+                    "type": ev.type,
+                    "pay_date": ev.pay_date.strftime("%d/%m/%Y"),
+                    "record_date": ev.record_date.strftime("%d/%m/%Y") if ev.record_date else "-",
+                    "amount": ev.amount,
+                    "total_receive": total_recv,
+                    "asset_type": p_item.asset.type
+                })
+
     return {
         "equity": total_equity,
         "total_cost": total_cost,
@@ -272,6 +303,7 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
             "values": chart_values
         },
         "history": history_data,
+        "agenda": agenda_data, # New Real Data
         "assets": sorted(assets_list, key=lambda x: x['total_value'], reverse=True),
         "recommendations": {
             "items": visible_recs,

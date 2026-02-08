@@ -1,7 +1,10 @@
 import httpx
 from sqlalchemy.orm import Session
 from app.models.asset import Asset
+from app.models.dividend import DividendEvent
 import asyncio
+from datetime import datetime
+import re
 
 BRAPI_TOKEN = "5y8qbu4kibxgcT3YQxG1XK"
 
@@ -152,24 +155,56 @@ async def fetch_batch_brapi(db: Session, tickers: str):
                 if dy > 0 and dy < 0.5:
                     dy = dy * 100
                 
-                # Fallback Investidor10 for FIIs if data is missing
-                # FIIs often have Brapi fundamental data missing (DY=0, P/VP=0)
-                # Also Check Price if Brapi failed (Price=0)
+                # Fallback Investidor10 for FIIs if data is missing, OR to fetch Dividend Calendar
+                # We now always try to fetch to get dividend history/agenda
+                should_scrape = False
                 if is_fii and (dy == 0 or p_vp == 0 or p_vp == 0.0 or price == 0):
-                    print(f" -> Fetching extra data for FII {symbol} from Investidor10...")
-                    extra_data = await scrape_investidor10(symbol)
+                    should_scrape = True
+                
+                # Force scrape for dividends if not already scraping (you can tune this to avoid performance hit)
+                # For now, let's do it for all to ensure "Real Data"
+                should_scrape = True 
+                
+                if should_scrape:
+                    # Determine type for URL
+                    sc_type = 'fii' if is_fii else 'stock'
+                    print(f" -> Fetching extra data (Dividends/Fun) for {symbol} ({sc_type}) from Investidor10...")
+                    extra_data = await scrape_investidor10(symbol, asset_type=sc_type)
+                    
                     if extra_data:
                         if dy == 0 and extra_data.get('dy'):
                             dy = extra_data['dy']
-                        if p_vp == 0 and extra_data.get('p_vp'):
+                        if (p_vp == 0 or p_vp == 0.0) and extra_data.get('p_vp'):
                             p_vp = extra_data['p_vp']
                         if price == 0 and extra_data.get('price'):
-                            price = extra_data['price']
+                             price = extra_data['price']
                         # Net Income is hard from I10 main page, but maybe Vacancy or other fields later.
                         
                 if price and price > 0: asset_obj.price = price
                 if dy and dy > 0: asset_obj.dy_12m = dy
                 if p_vp and p_vp > 0: asset_obj.p_vp = p_vp
+                
+                # --- Save Dividends ---
+                if extra_data and extra_data.get('dividends'):
+                     current_events = db.query(DividendEvent).filter(DividendEvent.asset_id == asset_obj.id).all()
+                     # Simple check (e.g. by pay_date and amount)
+                     # Or delete all and re-insert (easiest for now, but dangerous if IDs matter)
+                     # But we don't link dividends by ID elsewhere yet.
+                     # Let's check duplicates
+                     existing_keys = {(d.pay_date, d.amount, d.type) for d in current_events}
+                     
+                     for div in extra_data['dividends']:
+                         key = (div['pay_date'], div['amount'], div['type'])
+                         if key not in existing_keys:
+                             new_div = DividendEvent(
+                                 asset_id=asset_obj.id,
+                                 type=div['type'],
+                                 amount=div['amount'],
+                                 pay_date=div['pay_date'],
+                                 record_date=div['record_date']
+                             )
+                             db.add(new_div)
+                             existing_keys.add(key)
                 
                 # Liquidity (Financial Volume = Volume * Price)
                 # averageDailyVolume3Month is usually in defaultKeyStatistics or summaryDetail
@@ -192,11 +227,13 @@ async def fetch_batch_brapi(db: Session, tickers: str):
 
 import re
 
-async def scrape_investidor10(ticker: str):
+async def scrape_investidor10(ticker: str, asset_type: str = 'fii'):
     """
-    Scrapes basic FII data (DY, P/VP) from Investidor10 to supplement Brapi.
+    Scrapes basic FII/Stock data from Investidor10.
+    asset_type: 'fii' or 'stock' (default 'fii' for compatibility)
     """
-    url = f"https://investidor10.com.br/fiis/{ticker.lower()}/"
+    base_path = "fiis" if asset_type == 'fii' else "acoes"
+    url = f"https://investidor10.com.br/{base_path}/{ticker.lower()}/"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
@@ -236,6 +273,59 @@ async def scrape_investidor10(ticker: str):
                  except:
                     pass
             
+            # --- Extract Dividends ---
+            try:
+                table_match = re.search(r'<table id="table-dividends-history"(.*?)</table>', html, re.DOTALL)
+                if table_match:
+                    table_html = table_match.group(1)
+                    rows = re.findall(r'<tr.*?>(.*?)</tr>', table_html, re.DOTALL)
+                    
+                    dividend_list = []
+                    
+                    for row in rows:
+                        cols = re.findall(r'<td.*?>(.*?)</td>', row, re.DOTALL)
+                        clean_cols = [re.sub(r'<[^>]+>', '', c).strip() for c in cols]
+                        if len(clean_cols) >= 4:
+                            # 0: Tipo, 1: Data COM, 2: Pagamento, 3: Valor
+                            d_type = clean_cols[0].upper()
+                            d_datacom_str = clean_cols[1]
+                            d_pay_str = clean_cols[2]
+                            d_val_str = clean_cols[3]
+                            
+                            # Parse Value
+                            try:
+                                d_val = float(d_val_str.replace(",", "."))
+                            except:
+                                continue
+                                
+                            # Parse Dates
+                            d_datacom = None
+                            try:
+                                if d_datacom_str != '-':
+                                    d_datacom = datetime.strptime(d_datacom_str, "%d/%m/%Y").date()
+                            except:
+                                pass
+                                
+                            d_pay = None
+                            try:
+                                if d_pay_str != '-':
+                                    d_pay = datetime.strptime(d_pay_str, "%d/%m/%Y").date()
+                            except:
+                                pass
+                            
+                            if d_pay: 
+                                dividend_list.append({
+                                    "type": d_type,
+                                    "record_date": d_datacom,
+                                    "pay_date": d_pay,
+                                    "amount": d_val
+                                })
+
+                    if dividend_list:
+                        data['dividends'] = dividend_list
+            except Exception as e:
+                print(f"Error extracting dividends for {ticker}: {e}")
+
             return data
             
         except Exception as e:
