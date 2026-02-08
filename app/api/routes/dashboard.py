@@ -103,7 +103,7 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
         type_allocation[type_label] = type_allocation.get(type_label, 0) + current_val
         
         # Dados para Tabela
-        assets_list.append({
+        item_data = {
             "ticker": asset.ticker,
             "quantity": item.quantity,
             "average_price": item.average_price,
@@ -112,8 +112,59 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
             "profit_val": profit,
             "profit_pct": profit_pct,
             "wallet_pct": 0, # Calc after total
-            "recommendation": "Neutro" # Placeholder
-        })
+            "recommendation": "Neutro", # Placeholder
+            "magic_number": 0,
+            "magic_number_progress": 0,
+            "magic_number_remain": 0,
+            "badges": []
+        }
+
+        # --- Magic Number (Bola de Neve) ---
+        # Formula: Need (Price / Monthly Dividends) shares to buy 1 new share.
+        # Monthly Dividends = Price * (DY / 12)
+        # So: Target = Price / (Price * DY/12) = 1 / (DY/12) = 12 / DY
+        # DY must be decimal.
+        # asset.dy_12m is percentage (e.g. 12.5).
+        
+        dy_val = asset.dy_12m or 0.0
+        if dy_val > 0:
+            dy_decimal = dy_val / 100.0
+            # Target Shares to buy 1 share/month with dividends
+            target_shares = 12 / dy_decimal
+            
+            # Progress
+            owned = item.quantity
+            progress = (owned / target_shares) * 100 if target_shares > 0 else 0
+            remain = max(0, int(target_shares - owned))
+            
+            item_data["magic_number"] = int(target_shares)
+            item_data["magic_number_progress"] = min(100, progress)
+            item_data["magic_number_remain"] = remain
+            
+        # --- Badges Logic ---
+        badges = []
+        
+        # 1. P/VP Opportunity (FIIs only)
+        if asset.type == 'fii' and asset.p_vp and asset.p_vp > 0:
+            if asset.p_vp < 0.90:
+                badges.append({"label": "Desconto", "color": "emerald", "full": f"P/VP {asset.p_vp:.2f}"})
+            elif asset.p_vp > 1.20:
+                badges.append({"label": "Caro?", "color": "red", "full": f"P/VP {asset.p_vp:.2f}"})
+        
+        # 2. Dividend Payer
+        if dy_val > 14.0:
+             badges.append({"label": "Dividend King", "color": "orange", "full": f"DY {dy_val:.1f}%"})
+        elif dy_val > 8.0:
+             badges.append({"label": "Pagador", "color": "blue", "full": f"DY {dy_val:.1f}%"})
+            
+        # 3. Valuation (Simplistic P/L for Stocks)
+        if asset.type == 'stock' and asset.price and asset.lpa and asset.lpa > 0:
+            p_l = asset.price / asset.lpa
+            if p_l < 5.0:
+                badges.append({"label": "Barato", "color": "emerald", "full": f"P/L {p_l:.1f}"})
+        
+        item_data["badges"] = badges
+        assets_list.append(item_data)
 
 
     # --- Totals Calculation ---

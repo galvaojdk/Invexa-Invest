@@ -265,6 +265,7 @@
                     <th class="px-6 py-4 text-right">Atual</th>
                     <th class="px-6 py-4 text-center">Variação</th>
                     <th class="px-6 py-4 text-center">Rentabilidade</th>
+                    <th class="px-6 py-4 text-center">Insights</th>
                     <th class="px-6 py-4 text-right">Total</th>
                     <th class="px-6 py-4 text-center">%</th>
                 </tr>
@@ -443,6 +444,33 @@
                             ${arrowIcon}
                             ${fmtPct.format(asset.profit_pct / 100)}
                          </div>
+                    </td>
+
+                    <!-- Insights Column -->
+                    <td class="px-6 py-4">
+                        <div class="flex flex-col gap-2">
+                            <!-- Badges -->
+                            ${asset.badges && asset.badges.length > 0 ?
+                        `<div class="flex flex-wrap gap-1 justify-center">
+                                    ${asset.badges.map(b =>
+                            `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-${b.color}-500/20 text-${b.color}-400 border border-${b.color}-500/30" title="${b.full}">${b.label}</span>`
+                        ).join('')}
+                                </div>`
+                        : ''}
+                            
+                            <!-- Magic Number Progress -->
+                            ${asset.magic_number > 0 ?
+                        `<div class="w-full" title="Faltam ${asset.magic_number_remain} cotas para comprar 1 nova com dividendos (Meta: ${asset.magic_number})">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-[10px] text-slate-500">Bola de Neve</span>
+                                        <span class="text-[10px] text-blue-400 font-mono">${asset.quantity}/${asset.magic_number}</span>
+                                    </div>
+                                    <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                                        <div class="h-full bg-gradient-to-r from-blue-600 to-cyan-400" style="width: ${asset.magic_number_progress}%"></div>
+                                    </div>
+                                </div>`
+                        : ''}
+                        </div>
                     </td>
                     
                     <td class="px-6 py-4 text-right text-slate-200 font-medium font-mono">${fmtBRL.format(asset.total_value)}</td>
