@@ -380,229 +380,37 @@
         {% endcall %}
     </div>
 
-</div>
 
-
-
-<div class="md:hidden"> <!-- Início da seção oculta no Desktop -->
-    <!-- Charts and Agenda Section -->
-
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
-        <!-- Evolution Chart (Left - 2 Columns) -->
-        <div class="xl:col-span-2 bg-[#0f172a] rounded-2xl p-6 border border-slate-800 shadow-lg flex flex-col h-full">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h3 class="text-lg font-bold text-white">Evolução Patrimonial</h3>
-                    <p class="text-xs text-slate-500">Histórico de crescimento da carteira</p>
+    <!-- Agenda and Assets (Moved from Legacy Section) -->
+    <div class="space-y-6">
+        <!-- Proventos Agenda -->
+        <div class="bg-[#0f172a] rounded-2xl p-4 border border-slate-800 shadow-xl flex flex-col">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-xs font-bold text-white tracking-tight">Agenda de Proventos</h3>
+                <div class="flex items-center gap-1 text-emerald-400 font-bold" id="desk-agenda-total-row-mobi">
+                    <span class="text-xs" style="font-size: 10px;">R$ 0,00</span>
                 </div>
-                <select
-                    class="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none">
-                    <option>Últimos 12 Meses</option>
-                </select>
             </div>
-
-            <!-- Chart Container -->
-            <div
-                class="relative flex-1 w-full min-h-[300px] bg-slate-900/50 rounded-xl border border-slate-800/50 flex items-center justify-center overflow-hidden">
-                <!-- Grid Lines Decoration -->
-                <div class="absolute inset-0 grid grid-cols-6 grid-rows-4 gap-px opacity-10 pointer-events-none">
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                    <div class="bg-slate-700"></div>
-                </div>
-
-                <!-- Mock Bars -->
-                <div class="flex items-end gap-3 h-[70%] z-10 opacity-70">
-                    <div
-                        class="w-6 bg-blue-600/30 border-t-2 border-blue-500 h-[40%] rounded-sm hover:h-[45%] transition-all cursor-pointer">
-                    </div>
-                    <div class="w-6 bg-blue-600/40 border-t-2 border-blue-500 h-[50%] rounded-sm"></div>
-                    <div class="w-6 bg-blue-600/50 border-t-2 border-blue-500 h-[45%] rounded-sm"></div>
-                    <div class="w-6 bg-blue-600/60 border-t-2 border-blue-500 h-[60%] rounded-sm"></div>
-                    <div class="w-6 bg-blue-600/70 border-t-2 border-blue-500 h-[75%] rounded-sm"></div>
-                    <div
-                        class="w-6 bg-blue-600/80 border-t-2 border-blue-500 h-[85%] rounded-sm shadow-[0_0_15px_rgba(37,99,235,0.5)]">
-                    </div>
-                </div>
-                <div
-                    class="absolute bottom-4 text-xs text-blue-400 font-mono tracking-widest bg-slate-900/80 px-2 py-1 rounded border border-blue-500/20">
-                    AGUARDANDO DADOS HISTÓRICOS
-                </div>
+            <div class="overflow-y-auto max-h-[150px]">
+                <table class="w-full text-left text-[9px]">
+                    <tbody id="desk-agenda-body-mobi" class="divide-y divide-slate-800/50">
+                        <!-- Items -->
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <!-- Right Column (Allocation + Agenda) -->
-        <div class="xl:col-span-1 flex flex-col gap-6">
-
-            <!-- Allocation Chart -->
-            <div
-                class="bg-[#0f172a] rounded-2xl p-6 border border-slate-800 shadow-lg flex flex-col flex-1 min-h-[300px]">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-bold text-white">Alocação</h3>
-                    <span
-                        class="p-1 px-2 text-[10px] bg-slate-800 text-slate-400 rounded-md border border-slate-700 uppercase tracking-widest">Atual</span>
-                </div>
-                <div class="relative flex-1 w-full flex items-center justify-center">
-                    <canvas id="allocationChart" style="max-height: 250px;"></canvas>
-                </div>
+        <!-- Assets List (Mobile View) -->
+        <div class="bg-[#0f172a] rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+            <div class="bg-slate-900/30 p-4 flex items-center justify-between border-b border-slate-800/50">
+                <h3 class="text-base font-bold text-white uppercase tracking-tight">Meus Ativos</h3>
             </div>
-
-            <!-- Dividend Agenda -->
-            <div class="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50 shadow-xl backdrop-blur-sm">
-                <h3 class="text-slate-400 text-sm font-medium mb-4 flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                        </path>
-                    </svg>
-                    Agenda de Proventos (Mock)
-                </h3>
-                <div class="space-y-4">
-                    <div
-                        class="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-800/50">
-                        <div class="flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 ring-1 ring-slate-700">
-                                MXRF</div>
-                            <div>
-                                <span class="block text-white font-bold text-sm">MXRF11</span>
-                                <span class="block text-xs text-slate-500">Data Com: 31/01</span>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="block text-emerald-400 font-bold font-mono text-sm">+ R$ 45,00</span>
-                            <span class="block text-xs text-slate-400">Pagamento: 14/02</span>
-                        </div>
-                    </div>
-                    <div
-                        class="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-800/50">
-                        <div class="flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 ring-1 ring-slate-700">
-                                HGLG</div>
-                            <div>
-                                <span class="block text-white font-bold text-sm">HGLG11</span>
-                                <span class="block text-xs text-slate-500">Data Com: 31/01</span>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="block text-emerald-400 font-bold font-mono text-sm">+ R$ 120,50</span>
-                            <span class="block text-xs text-slate-400">Pagamento: 15/02</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-4 text-center">
-                    <a href="#" class="text-xs text-blue-400 hover:text-blue-300">Ver calendário completo -></a>
-                </div>
+            <div id="assets-mobile-list" class="divide-y divide-slate-800">
+                <!-- Items populated by JS -->
             </div>
         </div>
     </div>
 </div>
-
-<!-- Assets Table -->
-<div class="bg-[#0f172a] rounded-2xl border border-slate-800 shadow-lg overflow-hidden">
-    <!-- ... (header omitted, unchanged) ... -->
-    <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/30">
-        <h3 class="text-lg font-bold text-white flex items-center gap-3">
-            <span class="p-1.5 bg-blue-500/10 rounded-lg text-blue-400">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4">
-                    </path>
-                </svg>
-            </span>
-            Meus Ativos <span class="text-sm font-normal text-slate-500 ml-1" id="table-asset-count">(0)</span>
-        </h3>
-        <div class="text-right">
-            <p class="text-xs text-slate-500 uppercase tracking-wider mb-0.5">Valor em Carteira</p>
-            <p class="text-white font-bold text-lg font-mono tracking-tight" id="table-total-val">R$ ...</p>
-        </div>
-    </div>
-
-    <!-- Table Desktop -->
-    <div class="overflow-x-auto hidden md:block">
-        <table class="w-full text-sm text-left">
-            <thead
-                class="text-xs text-slate-500 uppercase bg-slate-900/80 border-b border-slate-800 font-medium tracking-wider select-none">
-                <tr>
-                    <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors"
-                        onclick="sortAssets('ticker')">
-                        <div class="flex items-center gap-1">Ativo <span id="sort-icon-ticker"
-                                class="text-[10px] opacity-50">↕</span></div>
-                    </th>
-                    <th class="px-6 py-4 text-center cursor-pointer hover:text-white transition-colors"
-                        onclick="sortAssets('quantity')">
-                        <div class="flex items-center justify-center gap-1">Qtde <span id="sort-icon-quantity"
-                                class="text-[10px] opacity-50">↕</span></div>
-                    </th>
-                    <th class="px-6 py-4 text-right cursor-pointer hover:text-white transition-colors"
-                        onclick="sortAssets('average_price')">
-                        <div class="flex items-center justify-end gap-1">Médio <span id="sort-icon-average_price"
-                                class="text-[10px] opacity-50">↕</span></div>
-                    </th>
-                    <th class="px-6 py-4 text-right cursor-pointer hover:text-white transition-colors"
-                        onclick="sortAssets('current_price')">
-                        <div class="flex items-center justify-end gap-1">Atual <span id="sort-icon-current_price"
-                                class="text-[10px] opacity-50">↕</span></div>
-                    </th>
-                    <th class="px-6 py-4 text-center cursor-pointer hover:text-white transition-colors"
-                        onclick="sortAssets('profit_pct')">
-                        <div class="flex items-center justify-center gap-1">Variação <span id="sort-icon-profit_pct"
-                                class="text-[10px] opacity-50">↕</span></div>
-                    </th>
-                    <th class="px-6 py-4 text-center cursor-pointer hover:text-white transition-colors"
-                        onclick="sortAssets('rentability')">
-                        <div class="flex items-center justify-center gap-1">Rentabilidade <span
-                                id="sort-icon-rentability" class="text-[10px] opacity-50">↕</span></div>
-                    </th>
-                    <th class="px-6 py-4 text-center cursor-pointer hover:text-white transition-colors"
-                        onclick="sortAssets('magic_number_progress')">
-                        <div class="flex items-center justify-center gap-1">Insights <span
-                                id="sort-icon-magic_number_progress" class="text-[10px] opacity-50">↕</span></div>
-                    </th>
-                    <th class="px-6 py-4 text-right cursor-pointer hover:text-white transition-colors"
-                        onclick="sortAssets('total_value')">
-                        <div class="flex items-center justify-end gap-1">Total <span id="sort-icon-total_value"
-                                class="text-[10px] opacity-50">↕</span></div>
-                    </th>
-                    <th class="px-6 py-4 text-center cursor-pointer hover:text-white transition-colors"
-                        onclick="sortAssets('wallet_pct')">
-                        <div class="flex items-center justify-center gap-1">% <span id="sort-icon-wallet_pct"
-                                class="text-[10px] opacity-50">↕</span></div>
-                    </th>
-                </tr>
-            </thead>
-            <tbody id="assets-table-body" class="divide-y divide-slate-800/50 bg-slate-900/20"></tbody>
-        </table>
-    </div>
-
-    <!-- Mobile Card View -->
-    <div id="assets-mobile-list" class="md:hidden divide-y divide-slate-800"></div>
-</div>
-
-</div> <!-- Fim da seção oculta no Desktop -->
 
 </div>
 
@@ -982,12 +790,20 @@
     }
 
     function renderAgenda(agenda) {
-        const body = document.getElementById('desk-agenda-body');
-        const rowTotal = document.getElementById('desk-agenda-total-row');
-        if (!body) return;
+        const bodyArr = [
+            document.getElementById('desk-agenda-body'),
+            document.getElementById('desk-agenda-body-mobi')
+        ].filter(el => el !== null);
+
+        const totalArr = [
+            document.getElementById('desk-agenda-total-row'),
+            document.getElementById('desk-agenda-total-row-mobi')
+        ].filter(el => el !== null);
+
+        if (bodyArr.length === 0) return;
 
         let totalMonth = 0;
-        body.innerHTML = agenda.length > 0 ? agenda.map(item => {
+        const html = agenda.length > 0 ? agenda.map(item => {
             totalMonth += item.total_receive;
             return `
                 <tr class="group hover:bg-slate-800/20 transition-colors">
@@ -1005,10 +821,13 @@
             `;
         }).join('') : '<tr><td colspan="5" class="py-8 text-center text-slate-500">Nenhum provento agendado</td></tr>';
 
-        if (rowTotal) {
+        bodyArr.forEach(body => body.innerHTML = html);
+
+        totalArr.forEach(rowTotal => {
             const totalEl = rowTotal.querySelector('span');
             if (totalEl) totalEl.innerText = fmtBRL.format(totalMonth);
-        }
+        });
+
         const historicEl = document.getElementById('desk-agenda-historic');
         if (historicEl) historicEl.innerText = fmtBRL.format(totalMonth * 10); // Mocked historic
     }
