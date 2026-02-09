@@ -4,26 +4,26 @@
 
 {% block content %}
 <!-- Dashbord Desktop (Hidden on Mobile) -->
-<div class="hidden md:flex flex-col gap-8">
+<div class="hidden md:flex flex-col gap-5">
 
     <!-- Top Row: Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
 
         <!-- Card: Patrimônio Total -->
         <div
-            class="bg-[#0f172a] rounded-2xl p-6 border border-slate-800 relative overflow-hidden group hover:border-blue-500/30 transition-all shadow-xl">
-            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <svg class="w-8 h-8 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+            class="bg-[#0f172a] rounded-2xl p-4 border border-slate-800 relative overflow-hidden group hover:border-blue-500/30 transition-all shadow-xl">
+            <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                <svg class="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
                     <path
                         d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
                 </svg>
             </div>
-            <div class="flex flex-col gap-1">
-                <div class="flex items-center gap-2 text-slate-500 uppercase text-[10px] font-bold tracking-widest">
-                    <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+            <div class="flex flex-col gap-0.5">
+                <div class="flex items-center gap-2 text-slate-500 uppercase text-[9px] font-bold tracking-widest">
+                    <div class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
                     Patrimônio Total
                 </div>
-                <h2 class="text-3xl font-bold text-white mt-1" id="desk-equity">R$ 0,00</h2>
+                <h2 class="text-2xl font-bold text-white mt-0.5" id="desk-equity">R$ 0,00</h2>
                 <div class="flex items-center gap-2 mt-1">
                     <span class="text-emerald-400 text-xs font-bold" id="desk-equity-diff-val">+ R$ 0,00</span>
                     <span class="text-emerald-400/80 text-[10px] bg-emerald-500/10 px-1.5 py-0.5 rounded"
@@ -31,7 +31,7 @@
                     <span class="text-slate-600 text-[10px]">último mês</span>
                 </div>
             </div>
-            <div class="mt-6 h-12 w-full opacity-50">
+            <div class="mt-4 h-8 w-full opacity-50">
                 <canvas id="sparkline-equity"></canvas>
             </div>
             <div
@@ -43,24 +43,24 @@
 
         <!-- Card: Lucro Total -->
         <div
-            class="bg-[#0f172a] rounded-2xl p-6 border border-slate-800 relative overflow-hidden group hover:border-emerald-500/30 transition-all shadow-xl">
-            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <svg class="w-8 h-8 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
+            class="bg-[#0f172a] rounded-2xl p-4 border border-slate-800 relative overflow-hidden group hover:border-emerald-500/30 transition-all shadow-xl">
+            <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                <svg class="w-6 h-6 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" />
                 </svg>
             </div>
-            <div class="flex flex-col gap-1">
-                <div class="flex items-center gap-2 text-slate-500 uppercase text-[10px] font-bold tracking-widest">
-                    <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+            <div class="flex flex-col gap-0.5">
+                <div class="flex items-center gap-2 text-slate-500 uppercase text-[9px] font-bold tracking-widest">
+                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
                     Lucro Total
                 </div>
-                <h2 class="text-3xl font-bold text-emerald-400 mt-1" id="desk-profit">R$ 0,00</h2>
+                <h2 class="text-2xl font-bold text-emerald-400 mt-0.5" id="desk-profit">R$ 0,00</h2>
                 <div class="flex items-center gap-2 mt-1">
                     <span class="text-emerald-400 text-xs font-bold" id="desk-profit-diff-val">+ R$ 0,00</span>
                     <span class="text-slate-600 text-[10px]">último mês</span>
                 </div>
             </div>
-            <div class="mt-6 h-12 w-full opacity-50">
+            <div class="mt-4 h-8 w-full opacity-50">
                 <canvas id="sparkline-profit"></canvas>
             </div>
             <div
@@ -72,25 +72,25 @@
 
         <!-- Card: Proventos -->
         <div
-            class="bg-[#0f172a] rounded-2xl p-6 border border-slate-800 relative overflow-hidden group hover:border-orange-500/30 transition-all shadow-xl">
-            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <svg class="w-8 h-8 text-orange-400" fill="currentColor" viewBox="0 0 24 24">
+            class="bg-[#0f172a] rounded-2xl p-4 border border-slate-800 relative overflow-hidden group hover:border-orange-500/30 transition-all shadow-xl">
+            <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                <svg class="w-6 h-6 text-orange-400" fill="currentColor" viewBox="0 0 24 24">
                     <path
                         d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
                 </svg>
             </div>
-            <div class="flex flex-col gap-1">
-                <div class="flex items-center gap-2 text-slate-500 uppercase text-[10px] font-bold tracking-widest">
-                    <div class="w-2 h-2 rounded-full bg-orange-500"></div>
+            <div class="flex flex-col gap-0.5">
+                <div class="flex items-center gap-2 text-slate-500 uppercase text-[9px] font-bold tracking-widest">
+                    <div class="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
                     Proventos (12M)
                 </div>
-                <h2 class="text-3xl font-bold text-white mt-1" id="desk-earnings">R$ 0,00</h2>
+                <h2 class="text-2xl font-bold text-white mt-0.5" id="desk-earnings">R$ 0,00</h2>
                 <div class="flex items-center gap-2 mt-1">
                     <span class="text-slate-300 text-xs font-bold" id="desk-earnings-monthly">R$ 0,00</span>
                     <span class="text-slate-600 text-[10px]">/ mês</span>
                 </div>
             </div>
-            <div class="mt-6 h-12 w-full opacity-50">
+            <div class="mt-4 h-8 w-full opacity-50">
                 <canvas id="sparkline-earnings"></canvas>
             </div>
             <div
@@ -102,26 +102,26 @@
 
         <!-- Card: Rentabilidade -->
         <div
-            class="bg-[#0f172a] rounded-2xl p-6 border border-slate-800 relative overflow-hidden group hover:border-purple-500/30 transition-all shadow-xl">
-            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <svg class="w-8 h-8 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+            class="bg-[#0f172a] rounded-2xl p-4 border border-slate-800 relative overflow-hidden group hover:border-purple-500/30 transition-all shadow-xl">
+            <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                <svg class="w-6 h-6 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
                     <path
                         d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-2V9h2v8zm-4 0H8v-4h2v4zm8 0h-2v-6h2v6z" />
                 </svg>
             </div>
-            <div class="flex flex-col gap-1">
-                <div class="flex items-center gap-2 text-slate-500 uppercase text-[10px] font-bold tracking-widest">
-                    <div class="w-2 h-2 rounded-full bg-purple-500"></div>
+            <div class="flex flex-col gap-0.5">
+                <div class="flex items-center gap-2 text-slate-500 uppercase text-[9px] font-bold tracking-widest">
+                    <div class="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
                     Rentabilidade
                 </div>
-                <h2 class="text-3xl font-bold text-emerald-400 mt-1" id="desk-rentability">0,0%</h2>
+                <h2 class="text-2xl font-bold text-emerald-400 mt-0.5" id="desk-rentability">0,0%</h2>
                 <div class="flex items-center gap-2 mt-1">
                     <span class="text-emerald-400 text-xs font-bold">+ 0,0%</span>
                     <span class="text-slate-600 text-[10px]">vs CDI</span>
                     <span class="text-purple-400 text-[10px] bg-purple-500/10 px-1 py-0.5 rounded ml-auto">95%</span>
                 </div>
             </div>
-            <div class="mt-6 h-12 w-full opacity-50">
+            <div class="mt-4 h-8 w-full opacity-50">
                 <canvas id="sparkline-rentability"></canvas>
             </div>
             <div
@@ -136,10 +136,10 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         <!-- Evolution Chart (Left - 2 Columns) -->
-        <div class="md:col-span-2 bg-[#0f172a] rounded-2xl p-6 border border-slate-800 shadow-xl flex flex-col">
-            <div class="flex justify-between items-center mb-6">
+        <div class="md:col-span-2 bg-[#0f172a] rounded-2xl p-4 md:p-5 border border-slate-800 shadow-xl flex flex-col">
+            <div class="flex justify-between items-center mb-4">
                 <div>
-                    <h3 class="text-lg font-bold text-white tracking-tight">Evolução Patrimonial</h3>
+                    <h3 class="text-base font-bold text-white tracking-tight">Evolução Patrimonial</h3>
                     <p class="text-xs text-slate-500">Histórico de crescimento | Últimos 12 Meses</p>
                 </div>
                 <div class="flex gap-2">
@@ -149,25 +149,25 @@
                     </select>
                 </div>
             </div>
-            <div class="h-[350px] w-full relative">
+            <div class="h-[240px] w-full relative">
                 <canvas id="mainEvolutionChart"></canvas>
             </div>
         </div>
 
         <!-- Allocation Chart -->
-        <div class="bg-[#0f172a] rounded-2xl p-6 border border-slate-800 shadow-xl flex flex-col">
-            <div class="flex justify-between items-center mb-8">
-                <h3 class="text-lg font-bold text-white tracking-tight">Alocação</h3>
+        <div class="bg-[#0f172a] rounded-2xl p-4 md:p-5 border border-slate-800 shadow-xl flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-base font-bold text-white tracking-tight">Alocação</h3>
                 <span
                     class="px-2 py-0.5 bg-slate-800 text-slate-400 text-[9px] font-bold uppercase tracking-widest border border-slate-700 rounded">Atual</span>
             </div>
             <div class="relative flex-1 flex flex-col items-center">
-                <div class="w-full h-[220px] relative">
+                <div class="w-full h-[160px] relative">
                     <canvas id="deskAllocationChart"></canvas>
                 </div>
                 <!-- Custom Legend -->
                 <div id="desk-allocation-legend"
-                    class="w-full mt-6 grid grid-cols-2 gap-x-4 gap-y-2 text-[10px] font-medium text-slate-400">
+                    class="w-full mt-4 grid grid-cols-2 gap-x-2 gap-y-1.5 text-[9px] font-medium text-slate-400">
                     <!-- Dynamic Items -->
                 </div>
             </div>
@@ -175,14 +175,14 @@
     </div>
 
     <!-- Proventos Agenda Row -->
-    <div class="bg-[#0f172a] rounded-2xl p-4 md:p-6 border border-slate-800 shadow-xl">
-        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+    <div class="bg-[#0f172a] rounded-2xl p-4 border border-slate-800 shadow-xl">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
             <div class="flex items-center gap-4">
                 <h3 class="text-lg font-bold text-white tracking-tight">Agenda de Proventos</h3>
                 <div class="h-6 w-px bg-slate-800"></div>
                 <div class="flex items-center gap-2 text-emerald-400 font-bold" id="desk-agenda-total-row">
                     <span class="text-slate-500 text-xs font-normal">Fev/25:</span>
-                    <span class="text-xl">R$ 0,00</span>
+                    <span class="text-lg">R$ 0,00</span>
                     <span class="text-[10px] bg-emerald-500/10 px-1.5 py-0.5 rounded ml-1">+12% vs Jan</span>
                 </div>
             </div>
@@ -212,22 +212,22 @@
 
     <!-- Assets Table Row -->
     <div class="bg-[#0f172a] rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
-        <div class="bg-slate-900/30 p-6 flex items-center justify-between border-b border-slate-800/50">
-            <h3 class="text-lg font-bold text-white flex items-center gap-2 uppercase tracking-tight">
+        <div class="bg-slate-900/30 p-4 flex items-center justify-between border-b border-slate-800/50">
+            <h3 class="text-base font-bold text-white flex items-center gap-2 uppercase tracking-tight">
                 <div class="w-2 h-6 bg-blue-500 rounded-full"></div>
                 Meus Ativos
             </h3>
             <div class="flex items-center gap-4 text-xs">
                 <div class="flex flex-col items-end">
-                    <span class="text-slate-500 uppercase font-bold text-[9px] tracking-widest">Valor em Carteira</span>
-                    <span class="text-white font-bold text-xl font-mono" id="desk-table-total">R$ 0,00</span>
+                    <span class="text-slate-500 uppercase font-bold text-[8px] tracking-widest">Valor em Carteira</span>
+                    <span class="text-white font-bold text-lg font-mono" id="desk-table-total">R$ 0,00</span>
                 </div>
             </div>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left">
                 <thead
-                    class="bg-slate-900/50 text-[10px] text-slate-500 uppercase font-bold tracking-widest border-b border-slate-800/50">
+                    class="bg-slate-900/50 text-[9px] text-slate-500 uppercase font-bold tracking-widest border-b border-slate-800/50">
                     <tr>
                         <th class="px-6 py-4">Ativo</th>
                         <th class="px-6 py-4 text-center">Situa.</th>
@@ -238,7 +238,7 @@
                         <th class="px-6 py-4 text-center">VARIAÇÃO</th>
                         <th class="px-6 py-4 text-center">RENTABILIDADE</th>
                         <th class="px-6 py-4 text-center">INSIGHTS</th>
-                        <th class="px-6 py-4 text-right">TOTAL</th>
+                        <th class="px-5 py-3 text-right">TOTAL</th>
                     </tr>
                 </thead>
                 <tbody id="desk-assets-body" class="text-sm divide-y divide-slate-800/30">
