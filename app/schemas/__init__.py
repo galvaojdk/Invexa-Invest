@@ -30,6 +30,7 @@ class UserResponse(UserBase):
     subscription_status: Optional[str] = None
     subscription_plan: Optional[str] = None
     subscription_end_date: Optional[datetime] = None
+    profile_pic: Optional[str] = None
 
     class Config:
         from_attributes = True
