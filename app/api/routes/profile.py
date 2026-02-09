@@ -7,6 +7,10 @@ from app.core import database, security
 from app.models.user import User
 from app.api.routes.dashboard import get_current_active_user
 from fastapi.templating import Jinja2Templates
+from fastapi import File, UploadFile
+import os
+import uuid
+import shutil
 
 router = APIRouter()
 
@@ -28,6 +32,7 @@ def get_profile_data(current_user: User = Depends(get_current_active_user)):
         "phone_number": current_user.phone_number,
         "is_premium": current_user.is_premium,
         "subscription_plan": current_user.subscription_plan,
+        "profile_pic": current_user.profile_pic,
         "subscription_end_date": current_user.subscription_end_date.strftime('%d/%m/%Y') if current_user.subscription_end_date else None
     }
 
@@ -59,3 +64,32 @@ def update_password(
     db.commit()
     
     return {"status": "success", "message": "Senha alterada"}
+
+@router.post("/upload-avatar")
+async def upload_avatar(
+    file: UploadFile = File(...),
+    db: Session = Depends(database.get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    # Validar tipo de arquivo
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Arquivo deve ser uma imagem")
+    
+    # Criar diretório se não existir
+    upload_dir = "app/static/uploads/avatars"
+    os.makedirs(upload_dir, exist_ok=True)
+    
+    # Gerar nome único
+    extension = file.filename.split(".")[-1]
+    filename = f"{uuid.uuid4()}.{extension}"
+    filepath = os.path.join(upload_dir, filename)
+    
+    # Salvar arquivo
+    with open(filepath, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    # Atualizar usuário
+    current_user.profile_pic = f"/static/uploads/avatars/{filename}"
+    db.commit()
+    
+    return {"status": "success", "url": current_user.profile_pic}

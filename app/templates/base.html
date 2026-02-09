@@ -630,8 +630,14 @@
                             }
                         }
                         if (document.querySelector('.user-avatar')) {
-                            const initial = (user.full_name || user.email)[0].toUpperCase();
-                            document.querySelector('.user-avatar').innerText = initial;
+                            const avatarContainer = document.querySelector('.user-avatar');
+                            if (user.profile_pic) {
+                                avatarContainer.innerHTML = `<img src="${user.profile_pic}" class="w-full h-full rounded-full object-cover">`;
+                                avatarContainer.classList.remove('bg-slate-800', 'flex', 'items-center', 'justify-center');
+                            } else {
+                                const initial = (user.full_name || user.email)[0].toUpperCase();
+                                avatarContainer.innerText = initial;
+                            }
                         }
 
                         // Show Admin Menu

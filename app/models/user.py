@@ -22,6 +22,7 @@ class User(Base):
     role = Column(String, default="user")
     full_name = Column(String, nullable=True)
     phone_number = Column(String, nullable=True)
+    profile_pic = Column(String, nullable=True)
     
     # Subscription Fields
     subscription_end_date = Column(DateTime, nullable=True)
