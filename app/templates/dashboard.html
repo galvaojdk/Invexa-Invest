@@ -791,7 +791,6 @@
 
             // --- Render Assets ---
             renderAssetsTable();
-            renderDesktopAssets(sortedAssets);
 
             // --- Sparkline Charts ---
             if (history.dates && history.dates.length > 0) {
@@ -845,6 +844,9 @@
         // Populate
         if (tableBody) tableBody.innerHTML = '';
         if (mobileList) mobileList.innerHTML = '';
+
+        // Update Desktop Table
+        renderDesktopAssets(sortedAssets);
 
         sortedAssets.forEach(asset => {
             const profitClass = asset.profit_val >= 0 ? 'text-emerald-400' : 'text-red-400';
