@@ -64,7 +64,7 @@ async def get_current_admin_user(current_user: User = Depends(get_current_active
 @router.get("/summary")
 def get_dashboard_summary(current_user: User = Depends(get_current_active_user), db: Session = Depends(database.get_db)):
     # Buscar Portfolio do usuario
-    portfolio_items = db.query(Portfolio).filter(Portfolio.user_id == current_user.id).all()
+    portfolio_items = db.query(Portfolio).filter(Portfolio.user_id == current_user.id, Portfolio.quantity > 0).all()
     
     total_equity = 0.0
     total_cost = 0.0

@@ -13,7 +13,7 @@ router = APIRouter()
 
 @router.get("/")
 def read_portfolio(current_user: User = Depends(get_current_active_user), db: Session = Depends(database.get_db)):
-    items = db.query(Portfolio).filter(Portfolio.user_id == current_user.id).all()
+    items = db.query(Portfolio).filter(Portfolio.user_id == current_user.id, Portfolio.quantity > 0).all()
     
     # Enriquecer resposta
     result = []
