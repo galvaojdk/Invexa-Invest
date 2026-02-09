@@ -4,7 +4,7 @@
 
 {% block content %}
 <!-- Dashbord Desktop (Hidden on Mobile) -->
-<div class="hidden md:flex flex-col gap-5">
+<div class="hidden md:flex flex-col gap-3 p-4">
 
     <!-- Top Row: Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -149,7 +149,7 @@
                     </select>
                 </div>
             </div>
-            <div class="h-[180px] w-full relative">
+            <div class="h-[160px] w-full relative">
                 <canvas id="mainEvolutionChart"></canvas>
             </div>
         </div>
@@ -160,7 +160,7 @@
             <div class="bg-[#0f172a] rounded-2xl p-4 border border-slate-800 shadow-xl flex flex-col">
                 <h3 class="text-xs font-bold text-white tracking-tight mb-4">Alocação</h3>
                 <div class="relative flex flex-col items-center">
-                    <div class="w-full h-[120px] relative">
+                    <div class="w-full h-[110px] relative">
                         <canvas id="deskAllocationChart"></canvas>
                     </div>
                     <!-- Custom Legend -->
@@ -180,7 +180,7 @@
                         <span class="text-xs" style="font-size: 10px;">R$ 0,00</span>
                     </div>
                 </div>
-                <div class="overflow-y-auto max-h-[100px] pr-1">
+                <div class="overflow-y-auto max-h-[80px] pr-1">
                     <table class="w-full text-left text-[9px]">
                         <tbody id="desk-agenda-body" class="divide-y divide-slate-800/50">
                             <!-- Items -->
@@ -205,7 +205,7 @@
                 </div>
             </div>
         </div>
-        <div class="overflow-x-auto overflow-y-auto max-h-[300px]">
+        <div class="overflow-x-auto overflow-y-auto max-h-[220px]">
             <table class="w-full text-left">
                 <thead
                     class="bg-slate-900/50 text-[9px] text-slate-500 uppercase font-bold tracking-widest border-b border-slate-800/50">
@@ -638,8 +638,10 @@
                     if (costEl) costEl.innerText = fmtBRL.format(cost);
                     if (footer) footer.innerText = fmtBRL.format(val);
 
-                    if (diffVal) diffVal.innerText = `${pSign} ${fmtBRL.format(profit)}`;
-                    if (diffPct) diffPct.innerText = `${pSign}${fmtPct.format(profitPct / 100)}`;
+                    const profitSign = profit >= 0 ? '+' : '';
+
+                    if (diffVal) diffVal.innerText = `${profitSign} ${fmtBRL.format(profit)}`;
+                    if (diffPct) diffPct.innerText = `${profitSign}${fmtPct.format(profitPct / 100)}`;
 
                     if (profit < 0) {
                         if (diffVal) diffVal.className = 'text-red-400 text-xs font-bold';
