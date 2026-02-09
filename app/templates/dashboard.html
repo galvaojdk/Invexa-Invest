@@ -3,8 +3,255 @@
 {% block header_title %}Overview{% endblock %}
 
 {% block content %}
-<!-- Tech Dashboard Container -->
-<div class="space-y-12">
+<!-- Dashbord Desktop (Hidden on Mobile) -->
+<div class="hidden md:flex flex-col gap-8">
+
+    <!-- Top Row: Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+        <!-- Card: Patrimônio Total -->
+        <div
+            class="bg-[#0f172a] rounded-2xl p-6 border border-slate-800 relative overflow-hidden group hover:border-blue-500/30 transition-all shadow-xl">
+            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <svg class="w-8 h-8 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                </svg>
+            </div>
+            <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-2 text-slate-500 uppercase text-[10px] font-bold tracking-widest">
+                    <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                    Patrimônio Total
+                </div>
+                <h2 class="text-3xl font-bold text-white mt-1" id="desk-equity">R$ 0,00</h2>
+                <div class="flex items-center gap-2 mt-1">
+                    <span class="text-emerald-400 text-xs font-bold" id="desk-equity-diff-val">+ R$ 0,00</span>
+                    <span class="text-emerald-400/80 text-[10px] bg-emerald-500/10 px-1.5 py-0.5 rounded"
+                        id="desk-equity-diff-pct">0,0%</span>
+                    <span class="text-slate-600 text-[10px]">último mês</span>
+                </div>
+            </div>
+            <div class="mt-6 h-12 w-full opacity-50">
+                <canvas id="sparkline-equity"></canvas>
+            </div>
+            <div
+                class="mt-2 flex justify-between items-center text-[10px] text-slate-500 font-mono border-t border-slate-800/50 pt-2">
+                <span>Investido: <span class="text-slate-300" id="desk-cost">R$ 0,00</span></span>
+                <span id="desk-equity-footer">R$ 0,00</span>
+            </div>
+        </div>
+
+        <!-- Card: Lucro Total -->
+        <div
+            class="bg-[#0f172a] rounded-2xl p-6 border border-slate-800 relative overflow-hidden group hover:border-emerald-500/30 transition-all shadow-xl">
+            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <svg class="w-8 h-8 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" />
+                </svg>
+            </div>
+            <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-2 text-slate-500 uppercase text-[10px] font-bold tracking-widest">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                    Lucro Total
+                </div>
+                <h2 class="text-3xl font-bold text-emerald-400 mt-1" id="desk-profit">R$ 0,00</h2>
+                <div class="flex items-center gap-2 mt-1">
+                    <span class="text-emerald-400 text-xs font-bold" id="desk-profit-diff-val">+ R$ 0,00</span>
+                    <span class="text-slate-600 text-[10px]">último mês</span>
+                </div>
+            </div>
+            <div class="mt-6 h-12 w-full opacity-50">
+                <canvas id="sparkline-profit"></canvas>
+            </div>
+            <div
+                class="mt-2 flex justify-between items-center text-[10px] text-slate-500 font-mono border-t border-slate-800/50 pt-2">
+                <span>Variação: <span class="text-emerald-400" id="desk-profit-pct">0,0%</span></span>
+                <span id="desk-profit-footer">R$ 0,00</span>
+            </div>
+        </div>
+
+        <!-- Card: Proventos -->
+        <div
+            class="bg-[#0f172a] rounded-2xl p-6 border border-slate-800 relative overflow-hidden group hover:border-orange-500/30 transition-all shadow-xl">
+            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <svg class="w-8 h-8 text-orange-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
+                </svg>
+            </div>
+            <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-2 text-slate-500 uppercase text-[10px] font-bold tracking-widest">
+                    <div class="w-2 h-2 rounded-full bg-orange-500"></div>
+                    Proventos (12M)
+                </div>
+                <h2 class="text-3xl font-bold text-white mt-1" id="desk-earnings">R$ 0,00</h2>
+                <div class="flex items-center gap-2 mt-1">
+                    <span class="text-slate-300 text-xs font-bold" id="desk-earnings-monthly">R$ 0,00</span>
+                    <span class="text-slate-600 text-[10px]">/ mês</span>
+                </div>
+            </div>
+            <div class="mt-6 h-12 w-full opacity-50">
+                <canvas id="sparkline-earnings"></canvas>
+            </div>
+            <div
+                class="mt-2 flex justify-between items-center text-[10px] text-slate-500 font-mono border-t border-slate-800/50 pt-2">
+                <span>Média: <span class="text-orange-400" id="desk-earnings-avg">R$ 0,00</span></span>
+                <span id="desk-earnings-footer">R$ 0,00</span>
+            </div>
+        </div>
+
+        <!-- Card: Rentabilidade -->
+        <div
+            class="bg-[#0f172a] rounded-2xl p-6 border border-slate-800 relative overflow-hidden group hover:border-purple-500/30 transition-all shadow-xl">
+            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <svg class="w-8 h-8 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-2V9h2v8zm-4 0H8v-4h2v4zm8 0h-2v-6h2v6z" />
+                </svg>
+            </div>
+            <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-2 text-slate-500 uppercase text-[10px] font-bold tracking-widest">
+                    <div class="w-2 h-2 rounded-full bg-purple-500"></div>
+                    Rentabilidade
+                </div>
+                <h2 class="text-3xl font-bold text-emerald-400 mt-1" id="desk-rentability">0,0%</h2>
+                <div class="flex items-center gap-2 mt-1">
+                    <span class="text-emerald-400 text-xs font-bold">+ 0,0%</span>
+                    <span class="text-slate-600 text-[10px]">vs CDI</span>
+                    <span class="text-purple-400 text-[10px] bg-purple-500/10 px-1 py-0.5 rounded ml-auto">95%</span>
+                </div>
+            </div>
+            <div class="mt-6 h-12 w-full opacity-50">
+                <canvas id="sparkline-rentability"></canvas>
+            </div>
+            <div
+                class="mt-2 flex justify-between items-center text-[10px] text-slate-500 font-mono border-t border-slate-800/50 pt-2">
+                <span>IBOV: <span class="text-red-400">-2,5%</span></span>
+                <span class="text-emerald-400">CDI: +4,2%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Middle Row: Charts -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- Evolution Chart (Left - 2 Columns) -->
+        <div class="md:col-span-2 bg-[#0f172a] rounded-2xl p-6 border border-slate-800 shadow-xl flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-bold text-white tracking-tight">Evolução Patrimonial</h3>
+                    <p class="text-xs text-slate-500">Histórico de crescimento | Últimos 12 Meses</p>
+                </div>
+                <div class="flex gap-2">
+                    <select
+                        class="bg-slate-900 border border-slate-700 text-slate-400 text-[10px] uppercase font-bold rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-blue-500 outline-none">
+                        <option>Últimos 12 Meses</option>
+                    </select>
+                </div>
+            </div>
+            <div class="h-[350px] w-full relative">
+                <canvas id="mainEvolutionChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Allocation Chart -->
+        <div class="bg-[#0f172a] rounded-2xl p-6 border border-slate-800 shadow-xl flex flex-col">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-lg font-bold text-white tracking-tight">Alocação</h3>
+                <span
+                    class="px-2 py-0.5 bg-slate-800 text-slate-400 text-[9px] font-bold uppercase tracking-widest border border-slate-700 rounded">Atual</span>
+            </div>
+            <div class="relative flex-1 flex flex-col items-center">
+                <div class="w-full h-[220px] relative">
+                    <canvas id="deskAllocationChart"></canvas>
+                </div>
+                <!-- Custom Legend -->
+                <div id="desk-allocation-legend"
+                    class="w-full mt-6 grid grid-cols-2 gap-x-4 gap-y-2 text-[10px] font-medium text-slate-400">
+                    <!-- Dynamic Items -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Proventos Agenda Row -->
+    <div class="bg-[#0f172a] rounded-2xl p-4 md:p-6 border border-slate-800 shadow-xl">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div class="flex items-center gap-4">
+                <h3 class="text-lg font-bold text-white tracking-tight">Agenda de Proventos</h3>
+                <div class="h-6 w-px bg-slate-800"></div>
+                <div class="flex items-center gap-2 text-emerald-400 font-bold" id="desk-agenda-total-row">
+                    <span class="text-slate-500 text-xs font-normal">Fev/25:</span>
+                    <span class="text-xl">R$ 0,00</span>
+                    <span class="text-[10px] bg-emerald-500/10 px-1.5 py-0.5 rounded ml-1">+12% vs Jan</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 text-[10px] text-slate-500 uppercase font-bold tracking-widest">
+                Recebidos últimos 10 meses: <span class="text-slate-300" id="desk-agenda-historic">R$ 0,00</span>
+            </div>
+        </div>
+
+        <!-- Table-like agenda list -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="text-slate-500 border-b border-slate-800/50 uppercase tracking-widest font-bold">
+                    <tr>
+                        <th class="pb-3 pr-4">Ativo</th>
+                        <th class="pb-3 pr-4">Data Com</th>
+                        <th class="pb-3 pr-4">Pagamento</th>
+                        <th class="pb-3 pr-4">Tipo</th>
+                        <th class="pb-3 text-right">Valor Bruto</th>
+                    </tr>
+                </thead>
+                <tbody id="desk-agenda-body" class="divide-y divide-slate-800/50">
+                    <!-- Items -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Assets Table Row -->
+    <div class="bg-[#0f172a] rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+        <div class="bg-slate-900/30 p-6 flex items-center justify-between border-b border-slate-800/50">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2 uppercase tracking-tight">
+                <div class="w-2 h-6 bg-blue-500 rounded-full"></div>
+                Meus Ativos
+            </h3>
+            <div class="flex items-center gap-4 text-xs">
+                <div class="flex flex-col items-end">
+                    <span class="text-slate-500 uppercase font-bold text-[9px] tracking-widest">Valor em Carteira</span>
+                    <span class="text-white font-bold text-xl font-mono" id="desk-table-total">R$ 0,00</span>
+                </div>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead
+                    class="bg-slate-900/50 text-[10px] text-slate-500 uppercase font-bold tracking-widest border-b border-slate-800/50">
+                    <tr>
+                        <th class="px-6 py-4">Ativo</th>
+                        <th class="px-6 py-4 text-center">Situa.</th>
+                        <th class="px-6 py-4 text-right">Qtde</th>
+                        <th class="px-6 py-4 text-right">MÉDIO</th>
+                        <th class="px-6 py-4 text-right">ATUAL</th>
+                        <th class="px-6 py-4 text-center">CARTEIRA</th>
+                        <th class="px-6 py-4 text-center">VARIAÇÃO</th>
+                        <th class="px-6 py-4 text-center">RENTABILIDADE</th>
+                        <th class="px-6 py-4 text-center">INSIGHTS</th>
+                        <th class="px-6 py-4 text-right">TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody id="desk-assets-body" class="text-sm divide-y divide-slate-800/30">
+                    <!-- Asset Items -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- Old Mobile Layout (Hidden on Desktop) -->
+<div class="md:hidden space-y-12">
 
     <!-- Subscription Warning Banner -->
     <div id="sub-warning-banner"
@@ -395,7 +642,75 @@
             const data = await response.json();
             currentAssets = data.assets || [];
 
-            // --- Update Top Cards ---
+            // --- Update Top Cards (Desktop) ---
+            const updateDeskCard = (id, val, cost, profit, profitPct, earnings, avgEarnings) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+
+                if (id === 'desk-equity') {
+                    el.innerText = fmtBRL.format(val);
+                    document.getElementById('desk-cost').innerText = fmtBRL.format(cost);
+                    document.getElementById('desk-equity-footer').innerText = fmtBRL.format(val);
+
+                    const pSign = profit >= 0 ? '+' : '';
+                    const diffVal = document.getElementById('desk-equity-diff-val');
+                    const diffPct = document.getElementById('desk-equity-diff-pct');
+                    diffVal.innerText = `${pSign} ${fmtBRL.format(profit)}`;
+                    diffPct.innerText = `${pSign}${fmtPct.format(profitPct / 100)}`;
+
+                    if (profit < 0) {
+                        diffVal.className = 'text-red-400 text-xs font-bold';
+                        diffPct.className = 'text-red-400/80 text-[10px] bg-red-500/10 px-1.5 py-0.5 rounded';
+                    }
+                }
+
+                if (id === 'desk-profit') {
+                    el.innerText = fmtBRL.format(profit);
+                    if (profit < 0) el.classList.replace('text-emerald-400', 'text-red-400');
+                    document.getElementById('desk-profit-diff-val').innerText = `${profit >= 0 ? '+' : ''} ${fmtBRL.format(profit)}`;
+                    document.getElementById('desk-profit-pct').innerText = `${profit >= 0 ? '+' : ''}${fmtPct.format(profitPct / 100)}`;
+                    document.getElementById('desk-profit-footer').innerText = fmtBRL.format(profit);
+                    if (profit < 0) document.getElementById('desk-profit-pct').className = 'text-red-400';
+                }
+
+                if (id === 'desk-earnings') {
+                    el.innerText = fmtBRL.format(earnings);
+                    document.getElementById('desk-earnings-monthly').innerText = fmtBRL.format(avgEarnings);
+                    document.getElementById('desk-earnings-avg').innerText = fmtBRL.format(avgEarnings);
+                    document.getElementById('desk-earnings-footer').innerText = fmtBRL.format(earnings);
+                }
+
+                if (id === 'desk-rentability') {
+                    el.innerText = fmtPct.format(profitPct / 100);
+                    if (profitPct < 0) el.classList.replace('text-emerald-400', 'text-red-400');
+                }
+            };
+
+            updateDeskCard('desk-equity', data.equity, data.total_cost, data.total_profit, data.total_profit_pct);
+            updateDeskCard('desk-profit', null, null, data.total_profit, data.total_profit_pct);
+            updateDeskCard('desk-earnings', null, null, null, null, data.earnings_year, data.earnings_year / 12);
+            updateDeskCard('desk-rentability', null, null, null, data.total_profit_pct);
+
+
+            // --- Render Sparklines (Desktop) ---
+            const history = data.history || {};
+            if (history.dates && history.dates.length > 0) {
+                renderSparkline('sparkline-equity', history.equity, 'rgba(59, 130, 246, 0.2)', '#3b82f6');
+                renderSparkline('sparkline-profit', history.profit, 'rgba(16, 185, 129, 0.2)', '#10b981');
+                renderSparkline('sparkline-earnings', history.earnings, 'rgba(245, 158, 11, 0.2)', '#f59e0b');
+                renderSparkline('sparkline-rentability', history.rentability, 'rgba(139, 92, 246, 0.2)', '#8b5cf6');
+
+                // Main Evolution Chart
+                renderMainChart('mainEvolutionChart', history);
+            }
+
+            // --- Allocation Chart (Desktop) ---
+            renderAllocationChart('deskAllocationChart', data.chart_allocation);
+
+            // --- Agenda (Desktop) ---
+            renderAgenda(data.agenda);
+
+            // --- Update Top Cards (Original/Mobile) ---
             document.getElementById('card-equity').innerText = fmtBRL.format(data.equity);
             document.getElementById('card-cost').innerText = fmtBRL.format(data.total_cost);
 
@@ -476,11 +791,10 @@
 
             // --- Render Assets ---
             renderAssetsTable();
+            renderDesktopAssets(sortedAssets);
 
             // --- Sparkline Charts ---
-            const history = data.history || {};
-            const dates = history.dates || [];
-            if (dates.length > 0) {
+            if (history.dates && history.dates.length > 0) {
                 renderSparkline('chartEquity', history.equity, 'rgba(59, 130, 246, 0.5)', '#3b82f6');
                 renderSparkline('chartProfit', history.profit, 'rgba(16, 185, 129, 0.5)', '#10b981');
                 renderSparkline('chartEarnings', history.earnings, 'rgba(245, 158, 11, 0.5)', '#f59e0b');
@@ -576,6 +890,160 @@
                 mobileList.appendChild(card);
             }
         });
+    }
+
+    function renderMainChart(id, history) {
+        const ctx = document.getElementById(id);
+        if (!ctx) return;
+
+        const existingChart = Chart.getChart(ctx);
+        if (existingChart) existingChart.destroy();
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: history.dates,
+                datasets: [{
+                    label: 'Patrimônio',
+                    data: history.equity,
+                    backgroundColor: 'rgba(59, 130, 246, 0.4)',
+                    borderColor: '#3b82f6',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    hoverBackgroundColor: '#3b82f6'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 10 } } },
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { size: 10 } } }
+                }
+            }
+        });
+    }
+
+    function renderAllocationChart(id, allocation) {
+        const ctx = document.getElementById(id);
+        if (!ctx) return;
+
+        const existingChart = Chart.getChart(ctx);
+        if (existingChart) existingChart.destroy();
+
+        const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: allocation.labels,
+                datasets: [{
+                    data: allocation.values,
+                    backgroundColor: colors,
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '80%',
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Legend
+        const legend = document.getElementById('desk-allocation-legend');
+        if (legend) {
+            legend.innerHTML = allocation.labels.map((label, i) => `
+                <div class="flex items-center gap-2">
+                    <div class="w-1.5 h-1.5 rounded-full" style="background: ${colors[i % colors.length]}"></div>
+                    <span>${label}</span>
+                    <span class="ml-auto text-white">${fmtPct.format(allocation.values[i] / allocation.values.reduce((a, b) => a + b, 0))}</span>
+                </div>
+            `).join('');
+        }
+    }
+
+    function renderAgenda(agenda) {
+        const body = document.getElementById('desk-agenda-body');
+        const rowTotal = document.getElementById('desk-agenda-total-row');
+        if (!body) return;
+
+        let totalMonth = 0;
+        body.innerHTML = agenda.length > 0 ? agenda.map(item => {
+            totalMonth += item.total_receive;
+            return `
+                <tr class="group hover:bg-slate-800/20 transition-colors">
+                    <td class="py-4 flex items-center gap-3">
+                        <div class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center font-bold text-slate-400 text-[10px] ring-1 ring-slate-700">${item.ticker.substring(0, 2)}</div>
+                        <span class="text-white font-bold">${item.ticker}</span>
+                    </td>
+                    <td class="py-4 text-slate-400 font-mono">${item.record_date || '-'}</td>
+                    <td class="py-4 text-slate-300 font-mono">${item.pay_date}</td>
+                    <td class="py-4">
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase ${item.type === 'Dividendo' ? 'bg-blue-500/10 text-blue-400' : 'bg-emerald-500/10 text-emerald-400'}">${item.type}</span>
+                    </td>
+                    <td class="py-4 text-right text-emerald-400 font-bold font-mono">+ ${fmtBRL.format(item.total_receive)}</td>
+                </tr>
+            `;
+        }).join('') : '<tr><td colspan="5" class="py-8 text-center text-slate-500">Nenhum provento agendado</td></tr>';
+
+        if (rowTotal) {
+            rowTotal.querySelector('.text-xl').innerText = fmtBRL.format(totalMonth);
+        }
+        document.getElementById('desk-agenda-historic').innerText = fmtBRL.format(totalMonth * 10); // Mocked historic
+    }
+
+    function renderDesktopAssets(assets) {
+        const body = document.getElementById('desk-assets-body');
+        if (!body) return;
+
+        body.innerHTML = assets.map(asset => {
+            const profitClass = asset.profit_val >= 0 ? 'text-emerald-400' : 'text-red-400';
+            const bgProfit = asset.profit_val >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400';
+
+            return `
+                <tr class="group hover:bg-slate-800/40 transition-colors">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400 ring-1 ring-slate-700 group-hover:ring-blue-500/50 transition-all">${asset.ticker.substring(0, 2)}</div>
+                            <div><span class="block text-white font-bold tracking-tight">${asset.ticker}</span><span class="block text-[10px] text-slate-500 uppercase">${asset.asset_type || 'Ação'}</span></div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex justify-center"><div class="w-8 h-8 rounded-full border-2 border-emerald-500/20 flex items-center justify-center text-[10px] text-emerald-400 font-bold">400</div></div>
+                    </td>
+                    <td class="px-6 py-4 text-right font-mono text-slate-300">${asset.quantity}</td>
+                    <td class="px-6 py-4 text-right text-slate-500 font-mono text-xs">${fmtBRL.format(asset.average_price)}</td>
+                    <td class="px-6 py-4 text-right font-bold text-white font-mono">${fmtBRL.format(asset.current_price)}</td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex flex-col items-center gap-1">
+                            <span class="${profitClass} text-[10px] font-bold">↑ ${fmtPct.format(asset.profit_pct / 100)}</span>
+                            <div class="w-12 h-0.5 bg-slate-800 rounded-full"><div class="h-full bg-blue-500" style="width: 70%"></div></div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="${bgProfit} px-2 py-0.5 rounded text-[10px] font-bold tracking-wide">${fmtPct.format(asset.profit_pct / 100)}</span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex items-center justify-center gap-1 ${profitClass} font-bold text-xs">
+                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                             ${fmtPct.format(asset.profit_pct / 100)}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-wrap gap-1 justify-center">
+                            ${asset.badges ? asset.badges.map(b => `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20">${b.label}</span>`).join('') : ''}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-right text-white font-bold font-mono">${fmtBRL.format(asset.total_value)}</td>
+                </tr>
+            `;
+        }).join('');
+
+        document.getElementById('desk-table-total').innerText = fmtBRL.format(assets.reduce((s, a) => s + a.total_value, 0));
     }
 
     function renderSparkline(canvasId, dataPoints, areaColor, lineColor) {
