@@ -25,7 +25,55 @@ app.include_router(admin.router, prefix=config.settings.API_V1_STR + "/admin", t
 app.include_router(premium.router, prefix=config.settings.API_V1_STR + "/premium", tags=["premium"])
 app.include_router(payments.router, prefix=config.settings.API_V1_STR + "/payments", tags=["payments"])
 app.include_router(profile.router, prefix=config.settings.API_V1_STR + "/profile", tags=["profile"])
+from app.api.routes import favorites
+app.include_router(favorites.router, prefix=config.settings.API_V1_STR + "/favorites", tags=["favorites"])
 app.include_router(views.router, tags=["views"])
+
+@app.get("/debug-brapi")
+async def debug_brapi():
+    import httpx
+    # Using the hardcoded token from the user's previous context or market_data.py
+    token = "5y8qbu4kibxgcT3YQxG1XK"
+    ticker = "PETR4"
+    modules = "summaryProfile,defaultKeyStatistics,financialData"
+    url = f"https://brapi.dev/api/quote/{ticker}?fundamental=true&modules={modules}&token={token}"
+    
+    async with httpx.AsyncClient() as client:
+        r = await client.get(url)
+        data = r.json()
+        
+    results = data.get('results', [])
+    if not results:
+        return {"error": "No results found"}
+        
+    item = results[0]
+    price = item.get('regularMarketPrice')
+    vol = item.get('regularMarketVolume')
+    dk = item.get('defaultKeyStatistics', {})
+    avg_vol = dk.get('averageDailyVolume3Month')
+    
+    calculated_liquidity = 0
+    used_vol = 0
+    
+    if avg_vol and avg_vol > 0:
+        used_vol = avg_vol
+    elif vol:
+        used_vol = vol
+        
+    if used_vol and price:
+        calculated_liquidity = used_vol * price
+    
+    return {
+        "ticker": ticker,
+        "price": price,
+        "volume_root": vol,
+        "avg_vol_3m": avg_vol,
+        "used_volume": used_vol,
+        "calculated_liquidity": calculated_liquidity,
+        "is_greater_than_1M": calculated_liquidity > 1000000
+    }
+
+
 
 @app.get("/")
 def read_root(request: Request):
@@ -82,3 +130,5 @@ async def startup_event():
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+

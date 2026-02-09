@@ -205,6 +205,12 @@
     let chartBar = null;
 
     function calculate() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
+
         const initial = parseFloat(document.getElementById('inp-initial').value) || 0;
         const monthly = parseFloat(document.getElementById('inp-monthly').value) || 0;
         const period = parseInt(document.getElementById('inp-period').value) || 0;

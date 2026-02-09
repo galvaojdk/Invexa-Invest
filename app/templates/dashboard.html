@@ -4,7 +4,7 @@
 
 {% block content %}
 <!-- Tech Dashboard Container -->
-<div class="space-y-6">
+<div class="space-y-12">
 
     <!-- Subscription Warning Banner -->
     <div id="sub-warning-banner"
@@ -27,7 +27,7 @@
     </div>
 
     <!-- Top Cards Area -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
 
         <!-- Card Macro: Tech Card Style -->
         {% macro tech_card(title, icon_path) %}
@@ -58,17 +58,23 @@
                 d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
             </path>
         </svg>') %}
-        <div>
-            <div class="flex items-end gap-3">
-                <h2 class="text-3xl font-bold text-white tracking-tight drop-shadow-sm" id="card-equity">R$ ...</h2>
-                <span
-                    class="mb-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700"
-                    id="card-equity-pct">
-                    -%
-                </span>
+        <div class="relative h-24 flex flex-col justify-end">
+            <div class="absolute inset-0 bottom-6 opacity-30">
+                <canvas id="chartEquity"></canvas>
             </div>
-            <p class="text-xs text-slate-500 mt-2 font-mono">Investido: <span class="text-slate-300" id="card-cost">R$
-                    ...</span></p>
+            <div class="relative z-10">
+                <div class="flex items-end gap-3">
+                    <h2 class="text-3xl font-bold text-white tracking-tight drop-shadow-sm" id="card-equity">R$ ...</h2>
+                    <span
+                        class="mb-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700"
+                        id="card-equity-pct">
+                        -%
+                    </span>
+                </div>
+                <p class="text-xs text-slate-500 mt-2 font-mono">Investido: <span class="text-slate-300"
+                        id="card-cost">R$
+                        ...</span></p>
+            </div>
         </div>
         {% endcall %}
 
@@ -77,17 +83,22 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6">
             </path>
         </svg>') %}
-        <div>
-            <h2 class="text-3xl font-bold text-emerald-400 tracking-tight drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]"
-                id="card-profit">R$ ...</h2>
-            <div class="mt-3 grid grid-cols-2 gap-2 text-xs border-t border-slate-800 pt-2">
-                <div>
-                    <span class="block text-slate-500">Capital</span>
-                    <span class="font-medium text-slate-300" id="card-profit-val">R$ ...</span>
-                </div>
-                <div class="text-right">
-                    <span class="block text-slate-500">Prov. Est.</span>
-                    <span class="font-medium text-blue-300" id="card-earnings-val">R$ ...</span>
+        <div class="relative h-24 flex flex-col justify-end">
+            <div class="absolute inset-x-0 bottom-8 h-16 opacity-30">
+                <canvas id="chartProfit"></canvas>
+            </div>
+            <div class="relative z-10">
+                <h2 class="text-3xl font-bold text-emerald-400 tracking-tight drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]"
+                    id="card-profit">R$ ...</h2>
+                <div class="mt-3 grid grid-cols-2 gap-2 text-xs border-t border-slate-800 pt-2 backdrop-blur-sm">
+                    <div>
+                        <span class="block text-slate-500">Capital</span>
+                        <span class="font-medium text-slate-300" id="card-profit-val">R$ ...</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="block text-slate-500">Prov. Est.</span>
+                        <span class="font-medium text-blue-300" id="card-earnings-val">R$ ...</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -100,16 +111,21 @@
                 d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z">
             </path>
         </svg>') %}
-        <div>
-            <h2 class="text-3xl font-bold text-white tracking-tight" id="card-earnings-total">R$ ...</h2>
-            <div class="mt-2 flex items-center gap-2">
-                <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                    <div class="h-full bg-blue-500 w-1/2 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
-                    <!-- Placeholder bar -->
-                </div>
+        <div class="relative h-24 flex flex-col justify-end">
+            <div class="absolute inset-x-0 bottom-6 h-16 opacity-30">
+                <canvas id="chartEarnings"></canvas>
             </div>
-            <p class="text-xs text-slate-500 mt-2 font-mono">Média: <span class="text-blue-300"
-                    id="card-earnings-avg">R$ ...</span> /mês</p>
+            <div class="relative z-10">
+                <h2 class="text-3xl font-bold text-white tracking-tight" id="card-earnings-total">R$ ...</h2>
+                <div class="mt-2 flex items-center gap-2">
+                    <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                        <div class="h-full bg-blue-500 w-1/2 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                        <!-- Placeholder bar -->
+                    </div>
+                </div>
+                <p class="text-xs text-slate-500 mt-2 font-mono">Média: <span class="text-blue-300"
+                        id="card-earnings-avg">R$ ...</span> /mês</p>
+            </div>
         </div>
         {% endcall %}
 
@@ -119,48 +135,31 @@
                 d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
             </path>
         </svg>') %}
-        <div class="flex flex-col justify-end h-full">
-            <div class="flex items-baseline justify-between">
-                <h2 class="text-3xl font-bold text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]"
-                    id="card-rentability">...%</h2>
-                <span class="text-xs text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded"
-                    id="card-variation-pct">...%</span>
+        <div class="relative h-24 flex flex-col justify-end">
+            <div class="absolute inset-x-0 bottom-6 h-16 opacity-30">
+                <canvas id="chartRentability"></canvas>
             </div>
-            <p class="text-xs text-slate-500 mt-1 text-right font-mono" id="card-variation-val">R$ ...</p>
+            <div class="relative z-10">
+                <div class="flex items-baseline justify-between">
+                    <h2 class="text-3xl font-bold text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]"
+                        id="card-rentability">...%</h2>
+                    <span class="text-xs text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded"
+                        id="card-variation-pct">...%</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-1 text-right font-mono" id="card-variation-val">R$ ...</p>
+            </div>
         </div>
         {% endcall %}
     </div>
 
 </div>
 
-<!-- Recommendations Section (New) -->
-<div class="grid grid-cols-1 gap-6">
-    <div class="bg-[#0f172a] rounded-2xl p-6 border border-slate-800 shadow-lg">
-        <div class="flex items-center gap-3 mb-6">
-            <div class="p-2 bg-purple-500/10 rounded-lg text-purple-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                </svg>
-            </div>
-            <div>
-                <h3 class="text-xl font-bold text-white">Principais Recomendações</h3>
-                <p class="text-xs text-slate-500">Oportunidades baseadas no Valor Justo (Graham - Inteligência
-                    Artificial)</p>
-            </div>
-        </div>
 
-        <div id="recommendations-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- JS Populated -->
-            <div class="text-center w-full py-8 text-slate-500 col-span-3">Nenhuma recomendação encontrada.</div>
-        </div>
-    </div>
-</div>
+<!-- Charts and Agenda Section -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
-<!-- Charts Section -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Chart 1: Evolution -->
-    <div class="lg:col-span-2 bg-[#0f172a] rounded-2xl p-6 border border-slate-800 shadow-lg">
+    <!-- Evolution Chart (Left - 2 Columns) -->
+    <div class="xl:col-span-2 bg-[#0f172a] rounded-2xl p-6 border border-slate-800 shadow-lg flex flex-col h-full">
         <div class="flex justify-between items-center mb-6">
             <div>
                 <h3 class="text-lg font-bold text-white">Evolução Patrimonial</h3>
@@ -174,7 +173,7 @@
 
         <!-- Chart Container -->
         <div
-            class="relative h-72 w-full bg-slate-900/50 rounded-xl border border-slate-800/50 flex items-center justify-center overflow-hidden">
+            class="relative flex-1 w-full min-h-[300px] bg-slate-900/50 rounded-xl border border-slate-800/50 flex items-center justify-center overflow-hidden">
             <!-- Grid Lines Decoration -->
             <div class="absolute inset-0 grid grid-cols-6 grid-rows-4 gap-px opacity-10 pointer-events-none">
                 <div class="bg-slate-700"></div>
@@ -203,8 +202,8 @@
                 <div class="bg-slate-700"></div>
             </div>
 
-            <!-- Mock Bars (Tech Style) -->
-            <div class="flex items-end gap-3 h-48 z-10 opacity-70">
+            <!-- Mock Bars -->
+            <div class="flex items-end gap-3 h-[70%] z-10 opacity-70">
                 <div
                     class="w-6 bg-blue-600/30 border-t-2 border-blue-500 h-[40%] rounded-sm hover:h-[45%] transition-all cursor-pointer">
                 </div>
@@ -223,21 +222,76 @@
         </div>
     </div>
 
-    <!-- Chart 2: Allocation -->
-    <div class="bg-[#0f172a] rounded-2xl p-6 border border-slate-800 shadow-lg flex flex-col">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-white">Alocação</h3>
-            <span
-                class="p-1 px-2 text-[10px] bg-slate-800 text-slate-400 rounded-md border border-slate-700 uppercase tracking-widest">Atual</span>
+    <!-- Right Column (Allocation + Agenda) -->
+    <div class="xl:col-span-1 flex flex-col gap-6">
+
+        <!-- Allocation Chart -->
+        <div class="bg-[#0f172a] rounded-2xl p-6 border border-slate-800 shadow-lg flex flex-col flex-1 min-h-[300px]">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-white">Alocação</h3>
+                <span
+                    class="p-1 px-2 text-[10px] bg-slate-800 text-slate-400 rounded-md border border-slate-700 uppercase tracking-widest">Atual</span>
+            </div>
+            <div class="relative flex-1 w-full flex items-center justify-center">
+                <canvas id="allocationChart" style="max-height: 250px;"></canvas>
+            </div>
         </div>
-        <div class="relative flex-1 min-h-[250px] w-full">
-            <canvas id="allocationChart"></canvas>
+
+        <!-- Dividend Agenda -->
+        <div class="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50 shadow-xl backdrop-blur-sm">
+            <h3 class="text-slate-400 text-sm font-medium mb-4 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                    </path>
+                </svg>
+                Agenda de Proventos (Mock)
+            </h3>
+            <div class="space-y-4">
+                <div
+                    class="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-800/50">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 ring-1 ring-slate-700">
+                            MXRF</div>
+                        <div>
+                            <span class="block text-white font-bold text-sm">MXRF11</span>
+                            <span class="block text-xs text-slate-500">Data Com: 31/01</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="block text-emerald-400 font-bold font-mono text-sm">+ R$ 45,00</span>
+                        <span class="block text-xs text-slate-400">Pagamento: 14/02</span>
+                    </div>
+                </div>
+                <div
+                    class="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-800/50">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 ring-1 ring-slate-700">
+                            HGLG</div>
+                        <div>
+                            <span class="block text-white font-bold text-sm">HGLG11</span>
+                            <span class="block text-xs text-slate-500">Data Com: 31/01</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="block text-emerald-400 font-bold font-mono text-sm">+ R$ 120,50</span>
+                        <span class="block text-xs text-slate-400">Pagamento: 15/02</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 text-center">
+                <a href="#" class="text-xs text-blue-400 hover:text-blue-300">Ver calendário completo -></a>
+            </div>
         </div>
     </div>
+</div>
 </div>
 
 <!-- Assets Table -->
 <div class="bg-[#0f172a] rounded-2xl border border-slate-800 shadow-lg overflow-hidden">
+    <!-- ... (header omitted, unchanged) ... -->
     <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/30">
         <h3 class="text-lg font-bold text-white flex items-center gap-3">
             <span class="p-1.5 bg-blue-500/10 rounded-lg text-blue-400">
@@ -255,26 +309,65 @@
         </div>
     </div>
 
-    <div class="overflow-x-auto">
+    <!-- Table Desktop -->
+    <div class="overflow-x-auto hidden md:block">
         <table class="w-full text-sm text-left">
             <thead
-                class="text-xs text-slate-500 uppercase bg-slate-900/80 border-b border-slate-800 font-medium tracking-wider">
+                class="text-xs text-slate-500 uppercase bg-slate-900/80 border-b border-slate-800 font-medium tracking-wider select-none">
                 <tr>
-                    <th class="px-6 py-4">Ativo</th>
-                    <th class="px-6 py-4 text-center">Qtde</th>
-                    <th class="px-6 py-4 text-right">Médio</th>
-                    <th class="px-6 py-4 text-right">Atual</th>
-                    <th class="px-6 py-4 text-center">Variação</th>
-                    <th class="px-6 py-4 text-center">Rentabilidade</th>
-                    <th class="px-6 py-4 text-right">Total</th>
-                    <th class="px-6 py-4 text-center">%</th>
+                    <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('ticker')">
+                        <div class="flex items-center gap-1">Ativo <span id="sort-icon-ticker"
+                                class="text-[10px] opacity-50">↕</span></div>
+                    </th>
+                    <th class="px-6 py-4 text-center cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('quantity')">
+                        <div class="flex items-center justify-center gap-1">Qtde <span id="sort-icon-quantity"
+                                class="text-[10px] opacity-50">↕</span></div>
+                    </th>
+                    <th class="px-6 py-4 text-right cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('average_price')">
+                        <div class="flex items-center justify-end gap-1">Médio <span id="sort-icon-average_price"
+                                class="text-[10px] opacity-50">↕</span></div>
+                    </th>
+                    <th class="px-6 py-4 text-right cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('current_price')">
+                        <div class="flex items-center justify-end gap-1">Atual <span id="sort-icon-current_price"
+                                class="text-[10px] opacity-50">↕</span></div>
+                    </th>
+                    <th class="px-6 py-4 text-center cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('profit_pct')">
+                        <div class="flex items-center justify-center gap-1">Variação <span id="sort-icon-profit_pct"
+                                class="text-[10px] opacity-50">↕</span></div>
+                    </th>
+                    <th class="px-6 py-4 text-center cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('rentability')">
+                        <div class="flex items-center justify-center gap-1">Rentabilidade <span
+                                id="sort-icon-rentability" class="text-[10px] opacity-50">↕</span></div>
+                    </th>
+                    <th class="px-6 py-4 text-center cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('magic_number_progress')">
+                        <div class="flex items-center justify-center gap-1">Insights <span
+                                id="sort-icon-magic_number_progress" class="text-[10px] opacity-50">↕</span></div>
+                    </th>
+                    <th class="px-6 py-4 text-right cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('total_value')">
+                        <div class="flex items-center justify-end gap-1">Total <span id="sort-icon-total_value"
+                                class="text-[10px] opacity-50">↕</span></div>
+                    </th>
+                    <th class="px-6 py-4 text-center cursor-pointer hover:text-white transition-colors"
+                        onclick="sortAssets('wallet_pct')">
+                        <div class="flex items-center justify-center gap-1">% <span id="sort-icon-wallet_pct"
+                                class="text-[10px] opacity-50">↕</span></div>
+                    </th>
                 </tr>
             </thead>
-            <tbody id="assets-table-body" class="divide-y divide-slate-800/50 bg-slate-900/20">
-                <!-- Javascript will populate -->
-            </tbody>
+            <tbody id="assets-table-body" class="divide-y divide-slate-800/50 bg-slate-900/20"></tbody>
         </table>
     </div>
+
+    <!-- Mobile Card View -->
+    <div id="assets-mobile-list" class="md:hidden divide-y divide-slate-800"></div>
 </div>
 
 </div>
@@ -284,39 +377,38 @@
     const fmtBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
     const fmtPct = new Intl.NumberFormat('pt-BR', { style: 'percent', minimumFractionDigits: 2 });
 
+    // Global State
+    let currentAssets = [];
+    let sortConfig = { key: 'total_value', direction: 'desc' };
+
     async function loadDashboardData() {
         const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = '/login';
-            return;
-        }
+        if (!token) { window.location.href = '/login'; return; }
 
         try {
             const response = await fetch('/api/v1/dashboard/summary', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (response.status === 401) {
-                window.location.href = '/login';
-                return;
-            }
+            if (response.status === 401) { window.location.href = '/login'; return; }
 
             const data = await response.json();
+            currentAssets = data.assets || [];
 
             // --- Update Top Cards ---
-
-            // Patrimony
             document.getElementById('card-equity').innerText = fmtBRL.format(data.equity);
             document.getElementById('card-cost').innerText = fmtBRL.format(data.total_cost);
+
             const profitSign = data.total_profit >= 0 ? '+' : '';
-            document.getElementById('card-equity-pct').innerText = `${profitSign}${fmtPct.format(data.total_profit_pct / 100)}`;
+            const cardEqPct = document.getElementById('card-equity-pct');
+            cardEqPct.innerText = `${profitSign}${fmtPct.format(data.total_profit_pct / 100)}`;
 
             if (data.total_profit < 0) {
-                document.getElementById('card-equity-pct').classList.remove('bg-slate-800', 'text-slate-300');
-                document.getElementById('card-equity-pct').classList.add('bg-red-500/10', 'text-red-400', 'border-red-500/20');
+                cardEqPct.classList.remove('bg-slate-800', 'text-slate-300');
+                cardEqPct.classList.add('bg-red-500/10', 'text-red-400', 'border-red-500/20');
             } else {
-                document.getElementById('card-equity-pct').classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
-                document.getElementById('card-equity-pct').classList.remove('bg-slate-800', 'text-slate-300');
+                cardEqPct.classList.remove('bg-slate-800', 'text-slate-300');
+                cardEqPct.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
             }
 
             // Subscription Check
@@ -332,214 +424,197 @@
                 }
             }
 
-            // Profit
-            document.getElementById('card-profit').innerText = `${profitSign}${fmtBRL.format(data.total_profit)}`;
-            if (data.total_profit < 0) document.getElementById('card-profit').classList.replace('text-emerald-400', 'text-red-400');
-
+            // Profit Card
+            const cardProfit = document.getElementById('card-profit');
+            cardProfit.innerText = `${profitSign}${fmtBRL.format(data.total_profit)}`;
+            if (data.total_profit < 0) cardProfit.classList.replace('text-emerald-400', 'text-red-400');
             document.getElementById('card-profit-val').innerText = fmtBRL.format(data.total_profit);
             document.getElementById('card-earnings-val').innerText = fmtBRL.format(data.earnings_year);
 
-            // Earnings
+            // Earnings Card
             document.getElementById('card-earnings-total').innerText = fmtBRL.format(data.earnings_year);
             document.getElementById('card-earnings-avg').innerText = fmtBRL.format(data.earnings_year / 12);
 
-            // Rentability
-            document.getElementById('card-rentability').innerText = fmtPct.format(data.rentability / 100);
-            document.getElementById('card-variation-pct').innerText = fmtPct.format(data.rentability / 100);
+            // Rentability Card
+            const cardRent = document.getElementById('card-rentability');
+            const cardVarPct = document.getElementById('card-variation-pct');
+
+            cardRent.innerText = fmtPct.format(data.rentability / 100);
+            cardVarPct.innerText = fmtPct.format(data.rentability / 100);
             document.getElementById('card-variation-val').innerText = fmtBRL.format(data.total_profit);
+
             if (data.rentability < 0) {
-                document.getElementById('card-rentability').classList.replace('text-emerald-400', 'text-red-400');
-                document.getElementById('card-variation-pct').classList.replace('text-emerald-400', 'text-red-400');
-                document.getElementById('card-variation-pct').classList.replace('bg-emerald-400/10', 'bg-red-400/10');
+                cardRent.classList.replace('text-emerald-400', 'text-red-400');
+                cardVarPct.classList.replace('text-emerald-400', 'text-red-400');
+                cardVarPct.classList.replace('bg-emerald-400/10', 'bg-red-400/10');
             }
 
-            // --- Allocation Chart (Tech Donut) ---
+            // --- Allocation Chart ---
             const ctx = document.getElementById('allocationChart');
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: data.chart_allocation.labels,
-                    datasets: [{
-                        data: data.chart_allocation.values,
-                        backgroundColor: [
-                            'rgba(59, 130, 246, 0.8)',   // Blue
-                            'rgba(16, 185, 129, 0.8)',   // Green
-                            'rgba(245, 158, 11, 0.8)',   // Amber
-                            'rgba(236, 72, 153, 0.8)',   // Pink
-                            'rgba(139, 92, 246, 0.8)'    // Violet
-                        ],
-                        borderColor: '#0f172a', // Matches card bg for separation
-                        borderWidth: 4,
-                        hoverOffset: 10,
-                        hoverBorderColor: '#fff',
-                        hoverBorderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    layout: { padding: 20 },
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                color: '#94a3b8',
-                                font: { size: 11, family: "'Inter', sans-serif" },
-                                usePointStyle: true,
-                                pointStyle: 'circle',
-                                padding: 20
-                            }
-                        }
+            if (ctx) {
+                // Destroy existing if needed (simple check)
+                const existingChart = Chart.getChart(ctx);
+                if (existingChart) existingChart.destroy();
+
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.chart_allocation.labels,
+                        datasets: [{
+                            data: data.chart_allocation.values,
+                            backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.8)', 'rgba(236, 72, 153, 0.8)', 'rgba(139, 92, 246, 0.8)'],
+                            borderColor: '#0f172a', borderWidth: 4, hoverOffset: 10, hoverBorderColor: '#fff', hoverBorderWidth: 2
+                        }]
                     },
-                    cutout: '75%', // Modern thin ring
-                    animation: { animateScale: true, animateRotate: true }
-                }
-            });
-
-            // --- Asset Table ---
-            const tableBody = document.getElementById('assets-table-body');
-            document.getElementById('table-asset-count').innerText = `(${data.assets.length})`;
-            document.getElementById('table-total-val').innerText = fmtBRL.format(data.equity);
-
-            tableBody.innerHTML = '';
-
-            data.assets.forEach(asset => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-800/50 transition-colors group border-b border-slate-800/50 last:border-0";
-
-                // Color for Profit/Loss
-                const profitClass = asset.profit_val >= 0 ? 'text-emerald-400' : 'text-red-400';
-                const bgProfitClass = asset.profit_val >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400';
-
-                const arrowIcon = asset.profit_val >= 0
-                    ? '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>'
-                    : '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>';
-
-                tr.innerHTML = `
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400 ring-1 ring-slate-700">
-                                ${asset.ticker.substring(0, 2)}
-                            </div>
-                            <div>
-                                <span class="block text-white font-bold tracking-wide">${asset.ticker}</span>
-                                <span class="block text-[10px] text-slate-500 uppercase">Ação</span>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 text-center font-mono text-slate-300">${asset.quantity}</td>
-                    <td class="px-6 py-4 text-right text-slate-400 text-xs">${fmtBRL.format(asset.average_price)}</td>
-                    <td class="px-6 py-4 text-right">
-                         <span class="text-white font-bold font-mono tracking-tight">${fmtBRL.format(asset.current_price)}</span>
-                    </td>
-                    
-                    <td class="px-6 py-4 text-center">
-                        <span class="${bgProfitClass} px-2 py-1 rounded-md text-xs font-bold inline-flex items-center gap-1">
-                             ${fmtPct.format(asset.profit_pct / 100)}
-                        </span>
-                    </td>
-                    
-                     <td class="px-6 py-4 text-center">
-                         <div class="flex items-center justify-center gap-1 ${profitClass} font-bold text-xs">
-                            ${arrowIcon}
-                            ${fmtPct.format(asset.profit_pct / 100)}
-                         </div>
-                    </td>
-                    
-                    <td class="px-6 py-4 text-right text-slate-200 font-medium font-mono">${fmtBRL.format(asset.total_value)}</td>
-                    <td class="px-6 py-4 text-center">
-                        <div class="flex items-center gap-2 justify-center">
-                            <div class="w-12 h-1 bg-slate-800 rounded-full overflow-hidden">
-                                <div class="h-full bg-blue-500" style="width: ${asset.wallet_pct}%"></div>
-                            </div>
-                            <span class="text-[10px] text-slate-500">${fmtPct.format(asset.wallet_pct / 100)}</span>
-                        </div>
-                    </td>
-                `;
-                tableBody.appendChild(tr);
-            });
-
-            // --- Recommendations ---
-            const recsContainer = document.getElementById('recommendations-container');
-            const recs = data.recommendations;
-
-            if (recs && (recs.items.length > 0 || recs.hidden_count > 0)) {
-                recsContainer.innerHTML = '';
-
-                // Render visible
-                recs.items.forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = "bg-slate-900/50 border border-slate-700/50 rounded-xl p-5 hover:border-emerald-500/30 transition-colors group relative overflow-hidden";
-                    card.innerHTML = `
-                        <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <svg class="w-24 h-24 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm6-4a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zm6-3a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path></svg>
-                        </div>
-                        <div class="flex justify-between items-start mb-4 relative z-10">
-                            <div>
-                                <h4 class="text-2xl font-bold text-white">${item.ticker}</h4>
-                                <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider bg-emerald-400/10 px-2 py-1 rounded border border-emerald-400/20">${item.action}</span>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-3xl font-bold text-emerald-400">+${item.upside.toFixed(0)}%</p>
-                                <p class="text-[10px] text-slate-500 uppercase">Upside Estimado</p>
-                            </div>
-                        </div>
-                        <div class="space-y-2 relative z-10">
-                            <div class="flex justify-between text-xs border-b border-slate-700/50 pb-2">
-                                <span class="text-slate-400">Preço Justo</span>
-                                <span class="text-white font-mono">${fmtBRL.format(item.fair_price)}</span>
-                            </div>
-                             <div class="flex justify-between text-xs">
-                                <span class="text-slate-400">Cotado a</span>
-                                <span class="text-slate-300 font-mono">${fmtBRL.format(item.current_price)}</span>
-                            </div>
-                            <p class="text-xs text-slate-500 mt-2 italic">"${item.reason}"</p>
-                        </div>
-                    `;
-                    recsContainer.appendChild(card);
-                });
-
-                // Render Hidden Blurred Cards
-                if (recs.hidden_count > 0) {
-                    for (let i = 0; i < recs.hidden_count; i++) {
-                        const blurredCard = document.createElement('div');
-                        blurredCard.className = "relative bg-[#0f172a] border border-slate-800 rounded-xl p-5 overflow-hidden cursor-pointer group";
-                        blurredCard.onclick = showPremiumModal;
-
-                        // Fake Content (Blurred)
-                        blurredCard.innerHTML = `
-                            <div class="filter blur-sm select-none opacity-50">
-                                <div class="flex justify-between items-start mb-4">
-                                    <div>
-                                        <div class="h-8 w-16 bg-slate-700 rounded mb-2"></div>
-                                        <div class="h-4 w-24 bg-slate-800 rounded"></div>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="h-8 w-12 bg-emerald-900/50 rounded mb-1 ml-auto"></div>
-                                        <div class="h-3 w-20 bg-slate-800 rounded ml-auto"></div>
-                                    </div>
-                                </div>
-                                <div class="space-y-3">
-                                    <div class="h-4 w-full bg-slate-800 rounded"></div>
-                                    <div class="h-4 w-3/4 bg-slate-800 rounded"></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Lock Overlay -->
-                            <div class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/40 opacity-70 group-hover:opacity-100 transition-opacity">
-                                <div class="p-3 bg-purple-600 rounded-full shadow-lg shadow-purple-500/50 mb-2 transform group-hover:scale-110 transition-transform">
-                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                                </div>
-                                <span class="text-xs font-bold text-white uppercase tracking-wider text-shadow">Premium</span>
-                            </div>
-                        `;
-                        recsContainer.appendChild(blurredCard);
+                    options: {
+                        responsive: true, maintainAspectRatio: false, layout: { padding: 20 },
+                        plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 11, family: "'Inter', sans-serif" }, usePointStyle: true, pointStyle: 'circle', padding: 20 } } },
+                        cutout: '75%', animation: { animateScale: true, animateRotate: true }
                     }
-                }
+                });
             }
+
+            // --- Render Assets ---
+            renderAssetsTable();
+
+            // --- Sparkline Charts ---
+            const history = data.history || {};
+            const dates = history.dates || [];
+            if (dates.length > 0) {
+                renderSparkline('chartEquity', history.equity, 'rgba(59, 130, 246, 0.5)', '#3b82f6');
+                renderSparkline('chartProfit', history.profit, 'rgba(16, 185, 129, 0.5)', '#10b981');
+                renderSparkline('chartEarnings', history.earnings, 'rgba(245, 158, 11, 0.5)', '#f59e0b');
+                renderSparkline('chartRentability', history.rentability, 'rgba(139, 92, 246, 0.5)', '#8b5cf6');
+            }
+
         } catch (error) {
             console.error("Dashboard Error:", error);
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-4 right-4 bg-red-600 text-white px-6 py-4 rounded-xl shadow-2xl z-50 animate-bounce";
+            toast.innerHTML = `<div class="font-bold">Erro ao carregar data</div><div class="text-xs">Falha: ${error.message}</div>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
         }
+    }
+
+    function sortAssets(key) {
+        if (sortConfig.key === key) sortConfig.direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
+        else { sortConfig.key = key; sortConfig.direction = key === 'ticker' ? 'asc' : 'desc'; }
+        renderAssetsTable();
+    }
+
+    function renderAssetsTable() {
+        const tableBody = document.getElementById('assets-table-body');
+        const mobileList = document.getElementById('assets-mobile-list');
+
+        // Headers
+        document.querySelectorAll('[id^="sort-icon-"]').forEach(el => el.innerText = '↕');
+        const currentIcon = document.getElementById(`sort-icon-${sortConfig.key}`);
+        if (currentIcon) currentIcon.innerText = sortConfig.direction === 'asc' ? '↑' : '↓';
+
+        // Sort
+        const sortedAssets = [...currentAssets].sort((a, b) => {
+            let valA = a[sortConfig.key];
+            let valB = b[sortConfig.key];
+            if (typeof valA === 'string') { valA = valA.toLowerCase(); valB = valB.toLowerCase(); }
+            if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        // Update Totals
+        const countSpan = document.getElementById('table-asset-count');
+        const valSpan = document.getElementById('table-total-val');
+        if (countSpan) countSpan.innerText = `(${sortedAssets.length})`;
+        if (valSpan) valSpan.innerText = fmtBRL.format(currentAssets.reduce((sum, asset) => sum + asset.total_value, 0));
+
+        // Populate
+        if (tableBody) tableBody.innerHTML = '';
+        if (mobileList) mobileList.innerHTML = '';
+
+        sortedAssets.forEach(asset => {
+            const profitClass = asset.profit_val >= 0 ? 'text-emerald-400' : 'text-red-400';
+            const bgProfitClass = asset.profit_val >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400';
+            const arrowIcon = asset.profit_val >= 0
+                ? '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>'
+                : '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>';
+
+            // 1. Desktop Row
+            if (tableBody) {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/50 transition-colors group border-b border-slate-800/50 last:border-0";
+                tr.innerHTML = `
+                    <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400 ring-1 ring-slate-700">${asset.ticker.substring(0, 2)}</div><div><span class="block text-white font-bold tracking-wide">${asset.ticker}</span><span class="block text-[10px] text-slate-500 uppercase">Ação</span></div></div></td>
+                    <td class="px-6 py-4 text-center font-mono text-slate-300">${asset.quantity}</td>
+                    <td class="px-6 py-4 text-right text-slate-400 text-xs">${fmtBRL.format(asset.average_price)}</td>
+                    <td class="px-6 py-4 text-right"><span class="text-white font-bold font-mono tracking-tight">${fmtBRL.format(asset.current_price)}</span></td>
+                    <td class="px-6 py-4 text-center"><span class="${bgProfitClass} px-2 py-1 rounded-md text-xs font-bold inline-flex items-center gap-1">${fmtPct.format(asset.profit_pct / 100)}</span></td>
+                    <td class="px-6 py-4 text-center"><div class="flex items-center justify-center gap-1 ${profitClass} font-bold text-xs">${arrowIcon} ${fmtPct.format(asset.profit_pct / 100)}</div></td>
+                    <td class="px-6 py-4"><div class="flex flex-col gap-2">
+                        ${asset.badges && asset.badges.length > 0 ? `<div class="flex flex-wrap gap-1 justify-center">${asset.badges.map(b => `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-${b.color}-500/20 text-${b.color}-400 border border-${b.color}-500/30" title="${b.full}">${b.label}</span>`).join('')}</div>` : ''}
+                        ${asset.magic_number > 0 ? `<div class="w-full" title="Faltam ${asset.magic_number_remain} cotas"><div class="flex justify-between items-center mb-1"><span class="text-[10px] text-slate-500">Bola de Neve</span><span class="text-[10px] text-blue-400 font-mono">${asset.quantity}/${asset.magic_number}</span></div><div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-blue-600 to-cyan-400" style="width: ${asset.magic_number_progress}%"></div></div></div>` : ''}
+                    </div></td>
+                    <td class="px-6 py-4 text-right text-slate-200 font-medium font-mono">${fmtBRL.format(asset.total_value)}</td>
+                    <td class="px-6 py-4 text-center"><div class="flex items-center gap-2 justify-center"><div class="w-12 h-1 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-blue-500" style="width: ${asset.wallet_pct}%"></div></div><span class="text-[10px] text-slate-500">${fmtPct.format(asset.wallet_pct / 100)}</span></div></td>
+                `;
+                tableBody.appendChild(tr);
+            }
+
+            // 2. Mobile Card
+            if (mobileList) {
+                const card = document.createElement('div');
+                card.className = "p-4 space-y-3";
+                const badgesHtml = asset.badges && asset.badges.length > 0
+                    ? `<div class="flex flex-wrap gap-1 mt-1">${asset.badges.map(b => `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-${b.color}-500/20 text-${b.color}-400 border border-${b.color}-500/30">${b.label}</span>`).join('')}</div>` : '';
+                const magicHtml = asset.magic_number > 0
+                    ? `<div class="mt-2 pt-2 border-t border-slate-800/50"><div class="flex justify-between items-center mb-1"><span class="text-[10px] text-slate-500 uppercase tracking-widest flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>Bola de Neve</span><span class="text-[10px] text-blue-400 font-mono">${asset.quantity}/${asset.magic_number}</span></div><div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-blue-500" style="width: ${asset.magic_number_progress}%"></div></div></div>` : '';
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start"><div class="flex gap-3"><div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 ring-1 ring-slate-700">${asset.ticker.substring(0, 2)}</div><div><span class="block text-white font-bold">${asset.ticker}</span><span class="block text-xs text-slate-400">${asset.quantity} cotas</span>${badgesHtml}</div></div><div class="text-right"><span class="block text-white font-bold font-mono">${fmtBRL.format(asset.total_value)}</span><span class="block text-xs ${profitClass} font-medium">${fmtBRL.format(asset.profit_val)} (${fmtPct.format(asset.profit_pct / 100)})</span></div></div>
+                    ${magicHtml}
+                `;
+                mobileList.appendChild(card);
+            }
+        });
+    }
+
+    function renderSparkline(canvasId, dataPoints, areaColor, lineColor) {
+        const ctx = document.getElementById(canvasId);
+        if (!ctx || !dataPoints || dataPoints.length === 0) return;
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: new Array(dataPoints.length).fill(''), // No labels
+                datasets: [{
+                    data: dataPoints,
+                    borderColor: lineColor,
+                    backgroundColor: (context) => {
+                        const ctx = context.chart.ctx;
+                        const gradient = ctx.createLinearGradient(0, 0, 0, 100);
+                        gradient.addColorStop(0, areaColor);
+                        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+                        return gradient;
+                    },
+                    borderWidth: 2,
+                    // Show a dot if only 1 point, otherwise hide points for sparkline look
+                    pointRadius: dataPoints.length === 1 ? 4 : 0,
+                    pointHoverRadius: 4,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: true, mode: 'index', intersect: false } },
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                layout: { padding: 0 }
+            }
+        });
     }
 
     document.addEventListener('DOMContentLoaded', () => {

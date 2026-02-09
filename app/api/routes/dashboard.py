@@ -7,6 +7,8 @@ from app.core import database, security
 from app.models.user import User
 from app.models.portfolio import Portfolio
 from app.models.asset import Asset
+from app.models.dividend import DividendEvent
+from datetime import date, timedelta
 from app.api.routes.auth import get_user_by_email # Helper temporário ou mover auth dependencies
 
 router = APIRouter()
@@ -75,8 +77,12 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
     for item in portfolio_items:
         asset = item.asset
         
+        # Safety check: if asset was deleted but portfolio item remains
+        if not asset:
+            continue
+        
         # Valores
-        current_val = item.quantity * asset.price
+        current_val = item.quantity * (asset.price or 0.0) # Handle None price
         cost_val = item.quantity * item.average_price
         
         total_equity += current_val
@@ -89,7 +95,7 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
         # Proventos (Estimativa 12m baseada no DY)
         # DY é anual. Valor bruto anual = Valor investido (ou atual?) * DY.
         # Geralmente DY é sobre preço atual.
-        yearly_earnings = current_val * (asset.dy_12m / 100)
+        yearly_earnings = current_val * ((asset.dy_12m or 0.0) / 100)
         total_earnings_12m += yearly_earnings
         
         # Alocação por Tipo
@@ -99,17 +105,68 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
         type_allocation[type_label] = type_allocation.get(type_label, 0) + current_val
         
         # Dados para Tabela
-        assets_list.append({
+        item_data = {
             "ticker": asset.ticker,
             "quantity": item.quantity,
             "average_price": item.average_price,
-            "current_price": asset.price,
+            "current_price": asset.price or 0.0,
             "total_value": current_val,
             "profit_val": profit,
             "profit_pct": profit_pct,
             "wallet_pct": 0, # Calc after total
-            "recommendation": "Neutro" # Placeholder
-        })
+            "recommendation": "Neutro", # Placeholder
+            "magic_number": 0,
+            "magic_number_progress": 0,
+            "magic_number_remain": 0,
+            "badges": []
+        }
+
+        # --- Magic Number (Bola de Neve) ---
+        # Formula: Need (Price / Monthly Dividends) shares to buy 1 new share.
+        # Monthly Dividends = Price * (DY / 12)
+        # So: Target = Price / (Price * DY/12) = 1 / (DY/12) = 12 / DY
+        # DY must be decimal.
+        # asset.dy_12m is percentage (e.g. 12.5).
+        
+        dy_val = asset.dy_12m or 0.0
+        if dy_val > 0:
+            dy_decimal = dy_val / 100.0
+            # Target Shares to buy 1 share/month with dividends
+            target_shares = 12 / dy_decimal
+            
+            # Progress
+            owned = item.quantity
+            progress = (owned / target_shares) * 100 if target_shares > 0 else 0
+            remain = max(0, int(target_shares - owned))
+            
+            item_data["magic_number"] = int(target_shares)
+            item_data["magic_number_progress"] = min(100, progress)
+            item_data["magic_number_remain"] = remain
+            
+        # --- Badges Logic ---
+        badges = []
+        
+        # 1. P/VP Opportunity (FIIs only)
+        if asset.type == 'fii' and asset.p_vp and asset.p_vp > 0:
+            if asset.p_vp < 0.90:
+                badges.append({"label": "Desconto", "color": "emerald", "full": f"P/VP {asset.p_vp:.2f}"})
+            elif asset.p_vp > 1.20:
+                badges.append({"label": "Caro?", "color": "red", "full": f"P/VP {asset.p_vp:.2f}"})
+        
+        # 2. Dividend Payer
+        if dy_val > 14.0:
+             badges.append({"label": "Dividend King", "color": "orange", "full": f"DY {dy_val:.1f}%"})
+        elif dy_val > 8.0:
+             badges.append({"label": "Pagador", "color": "blue", "full": f"DY {dy_val:.1f}%"})
+            
+        # 3. Valuation (Simplistic P/L for Stocks)
+        if asset.type == 'stock' and asset.price and asset.lpa and asset.lpa > 0:
+            p_l = asset.price / asset.lpa
+            if p_l < 5.0:
+                badges.append({"label": "Barato", "color": "emerald", "full": f"P/L {p_l:.1f}"})
+        
+        item_data["badges"] = badges
+        assets_list.append(item_data)
 
 
     # --- Totals Calculation ---
@@ -122,48 +179,10 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
     chart_labels = [k for k, v in sorted_alloc]
     chart_values = [v for k, v in sorted_alloc]
 
-    # --- Recommendations Feature ---
-    # Calculate simplistic upside based on P/VP and average price (MVP logic)
-    # Real app would use the sophisticated Valuation service
+    # --- Recommendations Feature REMOVED at User Request (Legal compliance) ---
     recommendations = []
-    
-    for item in portfolio_items:
-        asset = item.asset
-        # Simple Logic: If P/VP < 0.8 and Price < Avg Price => Buy
-        # Or use Graham number (22.5 * LPA * VPA)^0.5
-        
-        fair_price = 0.0
-        if asset.lpa > 0 and asset.vpa > 0:
-            fair_price = (22.5 * asset.lpa * asset.vpa) ** 0.5
-            
-        upside = 0.0
-        if fair_price > 0:
-            upside = ((fair_price - asset.price) / asset.price) * 100
-            
-        if upside > 15: # Valid recommendation
-            recommendations.append({
-                "ticker": asset.ticker,
-                "action": "COMPRA",
-                "upside": upside,
-                "fair_price": fair_price,
-                "current_price": asset.price,
-                "reason": "Preço abaixo do valor intrínseco (Graham)"
-            })
-            
-    # Sort by highest upside
-    recommendations.sort(key=lambda x: x['upside'], reverse=True)
-    
-    # Freemium Filter
-    is_premium = current_user.is_premium or current_user.is_admin
     visible_recs = []
     hidden_count = 0
-    
-    if recommendations:
-        if is_premium:
-            visible_recs = recommendations
-        else:
-            visible_recs = recommendations[:1]
-            hidden_count = len(recommendations) - 1
 
     # Subscription Status
     sub_status = {
@@ -176,9 +195,100 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
     
     if current_user.is_premium and current_user.subscription_end_date:
         from datetime import datetime
-        delta = current_user.subscription_end_date - datetime.now()
-        sub_status["days_remaining"] = delta.days
+        now = datetime.now()
+        delta = current_user.subscription_end_date - now
+        
+        # If delta.days is 0 but it's positive (e.g. 23 hours left), we should show 1 day or < 1 day.
+        # But commonly 'days' property of timedelta just gives full days.
+        # If it's less than 24h, delta.days is 0.
+        
+        # Adjust logic: if end_date > now, at least 1 day or "Expires Today"
+        # However, user likely wants to see "30 days" right after purchase.
+        
+        # Calculate total seconds and convert to days rounding up
+        total_seconds = delta.total_seconds()
+        if total_seconds > 0:
+             import math
+             days_remaining = math.ceil(total_seconds / 86400)
+             sub_status["days_remaining"] = days_remaining
+        else:
+             sub_status["days_remaining"] = 0
+             
         sub_status["end_date"] = current_user.subscription_end_date.strftime("%d/%m/%Y")
+
+    # --- History Snapshot Logic ---
+    from datetime import date
+    from app.models.portfolio_history import PortfolioSnapshot
+    
+    today = date.today()
+    
+    # Check if snapshot exists for today
+    existing_snapshot = db.query(PortfolioSnapshot).filter(
+        PortfolioSnapshot.user_id == current_user.id,
+        PortfolioSnapshot.snapshot_date == today
+    ).first()
+    
+    if not existing_snapshot:
+        # Create new snapshot
+        new_snapshot = PortfolioSnapshot(
+            user_id=current_user.id,
+            snapshot_date=today,
+            total_equity=total_equity,
+            total_profit=total_profit_val,
+            total_earnings=total_earnings_12m,
+            rentability_pct=total_profit_pct
+        )
+        db.add(new_snapshot)
+        db.commit()
+    else:
+        # Update existing snapshot (in case values changed during the day)
+        existing_snapshot.total_equity = total_equity
+        existing_snapshot.total_profit = total_profit_val
+        existing_snapshot.total_earnings = total_earnings_12m
+        existing_snapshot.rentability_pct = total_profit_pct
+        db.commit()
+        
+    # Fetch History (Last 30 days)
+    history_records = db.query(PortfolioSnapshot).filter(
+        PortfolioSnapshot.user_id == current_user.id
+    ).order_by(PortfolioSnapshot.snapshot_date.asc()).limit(30).all()
+    
+    history_data = {
+        "dates": [h.snapshot_date.strftime("%d/%m") for h in history_records],
+        "equity": [h.total_equity for h in history_records],
+        "profit": [h.total_profit for h in history_records],
+        "earnings": [h.total_earnings for h in history_records],
+        "rentability": [h.rentability_pct for h in history_records]
+    }
+
+    # --- Agenda de Proventos (Real Data) ---
+    today_date = date.today()
+    agenda_data = []
+    
+    asset_ids = [item.asset_id for item in portfolio_items] if portfolio_items else []
+    
+    if asset_ids:
+        # Fetch future dividends (and maybe recent past like last 30 days context?)
+        # Let's show upcoming for now as per "Agenda"
+        future_events = db.query(DividendEvent).filter(
+            DividendEvent.asset_id.in_(asset_ids),
+            DividendEvent.pay_date >= today_date
+        ).order_by(DividendEvent.pay_date.asc()).limit(20).all()
+        
+        for ev in future_events:
+            # Find associated portfolio item to get quantity
+            p_item = next((i for i in portfolio_items if i.asset_id == ev.asset_id), None)
+            if p_item and p_item.asset:
+                total_recv = ev.amount * p_item.quantity
+                agenda_data.append({
+                    "ticker": p_item.asset.ticker,
+                    "type": ev.type,
+                    "pay_date": ev.pay_date.strftime("%d/%m/%Y"),
+                    "record_date": ev.record_date.strftime("%d/%m/%Y") if ev.record_date else "-",
+                    "amount": ev.amount,
+                    "total_receive": total_recv,
+                    "asset_type": p_item.asset.type
+                })
 
     return {
         "equity": total_equity,
@@ -192,11 +302,13 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user),
             "labels": chart_labels,
             "values": chart_values
         },
+        "history": history_data,
+        "agenda": agenda_data, # New Real Data
         "assets": sorted(assets_list, key=lambda x: x['total_value'], reverse=True),
         "recommendations": {
             "items": visible_recs,
             "hidden_count": hidden_count,
-            "is_premium": is_premium
+            "is_premium": current_user.is_premium
         },
         "subscription": sub_status
     }

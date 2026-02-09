@@ -28,6 +28,8 @@
 /api/v1/profile/data -> get_profile_data
 /api/v1/profile/update -> update_profile
 /api/v1/profile/security -> update_password
+/api/v1/favorites/toggle/{ticker} -> toggle_favorite
+/api/v1/favorites/ -> get_favorites
 /dashboard -> dashboard_view
 /screener -> screener_view
 /portfolio -> portfolio
@@ -44,5 +46,6 @@
 /login -> login_view
 /register -> register_view
 /logout -> logout_view
+/debug-brapi -> debug_brapi
 / -> read_root
 /health -> health_check

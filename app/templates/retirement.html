@@ -153,6 +153,12 @@
     let fireChart = null;
 
     function calculateFIRE() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
+
         // Inputs
         let expense = parseFloat(document.getElementById('inp-expense').value);
         let inflation = parseFloat(document.getElementById('inp-inflation').value) / 100;

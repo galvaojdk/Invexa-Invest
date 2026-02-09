@@ -34,7 +34,18 @@
         <!-- Header Info -->
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-3xl font-bold text-white" id="res-ticker">ABCD3</h2>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-3xl font-bold text-white" id="res-ticker">ABCD3</h2>
+                    <button onclick="toggleFavoriteCurrent()" id="btn-fav-action"
+                        class="p-2 rounded-full hover:bg-slate-800 transition-colors group">
+                        <svg id="fav-icon-main"
+                            class="w-6 h-6 text-slate-600 group-hover:text-yellow-400 transition-colors"
+                            fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                    </button>
+                </div>
                 <p class="text-slate-400">Preço Atual: <span class="text-white font-mono text-xl" id="res-price">R$
                         0,00</span></p>
             </div>
@@ -48,7 +59,8 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
             <!-- Graham Card -->
-            <div class="bg-[#0f172a] rounded-2xl border border-slate-800 p-6 relative overflow-hidden group">
+            <div id="graham-card"
+                class="bg-[#0f172a] rounded-2xl border border-slate-800 p-6 relative overflow-hidden group">
                 <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                     <h1 class="text-6xl font-bold text-white">G</h1>
                 </div>
@@ -123,7 +135,10 @@
     async function checkPremiumAccess() {
         try {
             const token = localStorage.getItem('token');
-            if (!token) return;
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
 
             const res = await fetch('/api/v1/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
             if (res.ok) {
@@ -137,7 +152,19 @@
         } catch (e) { console.error(e); }
     }
 
-    document.addEventListener('DOMContentLoaded', checkPremiumAccess);
+    document.addEventListener('DOMContentLoaded', () => {
+        checkPremiumAccess();
+        checkFavorites();
+
+        // Check for Ticker param (from Global Search)
+        const urlParams = new URLSearchParams(window.location.search);
+        const ticker = urlParams.get('ticker');
+        if (ticker) {
+            document.getElementById('ticker-input').value = ticker;
+            // Short delay to ensure Auth check doesn't block (though analyzeValuation handles its own auth)
+            setTimeout(analyzeValuation, 500);
+        }
+    });
 
     async function analyzeValuation() {
         const ticker = document.getElementById('ticker-input').value;
@@ -156,7 +183,10 @@
                 showPremiumModal();
                 return;
             }
-            if (!response.ok) throw new Error("Erro ao analisar ativo.");
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.detail || "Erro ao analisar ativo.");
+            }
 
             const data = await response.json();
             renderValuation(data);
@@ -170,12 +200,22 @@
 
     function renderValuation(data) {
         // Basic Info
+        currentTicker = data.ticker;
+        updateFavIcon();
+
         document.getElementById('res-ticker').innerText = data.ticker;
         document.getElementById('res-price').innerText = fmtMoney(data.price);
 
         // Graham
-        document.getElementById('graham-price').innerText = fmtMoney(data.graham.fair_price);
-        document.getElementById('graham-margin').innerText = data.graham.margin.toFixed(2) + "%";
+        if (data.graham.fair_price !== null) {
+            document.getElementById('graham-price').innerText = fmtMoney(data.graham.fair_price);
+            document.getElementById('graham-margin').innerText = data.graham.margin.toFixed(2) + "%";
+            document.getElementById('graham-card').classList.remove('opacity-50');
+        } else {
+            document.getElementById('graham-price').innerText = "N/A";
+            document.getElementById('graham-margin').innerText = "-";
+            document.getElementById('graham-card').classList.add('opacity-50');
+        }
 
         // Graham Bar (0% at center? No, simpler: 0 to 100% margin)
         // If Margin is negative, it's expensive.
@@ -209,6 +249,55 @@
         }
 
         document.getElementById('results-area').classList.remove('hidden');
+    }
+
+    let favoriteTickers = new Set();
+    let currentTicker = "";
+
+    async function checkFavorites() {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        try {
+            const res = await fetch('/api/v1/favorites/', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) {
+                const favs = await res.json();
+                favoriteTickers = new Set(favs.map(f => f.ticker));
+                updateFavIcon();
+            }
+        } catch (e) { console.error("Error loading favorites", e); }
+    }
+
+    function updateFavIcon() {
+        if (!currentTicker) return;
+        const icon = document.getElementById('fav-icon-main');
+        if (favoriteTickers.has(currentTicker)) {
+            icon.classList.replace('text-slate-600', 'text-yellow-400');
+            icon.classList.remove('group-hover:text-yellow-400'); // Always yellow
+        } else {
+            icon.classList.replace('text-yellow-400', 'text-slate-600');
+            icon.classList.add('group-hover:text-yellow-400');
+        }
+    }
+
+    async function toggleFavoriteCurrent() {
+        if (!currentTicker) return;
+        const token = localStorage.getItem('token');
+        if (!token) return alert("Faça login para favoritar.");
+
+        const isFav = favoriteTickers.has(currentTicker);
+        if (isFav) favoriteTickers.delete(currentTicker);
+        else favoriteTickers.add(currentTicker);
+
+        updateFavIcon(); // Optimistic
+
+        try {
+            await fetch(`/api/v1/favorites/toggle/${currentTicker}`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+        } catch (e) {
+            console.error(e);
+            alert("Erro ao salvar favorito.");
+            if (isFav) favoriteTickers.add(currentTicker); else favoriteTickers.delete(currentTicker);
+            updateFavIcon();
+        }
     }
 
     function fmtMoney(val) {

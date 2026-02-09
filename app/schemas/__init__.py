@@ -27,6 +27,10 @@ class UserResponse(UserBase):
     is_admin: bool = False
     is_premium: bool = False
     role: str = "user"
+    subscription_status: Optional[str] = None
+    subscription_plan: Optional[str] = None
+    subscription_end_date: Optional[datetime] = None
+
     class Config:
         from_attributes = True
 
@@ -45,6 +49,9 @@ class AssetResponse(BaseModel):
     p_vp: Optional[float] = 0.0
     shares_outstanding: Optional[int] = 0
     net_income: Optional[float] = 0.0
+    liquidity_avg_2m: Optional[float] = 0.0
+    lpa: Optional[float] = 0.0
+    vpa: Optional[float] = 0.0
     # Runtime fields
     fair_price_graham: Optional[float] = 0.0
     fair_price_bazin: Optional[float] = 0.0
