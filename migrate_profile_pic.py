@@ -1,4 +1,4 @@
-from sqlalchemy import create_all, text
+from sqlalchemy import text
 from app.core.database import engine
 from app.core.config import settings
 
