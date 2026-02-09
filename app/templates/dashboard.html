@@ -132,81 +132,62 @@
         </div>
     </div>
 
-    <!-- Middle Row: Charts -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Middle Row: Charts and Agenda -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
 
         <!-- Evolution Chart (Left - 2 Columns) -->
         <div class="md:col-span-2 bg-[#0f172a] rounded-2xl p-4 md:p-5 border border-slate-800 shadow-xl flex flex-col">
             <div class="flex justify-between items-center mb-4">
                 <div>
                     <h3 class="text-base font-bold text-white tracking-tight">Evolução Patrimonial</h3>
-                    <p class="text-xs text-slate-500">Histórico de crescimento | Últimos 12 Meses</p>
+                    <p class="text-[10px] text-slate-500">Histórico de crescimento | Últimos 12 Meses</p>
                 </div>
                 <div class="flex gap-2">
                     <select
-                        class="bg-slate-900 border border-slate-700 text-slate-400 text-[10px] uppercase font-bold rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-blue-500 outline-none">
+                        class="bg-slate-900 border border-slate-700 text-slate-400 text-[9px] uppercase font-bold rounded-lg px-2 py-1 focus:ring-1 focus:ring-blue-500 outline-none">
                         <option>Últimos 12 Meses</option>
                     </select>
                 </div>
             </div>
-            <div class="h-[240px] w-full relative">
+            <div class="h-[180px] w-full relative">
                 <canvas id="mainEvolutionChart"></canvas>
             </div>
         </div>
 
-        <!-- Allocation Chart -->
-        <div class="bg-[#0f172a] rounded-2xl p-4 md:p-5 border border-slate-800 shadow-xl flex flex-col">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-base font-bold text-white tracking-tight">Alocação</h3>
-                <span
-                    class="px-2 py-0.5 bg-slate-800 text-slate-400 text-[9px] font-bold uppercase tracking-widest border border-slate-700 rounded">Atual</span>
-            </div>
-            <div class="relative flex-1 flex flex-col items-center">
-                <div class="w-full h-[160px] relative">
-                    <canvas id="deskAllocationChart"></canvas>
+        <!-- Right Column: Allocation and Agenda -->
+        <div class="flex flex-col gap-5">
+            <!-- Allocation Chart -->
+            <div class="bg-[#0f172a] rounded-2xl p-4 border border-slate-800 shadow-xl flex flex-col">
+                <h3 class="text-xs font-bold text-white tracking-tight mb-4">Alocação</h3>
+                <div class="relative flex flex-col items-center">
+                    <div class="w-full h-[120px] relative">
+                        <canvas id="deskAllocationChart"></canvas>
+                    </div>
+                    <!-- Custom Legend -->
+                    <div id="desk-allocation-legend"
+                        class="w-full mt-3 grid grid-cols-2 gap-x-2 gap-y-1 text-[8px] font-medium text-slate-400">
+                        <!-- Dynamic Items -->
+                    </div>
                 </div>
-                <!-- Custom Legend -->
-                <div id="desk-allocation-legend"
-                    class="w-full mt-4 grid grid-cols-2 gap-x-2 gap-y-1.5 text-[9px] font-medium text-slate-400">
-                    <!-- Dynamic Items -->
-                </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Proventos Agenda Row -->
-    <div class="bg-[#0f172a] rounded-2xl p-4 border border-slate-800 shadow-xl">
-        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-            <div class="flex items-center gap-4">
-                <h3 class="text-lg font-bold text-white tracking-tight">Agenda de Proventos</h3>
-                <div class="h-6 w-px bg-slate-800"></div>
-                <div class="flex items-center gap-2 text-emerald-400 font-bold" id="desk-agenda-total-row">
-                    <span class="text-slate-500 text-xs font-normal">Fev/25:</span>
-                    <span class="text-lg">R$ 0,00</span>
-                    <span class="text-[10px] bg-emerald-500/10 px-1.5 py-0.5 rounded ml-1">+12% vs Jan</span>
+            <!-- Proventos Agenda -->
+            <div
+                class="bg-[#0f172a] rounded-2xl p-4 border border-slate-800 shadow-xl flex-1 flex flex-col overflow-hidden">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-xs font-bold text-white tracking-tight">Agenda</h3>
+                    <div class="flex items-center gap-1 text-emerald-400 font-bold" id="desk-agenda-total-row">
+                        <span class="text-xs" style="font-size: 10px;">R$ 0,00</span>
+                    </div>
+                </div>
+                <div class="overflow-y-auto max-h-[100px] pr-1">
+                    <table class="w-full text-left text-[9px]">
+                        <tbody id="desk-agenda-body" class="divide-y divide-slate-800/50">
+                            <!-- Items -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div class="flex items-center gap-2 text-[10px] text-slate-500 uppercase font-bold tracking-widest">
-                Recebidos últimos 10 meses: <span class="text-slate-300" id="desk-agenda-historic">R$ 0,00</span>
-            </div>
-        </div>
-
-        <!-- Table-like agenda list -->
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-                <thead class="text-slate-500 border-b border-slate-800/50 uppercase tracking-widest font-bold">
-                    <tr>
-                        <th class="pb-3 pr-4">Ativo</th>
-                        <th class="pb-3 pr-4">Data Com</th>
-                        <th class="pb-3 pr-4">Pagamento</th>
-                        <th class="pb-3 pr-4">Tipo</th>
-                        <th class="pb-3 text-right">Valor Bruto</th>
-                    </tr>
-                </thead>
-                <tbody id="desk-agenda-body" class="divide-y divide-slate-800/50">
-                    <!-- Items -->
-                </tbody>
-            </table>
         </div>
     </div>
 
@@ -224,7 +205,7 @@
                 </div>
             </div>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto overflow-y-auto max-h-[300px]">
             <table class="w-full text-left">
                 <thead
                     class="bg-slate-900/50 text-[9px] text-slate-500 uppercase font-bold tracking-widest border-b border-slate-800/50">
@@ -649,35 +630,46 @@
 
                 if (id === 'desk-equity') {
                     el.innerText = fmtBRL.format(val);
-                    document.getElementById('desk-cost').innerText = fmtBRL.format(cost);
-                    document.getElementById('desk-equity-footer').innerText = fmtBRL.format(val);
-
-                    const pSign = profit >= 0 ? '+' : '';
                     const diffVal = document.getElementById('desk-equity-diff-val');
                     const diffPct = document.getElementById('desk-equity-diff-pct');
-                    diffVal.innerText = `${pSign} ${fmtBRL.format(profit)}`;
-                    diffPct.innerText = `${pSign}${fmtPct.format(profitPct / 100)}`;
+                    const footer = document.getElementById('desk-equity-footer');
+                    const costEl = document.getElementById('desk-cost');
+
+                    if (costEl) costEl.innerText = fmtBRL.format(cost);
+                    if (footer) footer.innerText = fmtBRL.format(val);
+
+                    if (diffVal) diffVal.innerText = `${pSign} ${fmtBRL.format(profit)}`;
+                    if (diffPct) diffPct.innerText = `${pSign}${fmtPct.format(profitPct / 100)}`;
 
                     if (profit < 0) {
-                        diffVal.className = 'text-red-400 text-xs font-bold';
-                        diffPct.className = 'text-red-400/80 text-[10px] bg-red-500/10 px-1.5 py-0.5 rounded';
+                        if (diffVal) diffVal.className = 'text-red-400 text-xs font-bold';
+                        if (diffPct) diffPct.className = 'text-red-400/80 text-[10px] bg-red-500/10 px-1.5 py-0.5 rounded';
                     }
                 }
 
                 if (id === 'desk-profit') {
                     el.innerText = fmtBRL.format(profit);
-                    if (profit < 0) el.classList.replace('text-emerald-400', 'text-red-400');
-                    document.getElementById('desk-profit-diff-val').innerText = `${profit >= 0 ? '+' : ''} ${fmtBRL.format(profit)}`;
-                    document.getElementById('desk-profit-pct').innerText = `${profit >= 0 ? '+' : ''}${fmtPct.format(profitPct / 100)}`;
-                    document.getElementById('desk-profit-footer').innerText = fmtBRL.format(profit);
-                    if (profit < 0) document.getElementById('desk-profit-pct').className = 'text-red-400';
+                    const diffVal = document.getElementById('desk-profit-diff-val');
+                    const diffPct = document.getElementById('desk-profit-pct');
+                    const footer = document.getElementById('desk-profit-footer');
+
+                    if (diffVal) diffVal.innerText = `${profit >= 0 ? '+' : ''} ${fmtBRL.format(profit)}`;
+                    if (diffPct) {
+                        diffPct.innerText = `${profit >= 0 ? '+' : ''}${fmtPct.format(profitPct / 100)}`;
+                        if (profit < 0) diffPct.className = 'text-red-400';
+                    }
+                    if (footer) footer.innerText = fmtBRL.format(profit);
                 }
 
                 if (id === 'desk-earnings') {
                     el.innerText = fmtBRL.format(earnings);
-                    document.getElementById('desk-earnings-monthly').innerText = fmtBRL.format(avgEarnings);
-                    document.getElementById('desk-earnings-avg').innerText = fmtBRL.format(avgEarnings);
-                    document.getElementById('desk-earnings-footer').innerText = fmtBRL.format(earnings);
+                    const monthly = document.getElementById('desk-earnings-monthly');
+                    const avg = document.getElementById('desk-earnings-avg');
+                    const footer = document.getElementById('desk-earnings-footer');
+
+                    if (monthly) monthly.innerText = fmtBRL.format(avgEarnings);
+                    if (avg) avg.innerText = fmtBRL.format(avgEarnings);
+                    if (footer) footer.innerText = fmtBRL.format(earnings);
                 }
 
                 if (id === 'desk-rentability') {
@@ -711,19 +703,22 @@
             renderAgenda(data.agenda);
 
             // --- Update Top Cards (Original/Mobile) ---
-            document.getElementById('card-equity').innerText = fmtBRL.format(data.equity);
-            document.getElementById('card-cost').innerText = fmtBRL.format(data.total_cost);
+            const cardEq = document.getElementById('card-equity');
+            const cardCost = document.getElementById('card-cost');
+            const cardEqPct = document.getElementById('card-equity-pct');
+
+            if (cardEq) cardEq.innerText = fmtBRL.format(data.equity);
+            if (cardCost) cardCost.innerText = fmtBRL.format(data.total_cost);
 
             const profitSign = data.total_profit >= 0 ? '+' : '';
-            const cardEqPct = document.getElementById('card-equity-pct');
-            cardEqPct.innerText = `${profitSign}${fmtPct.format(data.total_profit_pct / 100)}`;
-
-            if (data.total_profit < 0) {
-                cardEqPct.classList.remove('bg-slate-800', 'text-slate-300');
-                cardEqPct.classList.add('bg-red-500/10', 'text-red-400', 'border-red-500/20');
-            } else {
-                cardEqPct.classList.remove('bg-slate-800', 'text-slate-300');
-                cardEqPct.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
+            if (cardEqPct) {
+                cardEqPct.innerText = `${profitSign}${fmtPct.format(data.total_profit_pct / 100)}`;
+                cardEqPct.classList.remove('bg-slate-800', 'text-slate-300', 'bg-red-500/10', 'text-red-400', 'border-red-500/20', 'bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
+                if (data.total_profit < 0) {
+                    cardEqPct.classList.add('bg-red-500/10', 'text-red-400', 'border-red-500/20');
+                } else {
+                    cardEqPct.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
+                }
             }
 
             // Subscription Check
@@ -741,27 +736,37 @@
 
             // Profit Card
             const cardProfit = document.getElementById('card-profit');
-            cardProfit.innerText = `${profitSign}${fmtBRL.format(data.total_profit)}`;
-            if (data.total_profit < 0) cardProfit.classList.replace('text-emerald-400', 'text-red-400');
-            document.getElementById('card-profit-val').innerText = fmtBRL.format(data.total_profit);
-            document.getElementById('card-earnings-val').innerText = fmtBRL.format(data.earnings_year);
+            const cardProfitVal = document.getElementById('card-profit-val');
+
+            if (cardProfit) {
+                cardProfit.innerText = `${profitSign}${fmtBRL.format(data.total_profit)}`;
+                if (data.total_profit < 0) cardProfit.classList.replace('text-emerald-400', 'text-red-400');
+            }
+            if (cardProfitVal) cardProfitVal.innerText = fmtBRL.format(data.total_profit);
+            const cardEarningsVal = document.getElementById('card-earnings-val');
+            if (cardEarningsVal) cardEarningsVal.innerText = fmtBRL.format(data.earnings_year);
 
             // Earnings Card
-            document.getElementById('card-earnings-total').innerText = fmtBRL.format(data.earnings_year);
-            document.getElementById('card-earnings-avg').innerText = fmtBRL.format(data.earnings_year / 12);
+            const cardEarningsTotal = document.getElementById('card-earnings-total');
+            const cardEarningsAvg = document.getElementById('card-earnings-avg');
+            if (cardEarningsTotal) cardEarningsTotal.innerText = fmtBRL.format(data.earnings_year);
+            if (cardEarningsAvg) cardEarningsAvg.innerText = fmtBRL.format(data.earnings_year / 12);
 
             // Rentability Card
             const cardRent = document.getElementById('card-rentability');
             const cardVarPct = document.getElementById('card-variation-pct');
+            const cardVarVal = document.getElementById('card-variation-val');
 
-            cardRent.innerText = fmtPct.format(data.rentability / 100);
-            cardVarPct.innerText = fmtPct.format(data.rentability / 100);
-            document.getElementById('card-variation-val').innerText = fmtBRL.format(data.total_profit);
+            if (cardRent) cardRent.innerText = fmtPct.format(data.rentability / 100);
+            if (cardVarPct) cardVarPct.innerText = fmtPct.format(data.rentability / 100);
+            if (cardVarVal) cardVarVal.innerText = fmtBRL.format(data.total_profit);
 
             if (data.rentability < 0) {
-                cardRent.classList.replace('text-emerald-400', 'text-red-400');
-                cardVarPct.classList.replace('text-emerald-400', 'text-red-400');
-                cardVarPct.classList.replace('bg-emerald-400/10', 'bg-red-400/10');
+                if (cardRent) cardRent.classList.replace('text-emerald-400', 'text-red-400');
+                if (cardVarPct) {
+                    cardVarPct.classList.replace('text-emerald-400', 'text-red-400');
+                    cardVarPct.classList.replace('bg-emerald-400/10', 'bg-red-400/10');
+                }
             }
 
             // --- Allocation Chart ---
@@ -993,9 +998,11 @@
         }).join('') : '<tr><td colspan="5" class="py-8 text-center text-slate-500">Nenhum provento agendado</td></tr>';
 
         if (rowTotal) {
-            rowTotal.querySelector('.text-xl').innerText = fmtBRL.format(totalMonth);
+            const totalEl = rowTotal.querySelector('span');
+            if (totalEl) totalEl.innerText = fmtBRL.format(totalMonth);
         }
-        document.getElementById('desk-agenda-historic').innerText = fmtBRL.format(totalMonth * 10); // Mocked historic
+        const historicEl = document.getElementById('desk-agenda-historic');
+        if (historicEl) historicEl.innerText = fmtBRL.format(totalMonth * 10); // Mocked historic
     }
 
     function renderDesktopAssets(assets) {
@@ -1008,44 +1015,45 @@
 
             return `
                 <tr class="group hover:bg-slate-800/40 transition-colors">
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400 ring-1 ring-slate-700 group-hover:ring-blue-500/50 transition-all">${asset.ticker.substring(0, 2)}</div>
-                            <div><span class="block text-white font-bold tracking-tight">${asset.ticker}</span><span class="block text-[10px] text-slate-500 uppercase">${asset.asset_type || 'Ação'}</span></div>
+                    <td class="px-5 py-2.5">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded bg-slate-800 flex items-center justify-center text-[9px] font-bold text-slate-400 ring-1 ring-slate-700 group-hover:ring-blue-500/50 transition-all">${asset.ticker.substring(0, 2)}</div>
+                            <div><span class="block text-white font-bold tracking-tight text-xs">${asset.ticker}</span><span class="block text-[8px] text-slate-500 uppercase">${asset.asset_type || 'Ação'}</span></div>
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-center">
-                        <div class="flex justify-center"><div class="w-8 h-8 rounded-full border-2 border-emerald-500/20 flex items-center justify-center text-[10px] text-emerald-400 font-bold">400</div></div>
+                    <td class="px-5 py-2.5 text-center">
+                        <div class="flex justify-center"><div class="w-6 h-6 rounded-full border border-emerald-500/20 flex items-center justify-center text-[9px] text-emerald-400 font-bold">400</div></div>
                     </td>
-                    <td class="px-6 py-4 text-right font-mono text-slate-300">${asset.quantity}</td>
-                    <td class="px-6 py-4 text-right text-slate-500 font-mono text-xs">${fmtBRL.format(asset.average_price)}</td>
-                    <td class="px-6 py-4 text-right font-bold text-white font-mono">${fmtBRL.format(asset.current_price)}</td>
-                    <td class="px-6 py-4 text-center">
-                        <div class="flex flex-col items-center gap-1">
-                            <span class="${profitClass} text-[10px] font-bold">↑ ${fmtPct.format(asset.profit_pct / 100)}</span>
-                            <div class="w-12 h-0.5 bg-slate-800 rounded-full"><div class="h-full bg-blue-500" style="width: 70%"></div></div>
+                    <td class="px-5 py-2.5 text-right font-mono text-slate-300 text-xs">${asset.quantity}</td>
+                    <td class="px-5 py-2.5 text-right text-slate-500 font-mono text-[10px]">${fmtBRL.format(asset.average_price)}</td>
+                    <td class="px-5 py-2.5 text-right font-bold text-white font-mono text-xs">${fmtBRL.format(asset.current_price)}</td>
+                    <td class="px-5 py-2.5 text-center">
+                        <div class="flex flex-col items-center gap-0.5">
+                            <span class="${profitClass} text-[9px] font-bold">↑ ${fmtPct.format(asset.profit_pct / 100)}</span>
+                            <div class="w-10 h-0.5 bg-slate-800 rounded-full"><div class="h-full bg-blue-500" style="width: 70%"></div></div>
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-center">
-                        <span class="${bgProfit} px-2 py-0.5 rounded text-[10px] font-bold tracking-wide">${fmtPct.format(asset.profit_pct / 100)}</span>
+                    <td class="px-5 py-2.5 text-center">
+                        <span class="${bgProfit} px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wide">${fmtPct.format(asset.profit_pct / 100)}</span>
                     </td>
-                    <td class="px-6 py-4 text-center">
-                        <div class="flex items-center justify-center gap-1 ${profitClass} font-bold text-xs">
-                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                    <td class="px-5 py-2.5 text-center">
+                        <div class="flex items-center justify-center gap-0.5 ${profitClass} font-bold text-[10px]">
+                             <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                              ${fmtPct.format(asset.profit_pct / 100)}
                         </div>
                     </td>
-                    <td class="px-6 py-4">
-                        <div class="flex flex-wrap gap-1 justify-center">
-                            ${asset.badges ? asset.badges.map(b => `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20">${b.label}</span>`).join('') : ''}
+                    <td class="px-5 py-2.5">
+                        <div class="flex flex-wrap gap-0.5 justify-center">
+                            ${asset.badges ? asset.badges.map(b => `<span class="px-1 py-0.5 rounded text-[8px] font-bold uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20">${b.label}</span>`).join('') : ''}
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-right text-white font-bold font-mono">${fmtBRL.format(asset.total_value)}</td>
+                    <td class="px-5 py-2.5 text-right text-white font-bold font-mono text-xs">${fmtBRL.format(asset.total_value)}</td>
                 </tr>
             `;
         }).join('');
 
-        document.getElementById('desk-table-total').innerText = fmtBRL.format(assets.reduce((s, a) => s + a.total_value, 0));
+        const totalEl = document.getElementById('desk-table-total');
+        if (totalEl) totalEl.innerText = fmtBRL.format(assets.reduce((s, a) => s + a.total_value, 0));
     }
 
     function renderSparkline(canvasId, dataPoints, areaColor, lineColor) {
