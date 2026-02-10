@@ -6,6 +6,7 @@ from app.core import database, security
 from app.models.user import User
 from app.models.portfolio import Portfolio
 from app.models.asset import Asset
+from app.models.transaction import Transaction
 from app.api.routes.dashboard import get_current_active_user # Reutilizando auth logic temporariamente
 from app.schemas import PortfolioItemCreate
 
