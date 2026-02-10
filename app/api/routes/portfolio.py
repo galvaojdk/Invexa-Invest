@@ -154,8 +154,8 @@ def reset_user_data(current_user: User = Depends(get_current_active_user), db: S
     db.query(Portfolio).filter(Portfolio.user_id == current_user.id).delete()
     
     # Optional: Delete portfolio history if exists
-    from app.models.portfolio_history import PortfolioHistory
-    db.query(PortfolioHistory).filter(PortfolioHistory.user_id == current_user.id).delete()
+    from app.models.portfolio_history import PortfolioSnapshot
+    db.query(PortfolioSnapshot).filter(PortfolioSnapshot.user_id == current_user.id).delete()
     
     db.commit()
     return {"message": "Dados resetados com sucesso. Sua carteira está limpa."}
