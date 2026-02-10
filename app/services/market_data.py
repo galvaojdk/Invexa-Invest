@@ -69,7 +69,6 @@ async def fetch_batch_brapi(db: Session, tickers: str):
                 if not asset_obj:
                     asset_obj = Asset(ticker=symbol)
                     db.add(asset_obj)
-                    db.flush() # Ensure ID is generated for new assets
                 
                 # Basic
                 asset_obj.name = item.get('longName') or item.get('shortName') or symbol
@@ -98,6 +97,9 @@ async def fetch_batch_brapi(db: Session, tickers: str):
                 is_fii = "11" in symbol and (asset_obj.sector == 'Imobiliário' or "FUNDO" in asset_obj.name.upper())
                 asset_obj.type = 'fii' if is_fii else 'stock'
                 if is_fii and asset_obj.sector == 'Outros': asset_obj.sector = 'Fundo Imobiliário'
+                
+                # Flush now to ensure ID is generated (especially for new assets) before dealing with dividends
+                db.flush()
                 
                 # Extraction ----------------------
                 
