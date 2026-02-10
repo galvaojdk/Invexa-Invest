@@ -26,48 +26,49 @@ class NewsService:
             for url in self.sources:
                 try:
                     response = await client.get(url)
-                    print(f"DEBUG: RSS Fetch {url} - Status: {response.status_code}")
                     if response.status_code == 200:
                         feed = feedparser.parse(response.text)
-                        print(f"DEBUG: Parsed {len(feed.entries)} entries from {url}")
                         for entry in feed.entries:
+                            # Tentar extrair data para ordenação
+                            dt = None
+                            if hasattr(entry, 'published_parsed') and entry.published_parsed:
+                                dt = datetime.fromtimestamp(time.mktime(entry.published_parsed))
+                            
                             all_entries.append({
                                 "title": entry.title,
                                 "link": entry.link,
                                 "published": entry.get("published", ""),
-                                "source": url.split(".")[1], # Simplificado
-                                "summary": entry.get("summary", "")[:200] + "..."
+                                "date_obj": dt,
+                                "source": "Investing" if "investing" in url else "InfoMoney",
+                                "summary": entry.get("summary", "")[:200] + "..." if entry.get("summary") else ""
                             })
                 except Exception as e:
                     print(f"Erro ao buscar RSS {url}: {e}")
 
+        # Ordenar por data decrescente (mais recentes primeiro)
+        all_entries.sort(key=lambda x: x["date_obj"] if x["date_obj"] else datetime.min, reverse=True)
+        
         self._cache["all_news"] = {"data": all_entries, "time": current_time}
         return all_entries
 
-    async def get_news_for_portfolio(self, tickers: List[str]) -> List[Dict]:
-        """Filtra notícias relevantes para os tickers fornecidos."""
+    async def get_news_for_portfolio(self, search_terms: List[str], has_portfolio: bool = False) -> List[Dict]:
+        """Filtra notícias. Se has_portfolio=True, retorna apenas se houver match."""
         all_news = await self.fetch_all_news()
-        if not tickers:
-            return all_news[:10]
+        
+        if not has_portfolio or not search_terms:
+            return all_news[:6] # Limite de 6 notícias gerais
 
         filtered_news = []
-        # Normalizar tickers (ex: PETR4)
-        search_terms = [t.upper() for t in tickers]
+        terms = [t.upper() for t in search_terms]
         
         for news in all_news:
             title_upper = news["title"].upper()
             summary_upper = news["summary"].upper()
             
-            # Verifica se algum ticker aparece no título ou resumo
-            is_relevant = any(term in title_upper or term in summary_upper for term in search_terms)
-            
-            if is_relevant:
+            # Match estrito: o ticker ou termo deve estar presente
+            if any(term in title_upper or term in summary_upper for term in terms):
                 filtered_news.append(news)
 
-        # Se não houver notícias específicas pros tickers, retorna as últimas gerais
-        if not filtered_news:
-            return all_news[:10]
-
-        return filtered_news[:15] # Limitar a 15 notícias
+        return filtered_news[:15]
 
 news_service = NewsService()
