@@ -1,0 +1,27 @@
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from typing import List
+from app.core import database
+from app.api.routes.dashboard import get_current_active_user
+from app.models.user import User
+from app.models.portfolio import Portfolio
+from app.services.news_service import news_service
+
+router = APIRouter()
+
+@router.get("/")
+async def get_personalized_news(
+    db: Session = Depends(database.get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    # 1. Pegar tickers do usuário
+    portfolio_items = db.query(Portfolio).filter(Portfolio.user_id == current_user.id).all()
+    tickers = [item.asset.ticker for item in portfolio_items if item.asset]
+    
+    # 2. Buscar notícias filtradas
+    news = await news_service.get_news_for_portfolio(tickers)
+    
+    return {
+        "user_tickers": tickers,
+        "news": news
+    }
