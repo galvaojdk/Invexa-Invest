@@ -57,6 +57,7 @@ async def fetch_batch_brapi(db: Session, tickers: str):
             for item in results:
                 symbol = item.get('symbol')
                 price = item.get('regularMarketPrice') or 0.0
+                extra_data = None # Reset for each asset in batch
                 
                 # Modules
                 dk_stats = item.get('defaultKeyStatistics') or {}
@@ -68,6 +69,7 @@ async def fetch_batch_brapi(db: Session, tickers: str):
                 if not asset_obj:
                     asset_obj = Asset(ticker=symbol)
                     db.add(asset_obj)
+                    db.flush() # Ensure ID is generated for new assets
                 
                 # Basic
                 asset_obj.name = item.get('longName') or item.get('shortName') or symbol
