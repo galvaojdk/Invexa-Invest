@@ -9,6 +9,7 @@ from app.services.news_service import news_service
 
 router = APIRouter()
 
+@router.get("")
 @router.get("/")
 async def get_personalized_news(
     db: Session = Depends(database.get_db),

@@ -26,8 +26,10 @@ class NewsService:
             for url in self.sources:
                 try:
                     response = await client.get(url)
+                    print(f"DEBUG: RSS Fetch {url} - Status: {response.status_code}")
                     if response.status_code == 200:
                         feed = feedparser.parse(response.text)
+                        print(f"DEBUG: Parsed {len(feed.entries)} entries from {url}")
                         for entry in feed.entries:
                             all_entries.append({
                                 "title": entry.title,
