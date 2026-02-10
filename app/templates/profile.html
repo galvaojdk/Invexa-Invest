@@ -60,6 +60,10 @@
                 class="w-full text-left px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-white transition-colors">
                 Assinatura
             </button>
+            <button onclick="showSection('history')" id="nav-history"
+                class="w-full text-left px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-white transition-colors">
+                Histórico
+            </button>
         </div>
 
         <!-- Content Area -->
@@ -198,6 +202,57 @@
                 </div>
             </div>
 
+            <!-- History Section -->
+            <div id="section-history" class="hidden space-y-6">
+                <div class="bg-[#0f172a] rounded-2xl p-6 border border-slate-800 shadow-lg">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Histórico de Transações
+                        </h3>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead
+                                class="text-slate-500 border-b border-slate-800/50 uppercase text-[10px] font-bold tracking-widest">
+                                <tr>
+                                    <th class="pb-3">Data</th>
+                                    <th class="pb-3">Ativo</th>
+                                    <th class="pb-3">Tipo</th>
+                                    <th class="pb-3">Qtd</th>
+                                    <th class="pb-3">Preço</th>
+                                    <th class="pb-3 text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body" class="divide-y divide-slate-800/50">
+                                <!-- Items via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-red-900/10 border border-red-500/30 rounded-2xl p-6 shadow-lg">
+                    <h3 class="text-lg font-bold text-red-400 mb-2 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                            </path>
+                        </svg>
+                        Zona de Perigo
+                    </h3>
+                    <p class="text-sm text-slate-400 mb-6">Ao clicar no botão abaixo, todas as suas transações e
+                        posições atuais na carteira serão apagadas. Esta ação é irreversível.</p>
+                    <button onclick="confirmReset()"
+                        class="w-full md:w-auto bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white border border-red-500/50 font-bold py-3 px-8 rounded-xl transition-all">
+                        LIMPAR TODO O HISTÓRICO ⚠️
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -272,18 +327,89 @@
     // Tab Switching Logic
     function showSection(sectionId) {
         // Hide all
-        ['personal', 'security', 'subscription'].forEach(id => {
-            document.getElementById(`section-${id}`).classList.add('hidden');
+        ['personal', 'security', 'subscription', 'history'].forEach(id => {
+            const section = document.getElementById(`section-${id}`);
+            if (section) section.classList.add('hidden');
+
             const nav = document.getElementById(`nav-${id}`);
-            nav.classList.remove('bg-slate-800', 'text-white', 'border-l-4', 'border-blue-500', 'shadow-md');
-            nav.classList.add('text-slate-400');
+            if (nav) {
+                nav.classList.remove('bg-slate-800', 'text-white', 'border-l-4', 'border-blue-500', 'shadow-md');
+                nav.classList.add('text-slate-400');
+            }
         });
 
         // Show Current
-        document.getElementById(`section-${sectionId}`).classList.remove('hidden');
+        const activeSection = document.getElementById(`section-${sectionId}`);
+        if (activeSection) activeSection.classList.remove('hidden');
+
         const activeNav = document.getElementById(`nav-${sectionId}`);
-        activeNav.classList.add('bg-slate-800', 'text-white', 'border-l-4', 'border-blue-500', 'shadow-md');
-        activeNav.classList.remove('text-slate-400');
+        if (activeNav) {
+            activeNav.classList.add('bg-slate-800', 'text-white', 'border-l-4', 'border-blue-500', 'shadow-md');
+            activeNav.classList.remove('text-slate-400');
+        }
+
+        if (sectionId === 'history') loadTransactions();
+    }
+
+    async function loadTransactions() {
+        const token = localStorage.getItem('token');
+        const body = document.getElementById('history-table-body');
+        if (!body) return;
+
+        body.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-500">Carregando histório...</td></tr>';
+
+        try {
+            const response = await fetch('/api/v1/portfolio/transactions', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) throw new Error('Falha ao carregar');
+            const data = await response.json();
+
+            if (data.length === 0) {
+                body.innerHTML = '<tr><td colspan="6" class="py-12 text-center text-slate-500">Nenhuma transação encontrada.</td></tr>';
+                return;
+            }
+
+            body.innerHTML = data.map(t => `
+                <tr class="hover:bg-slate-800/20 transition-colors">
+                    <td class="py-4 text-slate-400 font-mono">${t.timestamp}</td>
+                    <td class="py-4 font-bold text-white">${t.ticker}</td>
+                    <td class="py-4">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${t.type === 'BUY' ? 'bg-blue-500/10 text-blue-400' : 'bg-red-500/10 text-red-400'}">${t.type === 'BUY' ? 'Compra' : 'Venda'}</span>
+                    </td>
+                    <td class="py-4 text-slate-300 font-mono">${t.quantity}</td>
+                    <td class="py-4 text-slate-300 font-mono">${fmtBRL.format(t.price)}</td>
+                    <td class="py-4 text-right font-bold text-white font-mono">${fmtBRL.format(t.total_value)}</td>
+                </tr>
+            `).join('');
+
+        } catch (error) {
+            body.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-red-400">Erro ao carregar histórico.</td></tr>';
+        }
+    }
+
+    const fmtBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    async function confirmReset() {
+        if (!confirm('⚠️ ATENÇÃO: Isso apagará permanentemente todo o seu histórico e posições atuais. Deseja continuar?')) return;
+
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch('/api/v1/portfolio/reset', {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                alert('Dados limpos com sucesso. Redirecionando para o dashboard...');
+                window.location.href = '/dashboard';
+            } else {
+                alert('Erro ao resetar dados.');
+            }
+        } catch (error) {
+            alert('Erro de conexão ao tentar resetar.');
+        }
     }
 
     // Form Handling

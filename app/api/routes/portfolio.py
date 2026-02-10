@@ -126,4 +126,35 @@ def create_transaction(item: TransactionCreate, current_user: User = Depends(get
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/transactions")
+def list_transactions(current_user: User = Depends(get_current_active_user), db: Session = Depends(database.get_db)):
+    transactions = db.query(Transaction).filter(Transaction.user_id == current_user.id).order_by(Transaction.timestamp.desc()).all()
+    
+    result = []
+    for t in transactions:
+        result.append({
+            "id": t.id,
+            "ticker": t.asset.ticker,
+            "type": t.type,
+            "quantity": t.quantity,
+            "price": t.price,
+            "total_value": t.total_value,
+            "profit_loss": t.profit_loss,
+            "timestamp": t.timestamp.strftime("%d/%m/%Y %H:%M")
+        })
+    return result
 
+@router.delete("/reset")
+def reset_user_data(current_user: User = Depends(get_current_active_user), db: Session = Depends(database.get_db)):
+    # Delete all transactions
+    db.query(Transaction).filter(Transaction.user_id == current_user.id).delete()
+    
+    # Delete all portfolio items (or set quantity to 0? User asked to "start from zero", so clear items is cleaner)
+    db.query(Portfolio).filter(Portfolio.user_id == current_user.id).delete()
+    
+    # Optional: Delete portfolio history if exists
+    from app.models.portfolio_history import PortfolioHistory
+    db.query(PortfolioHistory).filter(PortfolioHistory.user_id == current_user.id).delete()
+    
+    db.commit()
+    return {"message": "Dados resetados com sucesso. Sua carteira está limpa."}
