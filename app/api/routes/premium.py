@@ -187,7 +187,7 @@ def get_dividend_calendar(
     upcoming_events = []
     
     for item in portfolio:
-        asset = market_data.get_or_create_asset(db, item.ticker)
+        asset = item.asset
         if asset and asset.dy_12m > 0:
             # Estimate Annual Income
             annual_income = (asset.price * (asset.dy_12m / 100)) * item.quantity
@@ -199,7 +199,7 @@ def get_dividend_calendar(
             pay_date = datetime.now() + timedelta(days=days_offset)
             
             upcoming_events.append({
-                "ticker": item.ticker,
+                "ticker": asset.ticker,
                 "amount": round(annual_income / 4, 2), # Assuming quarterly
                 "pay_date": pay_date.strftime("%d/%m/%Y"),
                 "type": "Dividendo"
