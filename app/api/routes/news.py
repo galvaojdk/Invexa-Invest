@@ -29,9 +29,10 @@ async def get_personalized_news(
                 search_terms.append(first_name)
     
     # 2. Buscar notícias filtradas
-    news = await news_service.get_news_for_portfolio(search_terms, has_portfolio=has_portfolio)
+    result = await news_service.get_news_for_portfolio(search_terms, has_portfolio=has_portfolio)
     
     return {
         "user_tickers": [item.asset.ticker for item in portfolio_items if item.asset],
-        "news": news
+        "news": result["news"],
+        "is_fallback": result["is_fallback"]
     }

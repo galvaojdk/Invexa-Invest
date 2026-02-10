@@ -198,7 +198,7 @@
                 <div class="w-2 h-6 bg-emerald-500 rounded-full"></div>
                 Newsroom: Radar da Carteira
             </h3>
-            <span class="text-[10px] text-slate-500 font-mono uppercase">Atualizado agora</span>
+            <span id="news-status" class="text-[10px] text-slate-500 font-mono uppercase">Atualizado agora</span>
         </div>
 
         <div id="news-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -912,6 +912,13 @@
         })
             .then(res => res.json())
             .then(data => {
+                const statusEl = document.getElementById('news-status');
+                if (data.is_fallback) {
+                    statusEl.innerHTML = '<span class="text-amber-400/80">Panorama Geral do Mercado</span>';
+                } else {
+                    statusEl.innerHTML = '<span class="text-emerald-400/80">Notícias da sua Carteira</span>';
+                }
+
                 if (!data.news || data.news.length === 0) {
                     container.innerHTML = `
                     <div class="col-span-full py-8 text-center text-slate-500 bg-[#0f172a] border border-slate-800 rounded-2xl">

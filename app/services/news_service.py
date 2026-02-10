@@ -51,12 +51,12 @@ class NewsService:
         self._cache["all_news"] = {"data": all_entries, "time": current_time}
         return all_entries
 
-    async def get_news_for_portfolio(self, search_terms: List[str], has_portfolio: bool = False) -> List[Dict]:
-        """Filtra notícias. Se has_portfolio=True, retorna apenas se houver match."""
+    async def get_news_for_portfolio(self, search_terms: List[str], has_portfolio: bool = False) -> Dict:
+        """Filtra notícias. Se não houver match ou se não tiver carteira, retorna as 6 últimas gerais."""
         all_news = await self.fetch_all_news()
         
         if not has_portfolio or not search_terms:
-            return all_news[:6] # Limite de 6 notícias gerais
+            return {"news": all_news[:6], "is_fallback": True}
 
         filtered_news = []
         terms = [t.upper() for t in search_terms]
@@ -69,6 +69,9 @@ class NewsService:
             if any(term in title_upper or term in summary_upper for term in terms):
                 filtered_news.append(news)
 
-        return filtered_news[:15]
+        if not filtered_news:
+            return {"news": all_news[:6], "is_fallback": True}
+
+        return {"news": filtered_news[:15], "is_fallback": False}
 
 news_service = NewsService()
