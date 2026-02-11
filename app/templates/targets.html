@@ -149,10 +149,12 @@
     async function saveTargets() {
         const token = localStorage.getItem('token');
         const targets = [];
+        let total = 0;
         document.querySelectorAll('.target-row').forEach(row => {
             const name = row.querySelector('.category-name-input').value.toLowerCase();
             const percent = parseFloat(row.querySelector('.target-slider').value);
             if (name) {
+                total += percent;
                 targets.push({
                     target_type: 'category',
                     name: name,
@@ -160,6 +162,11 @@
                 });
             }
         });
+
+        if (total !== 100) {
+            alert(`O total das porcentagens deve ser exatamente 100%. Atualmente está em ${total.toFixed(0)}%.`);
+            return;
+        }
 
         try {
             const res = await fetch('/api/v1/portfolio/targets', {
