@@ -25,6 +25,10 @@ async def screener_view(request: Request):
 def portfolio(request: Request):
     return templates.TemplateResponse("portfolio.html", {"request": request})
 
+@router.get("/portfolio/targets", response_class=HTMLResponse)
+def portfolio_targets(request: Request):
+    return templates.TemplateResponse("targets.html", {"request": request})
+
 @router.get("/rankings/fiis", response_class=HTMLResponse)
 def ranking_fiis(request: Request):
     return templates.TemplateResponse("screener.html", {"request": request, "asset_type": "fii", "page_title": "Ranking de FIIs", "free_limit": 3})

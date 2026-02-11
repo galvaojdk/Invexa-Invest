@@ -91,4 +91,21 @@ class AlertResponse(AlertBase):
     class Config:
         from_attributes = True
 
+class UserTargetBase(BaseModel):
+    target_type: str # 'category' or 'asset'
+    name: str # 'stock', 'fii', etc.
+    target_percent: float
+
+class UserTargetCreate(UserTargetBase):
+    pass
+
+class UserTargetResponse(UserTargetBase):
+    id: int
+    user_id: int
+    class Config:
+        from_attributes = True
+
+class RebalanceRequest(BaseModel):
+    amount: float
+
 

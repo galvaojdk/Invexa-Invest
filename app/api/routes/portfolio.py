@@ -159,3 +159,32 @@ def reset_user_data(current_user: User = Depends(get_current_active_user), db: S
     
     db.commit()
     return {"message": "Dados resetados com sucesso. Sua carteira está limpa."}
+
+from app.models.user_target import UserTarget
+from app.schemas import UserTargetCreate, UserTargetResponse, RebalanceRequest
+from app.services.rebalance_service import rebalance_service
+
+@router.get("/targets", response_model=List[UserTargetResponse])
+def get_targets(current_user: User = Depends(get_current_active_user), db: Session = Depends(database.get_db)):
+    return db.query(UserTarget).filter(UserTarget.user_id == current_user.id).all()
+
+@router.post("/targets")
+def set_targets(targets: List[UserTargetCreate], current_user: User = Depends(get_current_active_user), db: Session = Depends(database.get_db)):
+    # Simple strategy: delete old and insert new
+    db.query(UserTarget).filter(UserTarget.user_id == current_user.id).delete()
+    
+    for t in targets:
+        new_target = UserTarget(
+            user_id=current_user.id,
+            target_type=t.target_type,
+            name=t.name,
+            target_percent=t.target_percent
+        )
+        db.add(new_target)
+    
+    db.commit()
+    return {"message": "Metas atualizadas com sucesso"}
+
+@router.post("/rebalance")
+def get_rebalance_suggestions(req: RebalanceRequest, current_user: User = Depends(get_current_active_user), db: Session = Depends(database.get_db)):
+    return rebalance_service.get_rebalance_suggestions(db, current_user.id, req.amount)

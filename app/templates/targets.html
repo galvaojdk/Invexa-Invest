@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block header_title %}Metas de Carteira{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+    <div class="bg-[#0f172a] rounded-2xl p-6 border border-slate-800 shadow-xl">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h3 class="text-xl font-bold text-white tracking-tight">Definir Metas de Alocação</h3>
+                <p class="text-sm text-slate-500">Distribua como você deseja que seu patrimônio seja alocado entre
+                    categorias.</p>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Total: </span>
+                <span id="total-pct" class="text-lg font-mono font-bold text-white">0%</span>
+            </div>
+        </div>
+
+        <div class="space-y-6" id="targets-container">
+            <!-- Asset Type Row: Stocks -->
+            <div
+                class="flex items-center gap-6 p-4 bg-slate-900/50 rounded-xl border border-slate-800 group hover:border-slate-700 transition-all">
+                <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <span class="block text-white font-bold uppercase text-xs tracking-widest mb-1">Ações
+                        (Stocks)</span>
+                    <input type="range" min="0" max="100" value="0"
+                        class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500 target-slider"
+                        data-type="stock">
+                </div>
+                <div class="w-20">
+                    <input type="number" value="0"
+                        class="w-full bg-slate-800 border border-slate-700 text-white text-center rounded-lg py-2 font-mono text-sm target-input"
+                        data-type="stock">
+                </div>
+            </div>
+
+            <!-- Asset Type Row: FIIs -->
+            <div
+                class="flex items-center gap-6 p-4 bg-slate-900/50 rounded-xl border border-slate-800 group hover:border-slate-700 transition-all">
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                        </path>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <span class="block text-white font-bold uppercase text-xs tracking-widest mb-1">FIIs
+                        (Imobiliário)</span>
+                    <input type="range" min="0" max="100" value="0"
+                        class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500 target-slider"
+                        data-type="fii">
+                </div>
+                <div class="w-20">
+                    <input type="number" value="0"
+                        class="w-full bg-slate-800 border border-slate-700 text-white text-center rounded-lg py-2 font-mono text-sm target-input"
+                        data-type="fii">
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 flex justify-end gap-4">
+            <div id="save-status" class="hidden items-center gap-2 text-emerald-400 text-sm font-medium animate-pulse">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Salvo com sucesso!
+            </div>
+            <button onclick="saveTargets()"
+                class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition-all transform active:scale-95">
+                Salvar Configurações
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-6">
+        <h4 class="text-blue-400 font-bold mb-2 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Como funciona?
+        </h4>
+        <p class="text-sm text-slate-400 leading-relaxed">
+            As metas definidas aqui serão usadas pelo **Assistente de Aporte Inteligente** no Dashboard. O sistema irá
+            priorizar os novos investimentos nos ativos que estiverem com a porcentagem atual abaixo da sua meta,
+            ajudando você a manter o balanceamento da sua carteira de forma automática.
+        </p>
+    </div>
+</div>
+
+<script>
+    async function loadTargets() {
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch('/api/v1/portfolio/targets', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+
+            data.forEach(t => {
+                const slider = document.querySelector(`.target-slider[data-type="${t.name}"]`);
+                const input = document.querySelector(`.target-input[data-type="${t.name}"]`);
+                if (slider) { slider.value = t.target_percent; }
+                if (input) { input.value = t.target_percent; }
+            });
+            updateTotal();
+        } catch (e) { console.error("Error loading targets", e); }
+    }
+
+    function updateTotal() {
+        let total = 0;
+        document.querySelectorAll('.target-slider').forEach(s => total += parseFloat(s.value));
+        const totalEl = document.getElementById('total-pct');
+        totalEl.innerText = `${total.toFixed(0)}%`;
+
+        if (total > 100) totalEl.className = 'text-lg font-mono font-bold text-red-400';
+        else if (total === 100) totalEl.className = 'text-lg font-mono font-bold text-emerald-400';
+        else totalEl.className = 'text-lg font-mono font-bold text-white';
+    }
+
+    async function saveTargets() {
+        const token = localStorage.getItem('token');
+        const targets = [];
+        document.querySelectorAll('.target-slider').forEach(s => {
+            targets.push({
+                target_type: 'category',
+                name: s.dataset.type,
+                target_percent: parseFloat(s.value)
+            });
+        });
+
+        try {
+            const res = await fetch('/api/v1/portfolio/targets', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(targets)
+            });
+            if (res.ok) {
+                const status = document.getElementById('save-status');
+                status.classList.remove('hidden');
+                status.classList.add('flex');
+                setTimeout(() => status.classList.replace('flex', 'hidden'), 3000);
+            }
+        } catch (e) { alert("Erro ao salvar metas."); }
+    }
+
+    // Sync Slider and Input
+    document.querySelectorAll('.target-slider').forEach(s => {
+        s.addEventListener('input', (e) => {
+            const val = e.target.value;
+            document.querySelector(`.target-input[data-type="${e.target.dataset.type}"]`).value = val;
+            updateTotal();
+        });
+    });
+
+    document.querySelectorAll('.target-input').forEach(i => {
+        i.addEventListener('input', (e) => {
+            const val = e.target.value;
+            const slider = document.querySelector(`.target-slider[data-type="${e.target.dataset.type}"]`);
+            if (slider) slider.value = val;
+            updateTotal();
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', loadTargets);
+</script>
+{% endblock %}

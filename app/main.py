@@ -99,12 +99,14 @@ async def startup_event():
             
             from app.models.alert import Alert
             from app.models.setting import Setting
+            from app.models.user_target import UserTarget
             print(f"Connecting to database (Attempt {attempt + 1}/{max_retries})...")
             user.Base.metadata.create_all(bind=database.engine)
             asset.Base.metadata.create_all(bind=database.engine)
             portfolio.Base.metadata.create_all(bind=database.engine)
             Alert.metadata.create_all(bind=database.engine)
             Setting.metadata.create_all(bind=database.engine)
+            UserTarget.metadata.create_all(bind=database.engine)
             print("TABLES CREATED SUCCESSFULLY")
             break
         except Exception as e:
