@@ -646,6 +646,7 @@
                 if (data.total_profit < 0) cardProfit.classList.replace('text-emerald-400', 'text-red-400');
             }
             if (cardProfitVal) cardProfitVal.innerText = fmtBRL.format(data.total_profit);
+            const cardEarningsVal = document.getElementById('card-earnings-val');
             if (cardEarningsVal) cardEarningsVal.innerText = fmtBRL.format(data.earnings_year);
 
             // Targets status check
