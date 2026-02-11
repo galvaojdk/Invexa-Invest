@@ -69,6 +69,13 @@
             </svg>
             <span id="txt-gap">Destaque Gaps</span>
         </button>
+
+        <!-- Sort Select (Only in Dividends Mode) -->
+        <select id="select-dividend-sort" onchange="changeDividendSort()"
+            class="hidden bg-slate-700 border border-slate-600 text-white text-[10px] font-bold rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all cursor-pointer">
+            <option value="dy">ORDENAR POR MAIOR DY</option>
+            <option value="projection">ORDENAR POR MAIOR PROJEÇÃO</option>
+        </select>
     </div>
 </div>
 
@@ -266,6 +273,12 @@
         let showGapsOnly = false;
         let portfolioMonths = new Set();
         let userPortfolio = [];
+        let currentSortMode = 'dy'; // 'dy' or 'projection'
+
+        function changeDividendSort() {
+            currentSortMode = document.getElementById('select-dividend-sort').value;
+            renderRecommendations();
+        }
 
         function toggleGapHighlighter() {
             showGapsOnly = !showGapsOnly;
@@ -388,8 +401,11 @@
 
             // UI Adjustments
             const btnGap = document.getElementById('btn-gap-highlighter');
+            const selectSort = document.getElementById('select-dividend-sort');
+
             if (logicType === 'dividends') {
                 btnGap.classList.replace('hidden', 'flex');
+                selectSort.classList.remove('hidden');
 
                 // Calculate portfolio months coverage
                 portfolioMonths = new Set();
@@ -401,6 +417,7 @@
                 });
             } else {
                 btnGap.classList.replace('flex', 'hidden');
+                selectSort.classList.add('hidden');
                 showGapsOnly = false;
             }
 
@@ -413,8 +430,17 @@
 
                     return priceOk && dyOk && liqOk;
                 });
-                // Sort by DY descending
-                recs.sort((a, b) => (b.dy_12m || 0) - (a.dy_12m || 0));
+                // Sort by selection
+                if (currentSortMode === 'projection') {
+                    // Projection = Price * (DY/100) / 12
+                    recs.sort((a, b) => {
+                        const projA = (a.price || 0) * ((a.dy_12m || 0) / 100) / 12;
+                        const projB = (b.price || 0) * ((b.dy_12m || 0) / 100) / 12;
+                        return projB - projA;
+                    });
+                } else {
+                    recs.sort((a, b) => (b.dy_12m || 0) - (a.dy_12m || 0));
+                }
             } else if (!filterType) {
                 // "Radar de Oportunidades" Page (No Type Filter) -> Apply Hybrid Logic
                 // Liquidity > 1M, Price > 0 and Valid Fundamentals (Graham)
