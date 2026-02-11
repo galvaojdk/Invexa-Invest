@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block header_title %}{{ page_title if page_title else 'Ativos em Alta' }}{% endblock %}
+{% block header_title %}{{ page_title if page_title else 'Radar de Oportunidades' }}{% endblock %}
 
 {% block content %}
 <input type="hidden" id="filter-asset-type" value="{{ asset_type if asset_type else '' }}">
@@ -44,7 +44,7 @@
     </div>
 </div>
 
-<!-- Ativos em Alta -->
+<!-- Radar de Oportunidades -->
 <div class="mb-8" id="recommendations-container">
 
     <div class="hidden">
@@ -315,7 +315,7 @@
             let recs = [];
 
             if (!filterType) {
-                // "Ativos em Alta" Page (No Type Filter) -> Apply Hybrid Logic
+                // "Radar de Oportunidades" Page (No Type Filter) -> Apply Hybrid Logic
                 // Liquidity > 1M, Price > 0 and Valid Fundamentals (Graham)
                 recs = allAssets.filter(asset => {
                     const liqOk = (asset.liquidity_avg_2m || 0) > 1000000;
@@ -424,11 +424,25 @@
                     bgIcon = "bg-emerald-500/10";
                 }
 
-                // Dynamic color for potential
                 const safeMargin = asset.safe_margin || 0;
                 const isPositive = safeMargin > 0;
                 const potentialColor = isPositive ? 'text-emerald-400' : 'text-red-400';
                 const potentialSign = isPositive ? '+' : '';
+
+                // Gap Calculation
+                const currentPrice = asset.price || 0;
+                let fairPrice = 0;
+                if (asset.type === 'stock') {
+                    if ((asset.lpa || 0) > 0 && (asset.vpa || 0) > 0) {
+                        fairPrice = Math.sqrt(22.5 * asset.lpa * asset.vpa);
+                    }
+                } else if (asset.type === 'fii') {
+                    const dyPct = (asset.dy_12m || 0) / 100;
+                    const dpa = currentPrice * dyPct;
+                    fairPrice = dpa / 0.06; // Standard 6% yield floor for Bazin
+                }
+
+                const priceGap = fairPrice > currentPrice ? fairPrice - currentPrice : 0;
 
                 // Status Logic
                 let statusLabel = "MANTER";
@@ -436,7 +450,7 @@
                 let statusBg = "bg-slate-800";
 
                 if (asset.status === 'Descontado') {
-                    statusLabel = "DESCONTADO";
+                    statusLabel = "OPORTUNIDADE";
                     statusClass = "text-emerald-400 font-bold animate-pulse";
                     statusBg = "bg-emerald-500/20";
                 } else if (asset.status === 'Bom Pagador') {
@@ -444,16 +458,18 @@
                     statusClass = "text-blue-400 font-bold";
                     statusBg = "bg-blue-500/20";
                 } else if (asset.status === 'Caro') {
-                    statusLabel = "ALTO RISCO"; // Changed from AGUARDAR
+                    statusLabel = "ALTO RISCO";
                     statusClass = "text-red-400 font-bold";
                     statusBg = "bg-red-500/20";
                 }
 
-                const liquidity = fmtMoneyShort(asset.liquidity_avg_2m); // Helper function
+                const liquidity = fmtMoneyShort(asset.liquidity_avg_2m);
 
                 card.innerHTML = `
                 <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0 pointer-events-none"></div>
                 
+                ${safeMargin > 15 ? `<div class="absolute -right-12 top-6 bg-emerald-500 text-white text-[8px] font-black py-1 w-40 text-center rotate-45 z-20 shadow-xl border-b border-emerald-400 uppercase tracking-tighter">GRANDE MARGEM</div>` : ''}
+
                 <div class="flex flex-col items-center gap-3 mb-2 w-full pt-1 relative z-10 pointer-events-none">
                     <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-800 pb-2 w-full text-center">${iconLabel}</div>
                     <div class="p-3 rounded-xl ${bgIcon} shadow-inner">
@@ -479,9 +495,20 @@
                             ${statusLabel}
                         </div>
                     </div>
-                    <div class="text-xs ${potentialColor} font-mono font-bold bg-slate-900/50 py-1 px-2 rounded-lg border border-slate-800">
-                        Potencial: ${potentialSign}${safeMargin.toFixed(2)}%
+                    
+                    <div class="flex flex-col gap-1 bg-slate-900/50 py-2 px-2 rounded-lg border border-slate-800">
+                        <div class="flex justify-between items-center text-[9px] text-slate-400 font-bold px-1">
+                            <span>POTENCIAL</span>
+                            <span class="${potentialColor}">${potentialSign}${safeMargin.toFixed(1)}%</span>
+                        </div>
+                        ${priceGap > 0 ? `
+                        <div class="flex justify-between items-center text-[9px] text-slate-400 font-bold px-1">
+                            <span>GAP PREÇO</span>
+                            <span class="text-white">+ R$ ${priceGap.toFixed(2)}</span>
+                        </div>
+                        ` : ''}
                     </div>
+                    
                     <div class="text-[9px] text-slate-600 font-mono pt-1" title="Liquidez Diária Média (2m)">
                         Vol: ${liquidity}
                     </div>
@@ -521,10 +548,10 @@
                     
                     <!-- Lock Overlay -->
                     <div class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/50 opacity-80 group-hover:opacity-100 transition-opacity z-20">
-                         <div class="p-3 bg-purple-600 rounded-full shadow-lg shadow-purple-500/50 mb-2 transform group-hover:scale-110 transition-transform">
-                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                         </div>
-                         <span class="text-xs font-bold text-white uppercase tracking-wider text-shadow">Premium</span>
+                        <div class="p-3 bg-purple-600 rounded-full shadow-lg shadow-purple-500/50 mb-2 transform group-hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        </div>
+                        <span class="text-xs font-bold text-white uppercase tracking-wider text-shadow">Premium</span>
                     </div>
                 `;
                     container.appendChild(blurred);
@@ -559,7 +586,7 @@
             const isFii = asset.type === 'fii';
 
             if (isFii) {
-                document.getElementById('modal-title').innerHTML = `Preço Teto (Bazin) <span class="text-blue-400 ml-2">${asset.ticker}</span>`;
+                document.getElementById('modal-title').innerHTML = `Preço Teto(Bazin) < span class="text-blue-400 ml-2" > ${asset.ticker}</span > `;
                 document.getElementById('div-inputs-projective').classList.remove('hidden');
                 document.getElementById('div-profit-input').style.display = 'none';
 
@@ -569,13 +596,13 @@
 
             } else {
                 // Graham (Default for Stocks)
-                document.getElementById('modal-title').innerHTML = `Preço Justo (Graham) <span class="text-blue-400 ml-2">${asset.ticker}</span>`;
+                document.getElementById('modal-title').innerHTML = `Preço Justo(Graham) < span class="text-blue-400 ml-2" > ${asset.ticker}</span > `;
                 // Hide Projective inputs for Graham
                 document.getElementById('div-inputs-projective').classList.add('hidden');
             }
 
             const price = asset.price || 0;
-            document.getElementById('val-price').innerText = `R$ ${price.toFixed(2)}`;
+            document.getElementById('val-price').innerText = `R$ ${price.toFixed(2)} `;
             document.getElementById('val-shares').innerText = asset.shares_outstanding ? asset.shares_outstanding.toLocaleString('pt-BR') : 'N/A';
 
             // Only populate profit if needed (for switching back to projective later? For now simplistic)
@@ -624,14 +651,14 @@
                 }
 
                 document.getElementById('val-lpa').innerText = `R$ ${lpa.toFixed(2)} (Est.)`;
-                document.getElementById('val-dpa').innerText = `R$ ${dpa.toFixed(2)}`;
-                document.getElementById('val-yield-proj').innerText = `${((currentPrice > 0) ? (dpa / currentPrice) * 100 : 0).toFixed(2)}%`;
+                document.getElementById('val-dpa').innerText = `R$ ${dpa.toFixed(2)} `;
+                document.getElementById('val-yield-proj').innerText = `${((currentPrice > 0) ? (dpa / currentPrice) * 100 : 0).toFixed(2)}% `;
 
-                explanation = `<strong class="text-emerald-400">Cálculo (Método Bazin para FIIs):</strong>\n`;
+                explanation = `< strong class="text-emerald-400" > Cálculo(Método Bazin para FIIs):</strong >\n`;
                 explanation += `Utiliza o rendimento anual projetado para encontrar o preço teto.\n\n`;
-                explanation += `1. <span class="text-slate-400">DPA (Dividendo por Ação):</span> R$ ${dpa.toFixed(2)} (Baseado no DY atual de ${(dyPct * 100).toFixed(2)}%)\n`;
-                explanation += `2. <span class="text-slate-400">Yield Mínimo Desejado:</span> ${minYield}%\n`;
-                explanation += `3. <span class="text-slate-400">Fórmula:</span> Preço Justo = DPA / Yield\n`;
+                explanation += `1. < span class="text-slate-400" > DPA(Dividendo por Ação):</span > R$ ${dpa.toFixed(2)} (Baseado no DY atual de ${(dyPct * 100).toFixed(2)}%) \n`;
+                explanation += `2. < span class="text-slate-400" > Yield Mínimo Desejado:</span > ${minYield}%\n`;
+                explanation += `3. < span class="text-slate-400" > Fórmula:</span > Preço Justo = DPA / Yield\n`;
                 explanation += `   R$ ${fairPrice.toFixed(2)} = ${dpa.toFixed(2)} / ${paramYield}\n`;
 
             } else {
