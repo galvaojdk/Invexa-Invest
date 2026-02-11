@@ -21,6 +21,16 @@ async def screener_view(request: Request):
         "free_limit": 1
     })
 
+@router.get("/radar/dividendos", response_class=HTMLResponse)
+def radar_dividendos(request: Request):
+    return templates.TemplateResponse("screener.html", {
+        "request": request, 
+        "asset_type": "", 
+        "page_title": "Radar de Dividendos Inteligente", 
+        "filter_type": "dividends",
+        "free_limit": 3
+    })
+
 @router.get("/portfolio", response_class=HTMLResponse)
 def portfolio(request: Request):
     return templates.TemplateResponse("portfolio.html", {"request": request})
