@@ -26,6 +26,22 @@
             <span id="txt-favorites">Ver Favoritos</span>
         </button>
 
+        <!-- Dynamic Filter Tabs -->
+        <div class="flex bg-slate-900 p-1 rounded-lg border border-slate-700 shadow-inner">
+            <button onclick="changeAssetTypeFilter('', this)"
+                class="tab-filter px-4 py-1.5 text-[10px] font-bold rounded-md transition-all bg-blue-600 text-white shadow-lg shadow-blue-500/20">
+                TODOS
+            </button>
+            <button onclick="changeAssetTypeFilter('stock', this)"
+                class="tab-filter px-4 py-1.5 text-[10px] font-bold rounded-md transition-all text-slate-400 hover:text-white">
+                AÇÕES
+            </button>
+            <button onclick="changeAssetTypeFilter('fii', this)"
+                class="tab-filter px-4 py-1.5 text-[10px] font-bold rounded-md transition-all text-slate-400 hover:text-white">
+                FIIS
+            </button>
+        </div>
+
         <!-- Action Button -->
         <button onclick="updateData()" id="btn-update"
             class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95">
@@ -226,6 +242,23 @@
         let isPremiumUser = false;
         let favoriteTickers = new Set();
         let showFavoritesOnly = false;
+        let activeFilterType = ''; // '', 'stock', 'fii'
+
+        function changeAssetTypeFilter(type, btn) {
+            activeFilterType = type;
+
+            // UI Update: Update Buttons
+            document.querySelectorAll('.tab-filter').forEach(b => {
+                b.classList.remove('bg-blue-600', 'text-white', 'shadow-lg', 'shadow-blue-500/20');
+                b.classList.add('text-slate-400', 'hover:text-white');
+            });
+
+            btn.classList.add('bg-blue-600', 'text-white', 'shadow-lg', 'shadow-blue-500/20');
+            btn.classList.remove('text-slate-400', 'hover:text-white');
+
+            currentPage = 1;
+            renderRecommendations();
+        }
 
         function toggleFavoritesFilter() {
             showFavoritesOnly = !showFavoritesOnly;
@@ -355,6 +388,11 @@
                     return true;
                 });
                 recs.sort((a, b) => b.safe_margin - a.safe_margin);
+            }
+
+            // Sub-filter by Asset Type (Tab Select)
+            if (typeof activeFilterType !== 'undefined' && activeFilterType) {
+                recs = recs.filter(asset => asset.type === activeFilterType);
             }
 
             // Filter by Favorites if enabled

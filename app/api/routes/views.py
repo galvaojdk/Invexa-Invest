@@ -39,14 +39,6 @@ def portfolio(request: Request):
 def portfolio_targets(request: Request):
     return templates.TemplateResponse("targets.html", {"request": request})
 
-@router.get("/rankings/fiis", response_class=HTMLResponse)
-def ranking_fiis(request: Request):
-    return templates.TemplateResponse("screener.html", {"request": request, "asset_type": "fii", "page_title": "Ranking de FIIs", "free_limit": 3})
-
-@router.get("/rankings/acoes", response_class=HTMLResponse)
-def ranking_acoes(request: Request):
-    return templates.TemplateResponse("screener.html", {"request": request, "asset_type": "stock", "page_title": "Ranking de Ações", "free_limit": 3})
-
 @router.get("/ferramentas/juros", response_class=HTMLResponse)
 def tools_juros(request: Request):
     return templates.TemplateResponse("calculator.html", {"request": request})
