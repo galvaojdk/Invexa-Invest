@@ -58,6 +58,17 @@
             </svg>
             <span>Atualizar Cotações</span>
         </button>
+
+        <!-- Smart Suggester Button (Only in Dividends Mode) -->
+        <button onclick="toggleGapHighlighter()" id="btn-gap-highlighter"
+            class="hidden items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-purple-500/20 transition-all border border-purple-400/30">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.989-2.386l-.548-.547z">
+                </path>
+            </svg>
+            <span id="txt-gap">Destaque Gaps</span>
+        </button>
     </div>
 </div>
 
@@ -217,7 +228,16 @@
         };
 
         async function loadAssets() {
-            // ... (Keep existing loadAssets) ...
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const res = await fetch('/api/v1/portfolio/', { headers: { 'Authorization': `Bearer ${token}` } });
+                    if (res.ok) {
+                        userPortfolio = await res.json();
+                    }
+                } catch (e) { console.error("Error loading portfolio", e); }
+            }
+
             try {
                 await checkUserStatus(); // Ensure we know if user is premium
                 await loadFavorites(); // Load favorites
@@ -243,6 +263,23 @@
         let favoriteTickers = new Set();
         let showFavoritesOnly = false;
         let activeFilterType = ''; // '', 'stock', 'fii'
+        let showGapsOnly = false;
+        let portfolioMonths = new Set();
+        let userPortfolio = [];
+
+        function toggleGapHighlighter() {
+            showGapsOnly = !showGapsOnly;
+            const btn = document.getElementById('btn-gap-highlighter');
+            const txt = document.getElementById('txt-gap');
+            if (showGapsOnly) {
+                btn.classList.add('ring-2', 'ring-white', 'bg-purple-700');
+                txt.innerText = "Mostrando Gaps";
+            } else {
+                btn.classList.remove('ring-2', 'ring-white', 'bg-purple-700');
+                txt.innerText = "Destaque Gaps";
+            }
+            renderRecommendations();
+        }
 
         function changeAssetTypeFilter(type, btn) {
             activeFilterType = type;
@@ -349,6 +386,24 @@
             const logicType = document.getElementById('filter-logic-type').value;
             let recs = [];
 
+            // UI Adjustments
+            const btnGap = document.getElementById('btn-gap-highlighter');
+            if (logicType === 'dividends') {
+                btnGap.classList.replace('hidden', 'flex');
+
+                // Calculate portfolio months coverage
+                portfolioMonths = new Set();
+                userPortfolio.forEach(pTicker => {
+                    const asset = allAssets.find(a => a.ticker === pTicker.ticker);
+                    if (asset && asset.payment_months) {
+                        asset.payment_months.split(',').forEach(m => portfolioMonths.add(parseInt(m)));
+                    }
+                });
+            } else {
+                btnGap.classList.replace('flex', 'hidden');
+                showGapsOnly = false;
+            }
+
             if (logicType === 'dividends') {
                 // Radar de Dividendos Inteligente
                 recs = allAssets.filter(asset => {
@@ -402,6 +457,20 @@
 
             // Take top 100
             recs = recs.slice(0, 100);
+
+            // If Gap highlighting is ON, we might want to sort those who fill gaps first
+            if (showGapsOnly && portfolioMonths.size > 0) {
+                recs.sort((a, b) => {
+                    const aMonths = (a.payment_months || "").split(',').map(m => parseInt(m));
+                    const bMonths = (b.payment_months || "").split(',').map(m => parseInt(m));
+
+                    const aGapsFilled = aMonths.filter(m => !portfolioMonths.has(m)).length;
+                    const bGapsFilled = bMonths.filter(m => !portfolioMonths.has(m)).length;
+
+                    if (aGapsFilled !== bGapsFilled) return bGapsFilled - aGapsFilled;
+                    return (b.dy_12m || 0) - (a.dy_12m || 0);
+                });
+            }
 
             // Update Count Text
             if (elCount) elCount.innerText = `${recs.length}`;
@@ -517,17 +586,49 @@
 
                 let cardContent = '';
                 if (logicType === 'dividends') {
+                    // Generate 12 months grid
+                    const monthsActive = (asset.payment_months || "").split(',').map(m => parseInt(m));
+                    let gridHtml = '<div class="grid grid-cols-6 gap-0.5 mt-2">';
+                    const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+                    monthNames.forEach((name, i) => {
+                        const mNum = i + 1;
+                        const isPaying = monthsActive.includes(mNum);
+                        const isGap = isPaying && !portfolioMonths.has(mNum);
+
+                        let bgColor = 'bg-slate-800/50 text-slate-600';
+                        let border = 'border-slate-800';
+
+                        if (isPaying) {
+                            bgColor = 'bg-blue-500/20 text-blue-300';
+                            border = 'border-blue-500/40';
+                        }
+
+                        if (showGapsOnly && isGap) {
+                            bgColor = 'bg-purple-500/30 text-purple-200 animate-pulse';
+                            border = 'border-purple-400';
+                        }
+
+                        gridHtml += `
+                            <div class="flex flex-col items-center justify-center py-1 rounded border ${border} ${bgColor} text-[7px] font-bold uppercase">
+                                ${isPaying ? `<svg class="w-1.5 h-1.5 mb-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"/></svg>` : ''}
+                                ${name}
+                            </div>`;
+                    });
+                    gridHtml += '</div>';
+
                     cardContent = `
-                        <div class="flex flex-col gap-1 bg-blue-900/20 py-2 px-2 rounded-lg border border-blue-500/30">
+                        <div class="flex flex-col gap-1 bg-blue-900/10 py-2 px-2 rounded-lg border border-blue-500/20">
                             <div class="flex justify-between items-center text-[9px] text-blue-300 font-bold px-1">
-                                <span>YIELD (12M)</span>
+                                <span>DY (HISTÓRICO)</span>
                                 <span class="text-white text-xs">${dyVal.toFixed(2)}%</span>
                             </div>
                             <div class="flex justify-between items-center text-[9px] text-blue-400 font-bold px-1">
-                                <span>ESTIMADO PRÓXIMO</span>
+                                <span>PROJEÇÃO MENSAL</span>
                                 <span class="text-emerald-400">R$ ${(currentPrice * (dyVal / 100) / 12).toFixed(2)}</span>
                             </div>
                         </div>
+                        ${gridHtml}
                      `;
                 } else {
                     cardContent = `
@@ -656,7 +757,7 @@
             const isFii = asset.type === 'fii';
 
             if (isFii) {
-                document.getElementById('modal-title').innerHTML = `Preço Teto(Bazin) < span class="text-blue-400 ml-2" > ${asset.ticker}</span > `;
+                document.getElementById('modal-title').innerHTML = `Preço Teto (Bazin) <span class="text-blue-400 ml-2">${asset.ticker}</span>`;
                 document.getElementById('div-inputs-projective').classList.remove('hidden');
                 document.getElementById('div-profit-input').style.display = 'none';
 
@@ -666,7 +767,7 @@
 
             } else {
                 // Graham (Default for Stocks)
-                document.getElementById('modal-title').innerHTML = `Preço Justo(Graham) < span class="text-blue-400 ml-2" > ${asset.ticker}</span > `;
+                document.getElementById('modal-title').innerHTML = `Preço Justo (Graham) <span class="text-blue-400 ml-2">${asset.ticker}</span>`;
                 // Hide Projective inputs for Graham
                 document.getElementById('div-inputs-projective').classList.add('hidden');
             }
@@ -722,13 +823,13 @@
 
                 document.getElementById('val-lpa').innerText = `R$ ${lpa.toFixed(2)} (Est.)`;
                 document.getElementById('val-dpa').innerText = `R$ ${dpa.toFixed(2)} `;
-                document.getElementById('val-yield-proj').innerText = `${((currentPrice > 0) ? (dpa / currentPrice) * 100 : 0).toFixed(2)}% `;
+                document.getElementById('val-yield-proj').innerText = `${((currentPrice > 0) ? (dpa / currentPrice) * 100 : 0).toFixed(2)}%`;
 
-                explanation = `< strong class="text-emerald-400" > Cálculo(Método Bazin para FIIs):</strong >\n`;
+                explanation = `<strong class="text-emerald-400">Cálculo (Método Bazin para FIIs):</strong>\n`;
                 explanation += `Utiliza o rendimento anual projetado para encontrar o preço teto.\n\n`;
-                explanation += `1. < span class="text-slate-400" > DPA(Dividendo por Ação):</span > R$ ${dpa.toFixed(2)} (Baseado no DY atual de ${(dyPct * 100).toFixed(2)}%) \n`;
-                explanation += `2. < span class="text-slate-400" > Yield Mínimo Desejado:</span > ${minYield}%\n`;
-                explanation += `3. < span class="text-slate-400" > Fórmula:</span > Preço Justo = DPA / Yield\n`;
+                explanation += `1. <span class="text-slate-400">DPA (Dividendo por Ação):</span> R$ ${dpa.toFixed(2)} (Baseado no DY atual de ${(dyPct * 100).toFixed(2)}%)\n`;
+                explanation += `2. <span class="text-slate-400">Yield Mínimo Desejado:</span> ${minYield}%\n`;
+                explanation += `3. <span class="text-slate-400">Fórmula:</span> Preço Justo = DPA / Yield\n`;
                 explanation += `   R$ ${fairPrice.toFixed(2)} = ${dpa.toFixed(2)} / ${paramYield}\n`;
 
             } else {

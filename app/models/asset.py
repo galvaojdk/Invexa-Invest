@@ -23,6 +23,7 @@ class Asset(Base):
     num_properties = Column(Integer, default=0) # Qtd Imóveis (FIIs)
     shares_outstanding = Column(BigInteger, default=0) # Numero de papeis
     net_income = Column(Float, default=0.0) # Lucro Liquido (12m)
+    payment_months = Column(String, nullable=True) # Meses de pagamento históricos (ex: "1,4,7,10")
     
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), default=func.now())
     

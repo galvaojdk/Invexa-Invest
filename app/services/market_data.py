@@ -209,6 +209,17 @@ async def fetch_batch_brapi(db: Session, tickers: str):
                              )
                              db.add(new_div)
                              existing_keys.add(key)
+                     
+                     # --- Update Payment Pattern (Typical Months) ---
+                     # Get all pay dates for this asset (including recently added ones)
+                     all_months = [d.pay_date.month for d in current_events]
+                     for div in extra_data['dividends']:
+                          m = div['pay_date'].month
+                          all_months.append(m)
+                     
+                     if all_months:
+                          unique_months = sorted(list(set(all_months)))
+                          asset_obj.payment_months = ",".join(map(str, unique_months))
                 
                 # Liquidity (Financial Volume = Volume * Price)
                 # averageDailyVolume3Month is usually in defaultKeyStatistics or summaryDetail

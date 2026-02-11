@@ -58,6 +58,7 @@ class AssetResponse(BaseModel):
     fair_price_bazin: Optional[float] = 0.0
     safe_margin: Optional[float] = 0.0
     status: Optional[str] = None
+    payment_months: Optional[str] = None
 
     class Config:
         from_attributes = True
