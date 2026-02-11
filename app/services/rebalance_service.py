@@ -22,10 +22,9 @@ class RebalanceService:
 
         # 3. Calculate current total equity and breakdown by category/asset
         total_equity = 0.0
-        current_alloc = {} # Key: target name (e.g. 'stock', 'fii'), Value: total current value
+        current_alloc = {} # Key: target name (e.g. 'stock', 'fii', 'crypto'), Value: total current value
         
-        # We need to link portfolio assets to targets
-        # For simplicity in this first version, we'll support category targets ('stock', 'fii')
+        # We link portfolio assets to targets by the asset.type field
         for item in portfolio_items:
             asset = item.asset
             if not asset: continue
@@ -33,48 +32,34 @@ class RebalanceService:
             value = item.quantity * (asset.price or 0.0)
             total_equity += value
             
-            asset_type = asset.type # 'stock' or 'fii'
+            asset_type = asset.type.lower() if asset.type else 'outros'
             current_alloc[asset_type] = current_alloc.get(asset_type, 0.0) + value
 
-        # 4. Filter relevant targets (categories for now)
+        # 4. Filter relevant targets (categories)
         category_targets = [t for t in targets if t.target_type == 'category']
         
         # 5. Determine how to distribute the new contribution
-        # We'll use a simple "fill the gap" approach
         new_total_equity = total_equity + contribution_amount
         
         suggestions = []
         
         # Calculate how much SHOULD be in each category
         for target in category_targets:
+            target_name = target.name.lower()
             target_value = new_total_equity * (target.target_percent / 100.0)
-            current_value = current_alloc.get(target.name, 0.0)
+            current_value = current_alloc.get(target_name, 0.0)
             
             gap = target_value - current_value
             if gap > 0:
-                # We should invest 'gap' amount in this category
-                # Now, which asset within this category?
-                # Simple rule: pick the asset within this category that is also below its "inner" target 
-                # or just pick the one with best DY/fundamental (for now let's just suggest the category)
-                
-                # To make it "Smart", let's suggest the top 1-2 assets in that category 
-                # that have the lowest % of the wallet within that category.
-                
-                cat_assets = [item for item in portfolio_items if item.asset.type == target.name]
+                # Suggest the top asset in this category that is most "lagging"
+                cat_assets = [item for item in portfolio_items if item.asset.type.lower() == target_name]
                 if not cat_assets: continue
-                
-                # Suggest assets in this category
-                # For a really smart suggestion, we could split the 'gap' among assets in the category
-                # but let's keep it simple: distribute the gap among the cat_assets proportionally?
-                # No, better to suggest buying the one that is most "lagging".
                 
                 # Sort cat_assets by current value (lower first)
                 cat_assets.sort(key=lambda x: x.quantity * (x.asset.price or 0.0))
                 
-                # Let's suggest the top asset in this category
                 best_asset = cat_assets[0].asset
                 
-                # Calculate how many shares of this asset to buy
                 shares_to_buy = 0
                 if best_asset.price and best_asset.price > 0:
                     shares_to_buy = int(gap / best_asset.price)
@@ -82,11 +67,11 @@ class RebalanceService:
                 if shares_to_buy > 0:
                     suggestions.append({
                         "ticker": best_asset.ticker,
-                        "category": target.name,
+                        "category": target.name.upper(),
                         "suggested_amount": gap,
                         "suggested_shares": shares_to_buy,
                         "current_price": best_asset.price,
-                        "reason": f"Sua meta para {target.name.upper()} é {target.target_percent}%, mas atualmente está abaixo disso."
+                        "reason": f"Sua meta para {target.name.upper()} é {target.target_percent}%, mas sua posição atual está abaixo do objetivo."
                     })
 
         # Sort suggestions by the magnitude of the gap (invest in most lagging first)

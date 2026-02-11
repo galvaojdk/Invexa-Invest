@@ -400,6 +400,22 @@
                             placeholder="EX: WEGE3" required>
                     </div>
 
+                    <div>
+                        <label class="block text-slate-400 text-xs font-bold mb-1.5 uppercase tracking-wide">Categoria
+                            (Opcional)</label>
+                        <select id="asset_type"
+                            class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm">
+                            <option value="">Automático (Ações/FII)</option>
+                            <option value="stock">Ações</option>
+                            <option value="fii">FIIs</option>
+                            <option value="crypto">Criptomoedas</option>
+                            <option value="fixed_income">Renda Fixa</option>
+                            <option value="other">Outros</option>
+                        </select>
+                        <p class="text-[10px] text-slate-500 mt-1">Classifique manualmente para ativos como Cripto ou
+                            Renda Fixa.</p>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label
@@ -590,6 +606,7 @@
                 const price = parseFloat(document.getElementById('price').value);
                 const type = document.getElementById('transaction-type').value;
                 const date = document.getElementById('date').value;
+                const asset_type = document.getElementById('asset_type').value;
 
                 try {
                     const res = await fetch('/api/v1/portfolio/transaction', {
@@ -598,7 +615,7 @@
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify({ ticker, type, quantity, price, date })
+                        body: JSON.stringify({ ticker, quantity, price, type, date, asset_type })
                     });
 
                     if (res.ok) {

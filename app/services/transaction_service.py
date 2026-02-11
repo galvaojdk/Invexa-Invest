@@ -6,7 +6,7 @@ from datetime import datetime
 
 class TransactionService:
     @staticmethod
-    def process_transaction(db: Session, user_id: int, ticker: str, type: str, quantity: int, price: float, date: datetime = None):
+    def process_transaction(db: Session, user_id: int, ticker: str, type: str, quantity: int, price: float, date: datetime = None, asset_type: str = None):
         # 1. Find Asset ID
         ticker = ticker.upper().replace(".SA", "")
         asset = db.query(Asset).filter(Asset.ticker == ticker).first()
@@ -17,6 +17,12 @@ class TransactionService:
             if not asset:
                 raise ValueError("Ativo não encontrado")
         
+        # Override or set type if provided
+        if asset_type:
+            asset.type = asset_type.lower()
+            db.commit()
+            db.refresh(asset)
+
         asset_id = asset.id
 
         # 2. Get Portfolio Item

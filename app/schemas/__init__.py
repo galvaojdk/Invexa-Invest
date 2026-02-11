@@ -73,6 +73,7 @@ class TransactionCreate(BaseModel):
     quantity: int
     price: float
     date: Optional[datetime] = None
+    asset_type: Optional[str] = None # stock, fii, crypto, etc.
 
 class AlertBase(BaseModel):
     ticker: str

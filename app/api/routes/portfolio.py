@@ -119,7 +119,8 @@ def create_transaction(item: TransactionCreate, current_user: User = Depends(get
             type=item.type,
             quantity=item.quantity,
             price=item.price,
-            date=item.date
+            date=item.date,
+            asset_type=item.asset_type
         )
         return {"message": "Movimentação registrada com sucesso"}
     except ValueError as e:

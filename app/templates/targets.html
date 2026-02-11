@@ -5,68 +5,32 @@
 {% block content %}
 <div class="max-w-4xl mx-auto space-y-8">
     <div class="bg-[#0f172a] rounded-2xl p-6 border border-slate-800 shadow-xl">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center justify-between mb-8">
             <div>
                 <h3 class="text-xl font-bold text-white tracking-tight">Definir Metas de Alocação</h3>
                 <p class="text-sm text-slate-500">Distribua como você deseja que seu patrimônio seja alocado entre
                     categorias.</p>
             </div>
-            <div class="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Total: </span>
-                <span id="total-pct" class="text-lg font-mono font-bold text-white">0%</span>
+            <div class="flex flex-col items-end gap-2">
+                <div class="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                    <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Total: </span>
+                    <span id="total-pct" class="text-lg font-mono font-bold text-white">0%</span>
+                </div>
+                <button onclick="addCategoryRow()"
+                    class="flex items-center gap-2 text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors uppercase tracking-wider">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Nova Categoria
+                </button>
             </div>
         </div>
 
-        <div class="space-y-6" id="targets-container">
-            <!-- Asset Type Row: Stocks -->
-            <div
-                class="flex items-center gap-6 p-4 bg-slate-900/50 rounded-xl border border-slate-800 group hover:border-slate-700 transition-all">
-                <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <span class="block text-white font-bold uppercase text-xs tracking-widest mb-1">Ações
-                        (Stocks)</span>
-                    <input type="range" min="0" max="100" value="0"
-                        class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500 target-slider"
-                        data-type="stock">
-                </div>
-                <div class="w-20">
-                    <input type="number" value="0"
-                        class="w-full bg-slate-800 border border-slate-700 text-white text-center rounded-lg py-2 font-mono text-sm target-input"
-                        data-type="stock">
-                </div>
-            </div>
-
-            <!-- Asset Type Row: FIIs -->
-            <div
-                class="flex items-center gap-6 p-4 bg-slate-900/50 rounded-xl border border-slate-800 group hover:border-slate-700 transition-all">
-                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                        </path>
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <span class="block text-white font-bold uppercase text-xs tracking-widest mb-1">FIIs
-                        (Imobiliário)</span>
-                    <input type="range" min="0" max="100" value="0"
-                        class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500 target-slider"
-                        data-type="fii">
-                </div>
-                <div class="w-20">
-                    <input type="number" value="0"
-                        class="w-full bg-slate-800 border border-slate-700 text-white text-center rounded-lg py-2 font-mono text-sm target-input"
-                        data-type="fii">
-                </div>
-            </div>
+        <div class="space-y-4" id="targets-container">
+            <!-- Rows will be injected here -->
         </div>
 
-        <div class="mt-8 flex justify-end gap-4">
+        <div class="mt-8 pt-8 border-t border-slate-800/50 flex justify-end gap-4">
             <div id="save-status" class="hidden items-center gap-2 text-emerald-400 text-sm font-medium animate-pulse">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -86,17 +50,66 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            Como funciona?
+            Importante
         </h4>
         <p class="text-sm text-slate-400 leading-relaxed">
-            As metas definidas aqui serão usadas pelo **Assistente de Aporte Inteligente** no Dashboard. O sistema irá
-            priorizar os novos investimentos nos ativos que estiverem com a porcentagem atual abaixo da sua meta,
-            ajudando você a manter o balanceamento da sua carteira de forma automática.
+            As categorias listadas aqui devem coincidir com as categorias de ativos na sua carteira.
+            Ao adicionar um novo investimento (como uma Criptomoeda), certifique-se de classificá-la corretamente no
+            modal de transação para que o assistente possa realizar os cálculos de rebalanceamento.
         </p>
     </div>
 </div>
 
 <script>
+    function createRowHtml(name = '', percent = 0) {
+        return `
+            <div class="flex flex-col md:flex-row items-center gap-4 md:gap-6 p-4 bg-slate-900/50 rounded-xl border border-slate-800 group hover:border-slate-700 transition-all target-row" data-name="${name}">
+                <div class="w-full md:w-48 flex flex-col gap-1">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Categoria</label>
+                    <input type="text" value="${name}" placeholder="Ex: Ações, Cripto..." 
+                        class="bg-transparent border-b border-slate-700 text-white font-bold py-1 focus:border-blue-500 outline-none transition-all category-name-input">
+                </div>
+                <div class="flex-1 w-full">
+                    <input type="range" min="0" max="100" value="${percent}" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500 target-slider">
+                </div>
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <div class="w-20">
+                        <input type="number" value="${percent}" class="w-full bg-slate-800 border border-slate-700 text-white text-center rounded-lg py-2 font-mono text-sm target-input">
+                    </div>
+                    <button onclick="this.closest('.target-row').remove(); updateTotal();" class="p-2 text-slate-600 hover:text-red-400 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    function addCategoryRow(name = '', percent = 0) {
+        const container = document.getElementById('targets-container');
+        const range = document.createRange();
+        const fragment = range.createContextualFragment(createRowHtml(name, percent));
+
+        const row = fragment.querySelector('.target-row');
+        const slider = row.querySelector('.target-slider');
+        const input = row.querySelector('.target-input');
+        const nameInput = row.querySelector('.category-name-input');
+
+        slider.addEventListener('input', (e) => {
+            input.value = e.target.value;
+            updateTotal();
+        });
+        input.addEventListener('input', (e) => {
+            slider.value = e.target.value;
+            updateTotal();
+        });
+        nameInput.addEventListener('input', (e) => {
+            row.dataset.name = e.target.value.toLowerCase();
+        });
+
+        container.appendChild(fragment);
+        updateTotal();
+    }
+
     async function loadTargets() {
         const token = localStorage.getItem('token');
         try {
@@ -105,14 +118,21 @@
             });
             const data = await res.json();
 
-            data.forEach(t => {
-                const slider = document.querySelector(`.target-slider[data-type="${t.name}"]`);
-                const input = document.querySelector(`.target-input[data-type="${t.name}"]`);
-                if (slider) { slider.value = t.target_percent; }
-                if (input) { input.value = t.target_percent; }
-            });
-            updateTotal();
-        } catch (e) { console.error("Error loading targets", e); }
+            const container = document.getElementById('targets-container');
+            container.innerHTML = '';
+
+            if (data.length === 0) {
+                addCategoryRow('stock', 0);
+                addCategoryRow('fii', 0);
+            } else {
+                data.forEach(t => addCategoryRow(t.name, t.target_percent));
+            }
+        } catch (e) {
+            console.error("Error loading targets", e);
+            // Fallback
+            addCategoryRow('stock', 0);
+            addCategoryRow('fii', 0);
+        }
     }
 
     function updateTotal() {
@@ -129,12 +149,16 @@
     async function saveTargets() {
         const token = localStorage.getItem('token');
         const targets = [];
-        document.querySelectorAll('.target-slider').forEach(s => {
-            targets.push({
-                target_type: 'category',
-                name: s.dataset.type,
-                target_percent: parseFloat(s.value)
-            });
+        document.querySelectorAll('.target-row').forEach(row => {
+            const name = row.querySelector('.category-name-input').value.toLowerCase();
+            const percent = parseFloat(row.querySelector('.target-slider').value);
+            if (name) {
+                targets.push({
+                    target_type: 'category',
+                    name: name,
+                    target_percent: percent
+                });
+            }
         });
 
         try {
@@ -154,24 +178,6 @@
             }
         } catch (e) { alert("Erro ao salvar metas."); }
     }
-
-    // Sync Slider and Input
-    document.querySelectorAll('.target-slider').forEach(s => {
-        s.addEventListener('input', (e) => {
-            const val = e.target.value;
-            document.querySelector(`.target-input[data-type="${e.target.dataset.type}"]`).value = val;
-            updateTotal();
-        });
-    });
-
-    document.querySelectorAll('.target-input').forEach(i => {
-        i.addEventListener('input', (e) => {
-            const val = e.target.value;
-            const slider = document.querySelector(`.target-slider[data-type="${e.target.dataset.type}"]`);
-            if (slider) slider.value = val;
-            updateTotal();
-        });
-    });
 
     document.addEventListener('DOMContentLoaded', loadTargets);
 </script>
