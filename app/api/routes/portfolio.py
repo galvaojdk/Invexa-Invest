@@ -21,36 +21,9 @@ def read_portfolio(current_user: User = Depends(get_current_active_user), db: Se
     for item in items:
         asset = item.asset
         
-        # Valuation Logic (Copied from assets.py for consistency)
-        # Graham (Stocks)
-        fair_price_graham = 0.0
-        status = "Neutro"
-        
-        if asset.type == 'stock' and asset.lpa > 0 and asset.vpa > 0:
-            try:
-                fair_price = (22.5 * asset.lpa * asset.vpa) ** 0.5
-                if asset.price < fair_price:
-                    status = "Descontado"
-                else:
-                    status = "Caro"
-            except:
-                pass
-        
-        # Bazin (FIIs/Dividends)
-        # Bazin = DY / 0.06
-        if asset.dy_12m and asset.dy_12m > 0:
-             dividend_val = (asset.price * (asset.dy_12m / 100))
-             fair_price_bazin = dividend_val / 0.06
-             
-             if asset.type == 'fii':
-                 if asset.price < fair_price_bazin:
-                     status = "Descontado"
-                 else:
-                     status = "Neutro" 
-             
-             # Stock fallback
-             elif status != "Descontado" and fair_price_bazin > asset.price:
-                 status = "Bom Pagador"
+        # Valuation Logic (Centralized)
+        from app.services.valuation_service import valuation_service
+        fair_price, status = valuation_service.calculate_fair_price(asset)
 
         # Calcular rentabilidade simples
         current_val = item.quantity * item.asset.price

@@ -1121,7 +1121,11 @@
                         <div class="flex justify-between items-start">
                             <div>
                                 <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">${item.category}</span>
-                                <h4 class="text-lg font-bold text-white">${item.ticker}</h4>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="text-lg font-bold text-white">${item.ticker}</h4>
+                                    ${item.status === 'Descontado' ? '<span class="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 text-[9px] font-bold rounded border border-emerald-500/30">DESCONTADO</span>' : ''}
+                                    ${item.status === 'Bom Pagador' ? '<span class="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 text-[9px] font-bold rounded border border-blue-500/30">DIVIDENDOS</span>' : ''}
+                                </div>
                             </div>
                             <div class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold rounded border border-emerald-500/20">
                                 SUGERIDO
