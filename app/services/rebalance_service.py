@@ -32,44 +32,38 @@ class RebalanceService:
             current_alloc[asset_type] = current_alloc.get(asset_type, 0.0) + value
             owned_asset_ids.add(asset.id)
 
-        # 4. Determine Target Amounts
+        # 4. Filter relevant targets (categories)
         category_targets = [t for t in targets if t.target_type == 'category']
         new_total_equity = total_equity + contribution_amount
         
-        suggestions = []
+        valid_allocations = [] # Stores (target, candidates, weight)
+        total_weight = 0.0
         
-        # 5. Process each category
+        # 5. Pass 1: Identificar gaps e buscar candidatos válidos
         for target in category_targets:
             target_name = target.name.lower() # 'stock', 'fii'
             target_val = new_total_equity * (target.target_percent / 100.0)
             current_val = current_alloc.get(target_name, 0.0)
             
-            gap = target_val - current_val
+            # Gap based on deficit
+            raw_gap = target_val - current_val
             
-            if gap > 0:
-                # We need to invest 'gap' into this category.
-                # Find candidates: 
-                # A) Owned assets in this category
-                # B) Top discounted assets in DB for this category
-                
-                candidates = []
-                
-                # A. Owned
-                owned_in_cat = [item.asset for item in portfolio_items if item.asset.type == target_name]
-                for asset in owned_in_cat:
-                    fp, status = valuation_service.calculate_fair_price(asset)
-                    candidates.append({
-                        "asset": asset,
-                        "status": status,
-                        "fair_price": fp,
-                        "owned": True,
-                        "score": RebalanceService._score_asset(asset, status, True)
-                    })
-                
-                # B. New Opportunities (Limit to avoid performance hit)
-                # Fetch top 20 by liquidity/dy to filter
-                # Ideally we'd have a 'ranking' table, but let's query raw for now
-                if target_name in ['stock', 'fii']:
+            candidates = []
+            
+            # A. Owned
+            owned_in_cat = [item.asset for item in portfolio_items if item.asset.type == target_name]
+            for asset in owned_in_cat:
+                fp, status = valuation_service.calculate_fair_price(asset)
+                candidates.append({
+                    "asset": asset,
+                    "status": status,
+                    "fair_price": fp,
+                    "owned": True,
+                    "score": RebalanceService._score_asset(asset, status, True)
+                })
+            
+            # B. New Opportunities (Limit to avoid performance hit)
+            if target_name in ['stock', 'fii']:
                      potential_new = db.query(Asset).filter(
                          Asset.type == target_name,
                          Asset.id.notin_(owned_asset_ids),
@@ -87,46 +81,70 @@ class RebalanceService:
                                  "owned": False,
                                  "score": RebalanceService._score_asset(asset, status, False)
                              })
+            
+            # Filter out 'Caro' assets
+            # A menos que não haja nenhuma outra opção? Por enquanto somos rigorosos.
+            candidates = [c for c in candidates if c['status'] != 'Caro']
+            candidates.sort(key=lambda x: x['score'], reverse=True)
+            
+            if candidates:
+                valid_allocations.append({
+                    "target": target,
+                    "candidates": candidates,
+                    "raw_gap": raw_gap,
+                    # Inicialmente peso é o gap positivo. Se for negativo/zero, peso 0.
+                    "weight": max(0, raw_gap)
+                })
+
+        # 6. Recalcular Pesos (Redistribuição)
+        # Calcula soma dos pesos (gaps positivos)
+        total_weight = sum(item['weight'] for item in valid_allocations)
+        
+        # Se total_weight for 0 (nenhum gap positivo ou carteira balanceada), 
+        # mas temos candidatos válidos, usamos o Target % para distribuir o aporte.
+        if total_weight == 0 and valid_allocations:
+             total_weight = sum(item['target'].target_percent for item in valid_allocations)
+             for item in valid_allocations:
+                 item['weight'] = item['target'].target_percent
+        
+        # Se ainda sim total_weight for 0 (ex: tudo caro), não sugerimos nada.
+        
+        suggestions = []
+
+        # 7. Pass 2: Distribuir o Aporte
+        if total_weight > 0:
+            for item in valid_allocations:
+                if item['weight'] <= 0: continue
                 
-                # Sort candidates by score
-                candidates.sort(key=lambda x: x['score'], reverse=True)
+                # Alocação Proporcional do Aporte disponível
+                allocation_amt = contribution_amount * (item['weight'] / total_weight)
                 
-                # Filter out 'Caro' assets to protect user, unless we have no other choice?
-                # Let's be strict: Don't suggest buying 'Caro'.
-                candidates = [c for c in candidates if c['status'] != 'Caro']
-                
-                # Pulverization Logic
-                # Pick top 3 candidates to spread the 'gap'
-                top_candidates = candidates[:3]
-                
-                if not top_candidates: continue
-                
-                # Distribute gap evenly (simplified) or weighted?
-                # Let's do evenly for now to "pulverize"
-                amount_per_asset = gap / len(top_candidates)
+                if allocation_amt < 1: continue 
+
+                # Pulverização
+                top_candidates = item['candidates'][:3]
+                amount_per_asset = allocation_amt / len(top_candidates)
                 
                 for cand in top_candidates:
                     asset = cand['asset']
                     if not asset.price or asset.price == 0: continue
                     
-                    # Check if amount is enough for at least 1 share
+                    # Tentar garantir compra mínima
                     if amount_per_asset < asset.price:
-                        # Try to buy at least 1 if possible with total gap?
-                        # If gap is small, maybe just 1 asset gets it.
-                        if gap >= asset.price:
-                             amount_per_asset = gap # Dump all in best for this iteration
+                         if allocation_amt >= asset.price:
+                             amount_per_asset = allocation_amt
                     
                     shares = int(amount_per_asset / asset.price)
                     if shares > 0:
                          reason = ""
                          if cand['owned']:
-                             reason = f"Aumentar posição em {target.name.upper()} ({cand['status']})"
+                             reason = f"Aumentar posição em {item['target'].name.upper()} ({cand['status']})"
                          else:
-                             reason = f"Oportunidade em {target.name.upper()} ({cand['status']})"
+                             reason = f"Oportunidade em {item['target'].name.upper()} ({cand['status']})"
                              
                          suggestions.append({
                             "ticker": asset.ticker,
-                            "category": target.name.upper(),
+                            "category": item['target'].name.upper(),
                             "suggested_amount": shares * asset.price,
                             "suggested_shares": shares,
                             "current_price": asset.price,
@@ -159,5 +177,6 @@ class RebalanceService:
         if asset.dy_12m > 6: score += (asset.dy_12m) # +6 to +15 pts
         
         return score
-
+            
+    # Keep singleton
 rebalance_service = RebalanceService()
