@@ -45,6 +45,16 @@ class ValuationService:
                      fair_price = (asset.price * (asset.dy_12m / 100)) / 0.06
                      if asset.price < fair_price:
                          status = "Bom Pagador"
+                 
+                 # Fallback 2: P/VP for Stocks (if Graham and Div failed)
+                 if status == "Neutro" and asset.p_vp > 0:
+                     if asset.p_vp < 1.0:
+                         # Assume fair price is P/VP = 1.0
+                         fair_price_pvp = asset.price / asset.p_vp
+                         status = "Descontado"
+                         if fair_price == 0: fair_price = fair_price_pvp
+                     elif asset.p_vp > 1.5: # Margin for expensive
+                          status = "Caro"
         
         # 2. Bazin (For FIIs or High Dividend Stocks)
         # We prioritize Bazin for FIIs
