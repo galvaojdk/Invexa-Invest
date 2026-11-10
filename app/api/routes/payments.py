@@ -72,11 +72,11 @@ async def create_checkout_preference(
     # Calculate Price and Title
     if plan_type == 'annual':
         price = 322.90 # (29.90 * 12) * 0.9 = 322.92 -> rounding to nice number
-        title = "Invexa Premium (Anual)"
+        title = "Invexa Invest Premium (Anual)"
         months_duration = 12
     else:
         price = 29.90
-        title = "Invexa Premium (Mensal)"
+        title = "Invexa Invest Premium (Mensal)"
         months_duration = 1
 
     preference_data = {
@@ -90,7 +90,7 @@ async def create_checkout_preference(
         ],
         "payer": {
             "email": current_user.email,
-            "name": current_user.full_name or "Usuario Invexa"
+            "name": current_user.full_name or "Usuario Invexa Invest"
         },
         "external_reference": f"{current_user.id}|{plan_type}", # Pass plan type in ref
         "back_urls": {

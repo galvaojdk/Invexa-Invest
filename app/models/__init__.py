@@ -3,3 +3,7 @@ from .asset import Asset
 from .portfolio import Portfolio
 from .transaction import Transaction
 from .user_target import UserTarget
+from .dividend import DividendEvent
+from .alert import Alert
+from .setting import Setting
+from .portfolio_history import PortfolioSnapshot

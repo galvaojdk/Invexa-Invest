@@ -35,6 +35,13 @@ router = APIRouter()
 
 @router.get("/", response_model=List[AssetResponse])
 def read_assets(skip: int = 0, limit: int = 100, asset_type: str = None, db: Session = Depends(database.get_db)):
+    if db.query(Asset).count() == 0:
+        try:
+            from scripts.seeds.seed_market_b3 import seed_market_data
+            seed_market_data()
+        except Exception as e:
+            print(f"Erro no auto-seed de ativos: {e}")
+
     query = db.query(Asset)
     if asset_type:
         query = query.filter(Asset.type == asset_type)

@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 # Garantir que o diretório raiz está no path para importar os módulos do app
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 from app.core import database
 # Importar todos os modelos para evitar erros de relacionamento do SQLAlchemy

@@ -3,7 +3,7 @@ import os
 import time
 # Invexa Main Application
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
+from app.core.templates import Jinja2Templates
 from app.core import config, database
 from app.models import user, asset, portfolio
 from app.api.routes import auth, views, dashboard, assets, portfolio as portfolio_routes, admin, premium, payments, profile

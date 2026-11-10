@@ -38,207 +38,67 @@ def get_or_create_asset(db: Session, ticker: str):
     return db.query(Asset).filter(Asset.ticker == ticker_clean).first()
 
 async def fetch_batch_brapi(db: Session, tickers: str):
-    # Add modules to get rich data
-    modules = "summaryProfile,defaultKeyStatistics,financialData"
-    url = f"https://brapi.dev/api/quote/{tickers}?fundamental=true&modules={modules}&token={BRAPI_TOKEN}"
-    print(f"Fetching batch via Brapi: {tickers}...")
-    
-    timeout = httpx.Timeout(30.0, connect=10.0)
+    ticker_list = [t.strip().upper().replace(".SA", "") for t in tickers.split(",") if t.strip()]
+    if not ticker_list:
+        return
+
+    print(f"Fetching {len(ticker_list)} assets via Brapi (1 por 1)...")
+    timeout = httpx.Timeout(15.0, connect=5.0)
+
     async with httpx.AsyncClient(timeout=timeout) as client:
-        try:
-            r = await client.get(url)
-            if r.status_code != 200:
-                print(f"Erro Brapi: {r.status_code} - {r.text}")
-                return
+        for symbol in ticker_list:
+            try:
+                # Brapi Free endpoint (1 ticker por requisicao)
+                url = f"https://brapi.dev/api/quote/{symbol}?fundamental=true&token={BRAPI_TOKEN}"
+                r = await client.get(url)
+                if r.status_code != 200:
+                    print(f"Erro Brapi para {symbol}: {r.status_code}")
+                    continue
                 
-            data = r.json()
-            results = data.get('results', [])
-            
-            for item in results:
-                symbol = item.get('symbol')
+                data = r.json()
+                results = data.get('results', [])
+                if not results:
+                    continue
+                
+                item = results[0]
                 price = item.get('regularMarketPrice') or 0.0
-                extra_data = None # Reset for each asset in batch
-                
-                # Modules
-                dk_stats = item.get('defaultKeyStatistics') or {}
-                sum_prof = item.get('summaryProfile') or {}
-                fin_data = item.get('financialData') or {}
+                vol = item.get('regularMarketVolume') or 0
+                lpa = item.get('earningsPerShare')
                 
                 # Create or Get
                 asset_obj = db.query(Asset).filter(Asset.ticker == symbol).first()
                 if not asset_obj:
-                    asset_obj = Asset(ticker=symbol)
+                    is_fii = "11" in symbol
+                    asset_obj = Asset(
+                        ticker=symbol,
+                        name=item.get('longName') or item.get('shortName') or symbol,
+                        type='fii' if is_fii else 'stock',
+                        sector='Fundo Imobiliário' if is_fii else 'Outros'
+                    )
                     db.add(asset_obj)
                 
-                # Basic
-                asset_obj.name = item.get('longName') or item.get('shortName') or symbol
+                if item.get('longName') or item.get('shortName'):
+                    asset_obj.name = item.get('longName') or item.get('shortName')
+                
                 if price and price > 0:
                     asset_obj.price = price
                 
-                # Sector
-                raw_sector = sum_prof.get('sector') or 'Outros'
-                SECTOR_MAP = {
-                    'Financial Services': 'Serviços Financeiros',
-                    'Utilities': 'Utilidade Pública',
-                    'Basic Materials': 'Materiais Básicos',
-                    'Real Estate': 'Imobiliário',
-                    'Energy': 'Energia',
-                    'Industrials': 'Industriais',
-                    'Consumer Defensive': 'Consumo Não Cíclico',
-                    'Consumer Cyclical': 'Consumo Cíclico',
-                    'Technology': 'Tecnologia',
-                    'Healthcare': 'Saúde',
-                    'Communication Services': 'Comunicação',
-                    'Consumer Goods': 'Bens de Consumo'
-                }
-                asset_obj.sector = SECTOR_MAP.get(raw_sector, raw_sector)
+                if lpa and lpa > 0:
+                    asset_obj.lpa = lpa
                 
-                # Type Logic
-                is_fii = "11" in symbol and (asset_obj.sector == 'Imobiliário' or "FUNDO" in asset_obj.name.upper())
-                asset_obj.type = 'fii' if is_fii else 'stock'
-                if is_fii and asset_obj.sector == 'Outros': asset_obj.sector = 'Fundo Imobiliário'
+                if asset_obj.vpa and asset_obj.vpa > 0 and price > 0:
+                    asset_obj.p_vp = round(price / asset_obj.vpa, 2)
                 
-                # Flush now to ensure ID is generated (especially for new assets) before dealing with dividends
-                db.flush()
+                if vol and vol > 0 and price > 0:
+                    asset_obj.liquidity_avg_2m = float(vol * price)
                 
-                # Extraction ----------------------
+                asset_obj.updated_at = datetime.now()
+                db.commit()
+                print(f"[OK] Atualizado {symbol}: R$ {price}")
                 
-                # P/VP (Price to Book)
-                # Usually in defaultKeyStatistics.priceToBook
-                p_vp = dk_stats.get('priceToBook')
-                if not p_vp:
-                     # Fallback: Price / BookValue
-                     bv = dk_stats.get('bookValue')
-                     if bv and bv > 0 and price > 0:
-                         p_vp = price / bv
-                asset_obj.p_vp = p_vp or 0.0
-                
-                # LPA (EPS)
-                lpa = dk_stats.get('trailingEps') or item.get('earningsPerShare') or 0.0
-                asset_obj.lpa = lpa
-                
-                # VPA (Book Value)
-                vpa = dk_stats.get('bookValue') or 0.0
-                if vpa != 0:
-                   asset_obj.vpa = vpa
-                
-                # Shares
-                shares = dk_stats.get('sharesOutstanding') or dk_stats.get('impliedSharesOutstanding') or 0
-                asset_obj.shares_outstanding = int(shares)
-                
-                # Net Income
-                # Brapi dump showed no 'netIncomeToCommon'. 
-                # Calc: EPS * Shares or ProfitMargin * Revenue
-                net_income = dk_stats.get('netIncomeToCommon')
-                if not net_income:
-                    if lpa and shares:
-                        net_income = lpa * shares
-                    elif fin_data.get('profitMargins') and fin_data.get('totalRevenue'):
-                         net_income = fin_data.get('profitMargins') * fin_data.get('totalRevenue')
-                
-                asset_obj.net_income = net_income or 0.0
-                
-                # Dividend Yield (12m)
-                # Brapi dump: 'dividendYield': 2.63326 (in defaultKeyStatistics)
-                # Check magnitude. If > 0.5 likely percent. If < 0.5 likely decimal? 
-                # Actually dump said 2.63326. WEGE3 is around 2-3%. So it is PERCENT value.
-                # Standard convention: 0.0263 (decimal).
-                # But Brapi seems to send 2.63?
-                # Let's verify dump again.
-                # "dividendYield": 2.63326.
-                # If it was decimal it would be 0.026.
-                # So it IS percent.
-                dy = dk_stats.get('dividendYield') or item.get('dividendYield') or 0.0
-                # If value is like 0.05 (5%), keep it? Or is it 5.0?
-                # If > 1.0 it is likely percent. If < 1.0 (and not 0), it might be decimal.
-                # But careful. 2.63 is percent.
-                # My DB likely stores percent (e.g. 2.63).
-                # Previous logic: "if dy < 0.5 and dy > 0: dy = dy * 100".
-                # If Brapi sends 2.63, it stays 2.63.
-                # If Brapi sends 0.0263, it becomes 2.63.
-                if dy > 0 and dy < 0.5:
-                    dy = dy * 100
-                
-                # Fallback Investidor10 for FIIs if data is missing, OR to fetch Dividend Calendar
-                # We now always try to fetch to get dividend history/agenda
-                should_scrape = False
-                if is_fii and (dy == 0 or p_vp == 0 or p_vp == 0.0 or price == 0):
-                    should_scrape = True
-                
-                # Force scrape for dividends if not already scraping (you can tune this to avoid performance hit)
-                # For now, let's do it for all to ensure "Real Data"
-                should_scrape = True 
-                
-                if should_scrape:
-                    # Determine type for URL
-                    sc_type = 'fii' if is_fii else 'stock'
-                    print(f" -> Fetching extra data (Dividends/Fun) for {symbol} ({sc_type}) from Investidor10...")
-                    extra_data = await scrape_investidor10(symbol, asset_type=sc_type)
-                    
-                    if extra_data:
-                        if dy == 0 and extra_data.get('dy'):
-                            dy = extra_data['dy']
-                        if (p_vp == 0 or p_vp == 0.0) and extra_data.get('p_vp'):
-                            p_vp = extra_data['p_vp']
-                        if price == 0 and extra_data.get('price'):
-                             price = extra_data['price']
-                        # Net Income is hard from I10 main page, but maybe Vacancy or other fields later.
-                        
-                if price and price > 0: asset_obj.price = price
-                if dy and dy > 0: asset_obj.dy_12m = dy
-                if p_vp and p_vp > 0: asset_obj.p_vp = p_vp
-                
-                # --- Save Dividends ---
-                if extra_data and extra_data.get('dividends'):
-                     current_events = db.query(DividendEvent).filter(DividendEvent.asset_id == asset_obj.id).all()
-                     # Simple check (e.g. by pay_date and amount)
-                     # Or delete all and re-insert (easiest for now, but dangerous if IDs matter)
-                     # But we don't link dividends by ID elsewhere yet.
-                     # Let's check duplicates
-                     existing_keys = {(d.pay_date, d.amount, d.type) for d in current_events}
-                     
-                     for div in extra_data['dividends']:
-                         key = (div['pay_date'], div['amount'], div['type'])
-                         if key not in existing_keys:
-                             new_div = DividendEvent(
-                                 asset_id=asset_obj.id,
-                                 type=div['type'],
-                                 amount=div['amount'],
-                                 pay_date=div['pay_date'],
-                                 record_date=div['record_date']
-                             )
-                             db.add(new_div)
-                             existing_keys.add(key)
-                     
-                     # --- Update Payment Pattern (Typical Months) ---
-                     # Get all pay dates for this asset (including recently added ones)
-                     all_months = [d.pay_date.month for d in current_events]
-                     for div in extra_data['dividends']:
-                          m = div['pay_date'].month
-                          all_months.append(m)
-                     
-                     if all_months:
-                          unique_months = sorted(list(set(all_months)))
-                          asset_obj.payment_months = ",".join(map(str, unique_months))
-                
-                # Liquidity (Financial Volume = Volume * Price)
-                # averageDailyVolume3Month is usually in defaultKeyStatistics or summaryDetail
-                # regularMarketVolume is in root
-                vol = item.get('regularMarketVolume') or 0
-                avg_vol_3m = dk_stats.get('averageDailyVolume3Month') or 0
-                
-                # Use 3M avg if available for stability, else daily volume
-                used_vol = avg_vol_3m if (avg_vol_3m and avg_vol_3m > 0) else vol
-                
-                # Ensure we have valid numbers
-                clean_price = asset_obj.price or 0
-                if used_vol and used_vol > 0 and clean_price > 0:
-                     asset_obj.liquidity_avg_2m = float(used_vol * clean_price)
-                
-            db.commit()
-
-        except Exception as e:
-            print(f"Batch Error {tickers}: {e}")
+            except Exception as e:
+                db.rollback()
+                print(f"Erro ao processar {symbol}: {e}")
 
 import re
 

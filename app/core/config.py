@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 from typing import Optional
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Invexa"
+    PROJECT_NAME: str = "Invexa Invest"
     API_V1_STR: str = "/api/v1"
     
     # Segurança
